@@ -1,0 +1,11 @@
+{
+  "_readme": "Player piece colours. 'set' says which box the pieces come from. 'hex' is only used to draw the colour dot.",
+  "colours": [
+    { "id": "red", "name": "Red", "hex": "#c8342b", "set": "base" },
+    { "id": "blue", "name": "Blue", "hex": "#2a6fc9", "set": "base" },
+    { "id": "white", "name": "White", "hex": "#f4f3ee", "set": "base" },
+    { "id": "orange", "name": "Orange", "hex": "#e8832a", "set": "base" },
+    { "id": "green", "name": "Green", "hex": "#2f8f4e", "set": "5-6 extension" },
+    { "id": "brown", "name": "Brown", "hex": "#7a5233", "set": "5-6 extension" }
+  ]
+}

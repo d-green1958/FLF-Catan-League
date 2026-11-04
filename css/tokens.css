@@ -1,0 +1,63 @@
+/* Colours, sizes and fonts. To re-theme the site, this is the file to edit. */
+:root {
+  color-scheme: light;
+  --bg: #f4f5f7; --surface: #ffffff; --surface-2: #f8f9fa; --surface-3: #f0f1f4; --hover: #f4f5f8;
+  --sidebar: #fafafb; --border: #e5e7eb; --border-strong: #d4d7dd;
+  --ink: #0f1115; --ink-2: #4a505a; --muted: #6f7580; --faint: #b8bdc6;
+  --accent: #002147; --accent-2: #0e3466; --accent-soft: rgba(0, 33, 71, .07); --accent-line: rgba(0, 33, 71, .35);
+  --btn: #002147; --btn-hover: #0e3466;
+  --gold: #8a6414; --gold-soft: rgba(184, 138, 46, .16);
+  --good: #128a4a; --good-soft: rgba(18, 138, 74, .10);
+  --warn: #8a5800; --warn-soft: rgba(240, 164, 23, .16);
+  --bad: #c43535; --bad-soft: rgba(196, 53, 53, .09);
+  --piece-ring: rgba(15, 17, 21, .28);
+
+  /* Chart series colours, checked for colour blindness in this order. Never reorder without re-checking. */
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
+  --grid: #e5e7eb; --heat: 0, 33, 71;
+
+  --r-sm: 6px; --r: 9px; --r-lg: 13px;
+  --sh-sm: 0 1px 2px rgba(16, 24, 40, .05);
+  --sh: 0 1px 2px rgba(16, 24, 40, .04), 0 4px 14px -6px rgba(16, 24, 40, .08);
+  --sh-lg: 0 20px 50px -12px rgba(16, 24, 40, .28), 0 2px 6px rgba(16, 24, 40, .06);
+  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0c0d10; --surface: #141519; --surface-2: #18191e; --surface-3: #1e2026; --hover: #1c1e23;
+    --sidebar: #101114; --border: #24262c; --border-strong: #31343b;
+    --ink: #eceef2; --ink-2: #a9aeb8; --muted: #8b919c; --faint: #4c515b;
+    --accent: #8fb5e6; --accent-2: #a9c7ef; --accent-soft: rgba(143, 181, 230, .13); --accent-line: rgba(143, 181, 230, .45);
+    --btn: #2b5d9b; --btn-hover: #366bad;
+    --gold: #e3bd63; --gold-soft: rgba(227, 189, 99, .14);
+    --good: #3ccb7f; --good-soft: rgba(60, 203, 127, .12);
+    --warn: #f3b94a; --warn-soft: rgba(243, 185, 74, .14);
+    --bad: #f07070; --bad-soft: rgba(240, 112, 112, .12);
+    --piece-ring: rgba(255, 255, 255, .34);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+    --grid: #24262c; --heat: 143, 181, 230;
+    --sh-sm: none; --sh: 0 0 0 1px rgba(255, 255, 255, .01); --sh-lg: 0 24px 60px -10px rgba(0, 0, 0, .7);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0c0d10; --surface: #141519; --surface-2: #18191e; --surface-3: #1e2026; --hover: #1c1e23;
+  --sidebar: #101114; --border: #24262c; --border-strong: #31343b;
+  --ink: #eceef2; --ink-2: #a9aeb8; --muted: #8b919c; --faint: #4c515b;
+  --accent: #8fb5e6; --accent-2: #a9c7ef; --accent-soft: rgba(143, 181, 230, .13); --accent-line: rgba(143, 181, 230, .45);
+  --btn: #2b5d9b; --btn-hover: #366bad;
+  --gold: #e3bd63; --gold-soft: rgba(227, 189, 99, .14);
+  --good: #3ccb7f; --good-soft: rgba(60, 203, 127, .12);
+  --warn: #f3b94a; --warn-soft: rgba(243, 185, 74, .14);
+  --bad: #f07070; --bad-soft: rgba(240, 112, 112, .12);
+  --piece-ring: rgba(255, 255, 255, .34);
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+  --grid: #24262c; --heat: 143, 181, 230;
+  --sh-sm: none; --sh: 0 0 0 1px rgba(255, 255, 255, .01); --sh-lg: 0 24px 60px -10px rgba(0, 0, 0, .7);
+}

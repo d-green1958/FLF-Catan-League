@@ -1,0 +1,140 @@
+{
+  "_readme": "Text for the Rules page. 'general' is our own short summary of the 2025 base game rulebook, which remains the authority. 'league' is a draft until the group votes on it.",
+  "general": {
+    "intro": "A quick refresher in our own words, based on the 2025 edition. If this page and your rulebook disagree, the rulebook wins.",
+    "sections": [
+      {
+        "heading": "The goal",
+        "items": [
+          "Be the first to reach 10 victory points (VPs). You can only win on your own turn.",
+          "Settlements are worth 1 VP and cities are worth 2 VPs.",
+          "Longest Route and Largest Army are worth 2 VPs each, and each Victory Point card is worth 1 VP."
+        ]
+      },
+      {
+        "heading": "Your turn",
+        "items": [
+          "You may play one development card before you roll.",
+          "Roll both dice. Every hex showing that number produces: 1 card per settlement and 2 per city on it. The hex holding the robber produces nothing.",
+          "Then trade, build and play a development card in any order, if you have not already played one this turn.",
+          "When you are done, pass the dice to your left."
+        ]
+      },
+      {
+        "heading": "Rolling a 7",
+        "items": [
+          "Nobody collects resources.",
+          "Anyone holding more than 7 resource cards discards half of them, rounded down.",
+          "The roller moves the robber to a new hex and steals 1 random card from a player with a building on that hex."
+        ]
+      },
+      {
+        "heading": "Trading",
+        "items": [
+          "On your turn you can trade with any player. Other players can only trade with you, not with each other.",
+          "With the supply you can trade 4 of one resource for 1 of another. A 3:1 port improves that to 3 of one resource, and a 2:1 port to 2 of the resource it shows.",
+          "You cannot give cards away, and that includes trading a resource for the same resource."
+        ]
+      },
+      {
+        "heading": "Building",
+        "items": [
+          "Settlements must connect to one of your roads and sit at least two edges from every other building.",
+          "Cities replace one of your settlements.",
+          "Roads must connect to your own road or building, and cannot carry on through an opponent's building.",
+          "You have 15 roads, 5 settlements and 4 cities."
+        ],
+        "costs": [
+          { "item": "Road", "cost": "1 wood, 1 brick", "vp": "0" },
+          { "item": "Settlement", "cost": "1 wood, 1 brick, 1 wool, 1 wheat", "vp": "1" },
+          { "item": "City", "cost": "2 wheat, 3 ore", "vp": "2" },
+          { "item": "Development card", "cost": "1 wool, 1 wheat, 1 ore", "vp": "Varies" }
+        ]
+      },
+      {
+        "heading": "Development cards",
+        "items": [
+          "The deck has 25 cards: 14 Knights, 5 Victory Points, 2 Road Building, 2 Year of Plenty and 2 Monopoly.",
+          "You can play only one per turn, and not on the turn you bought it.",
+          "Victory Point cards are the exception: you can reveal any number of them, even ones you just bought, if that wins you the game."
+        ]
+      },
+      {
+        "heading": "Longest Route and Largest Army",
+        "items": [
+          "Longest Route goes to the first player with 5 continuous roads, and moves as soon as someone has more.",
+          "Largest Army goes to the first player to play 3 Knights, and moves as soon as someone has played more."
+        ]
+      },
+      {
+        "heading": "Playing with 3 or with 5–6",
+        "items": [
+          "In a 3-player game, the white pieces are not used.",
+          "For 5–6 players you need the extension. In the 2025 edition each turn has a paired player: the third player to the left of the active player takes an Action phase straight after the active player, but cannot trade with other players.",
+          "Older editions of the extension use a special building phase instead, and older boxes call Longest Route 'Longest Road'."
+        ]
+      }
+    ]
+  },
+  "league": {
+    "status": "Draft for the group to vote on",
+    "intro": "These are a starting point, not a decree. Nothing here is final until the group has agreed it.",
+    "sections": [
+      {
+        "heading": "Who and what counts",
+        "items": [
+          "Anyone can join by registering a profile. There is no fee and no try-out.",
+          "A league game has 3 to 6 registered players, all of whom agree before setup that it counts.",
+          "Agree the rules before the first settlement goes down: expansions, scenario, victory point target and any house rules."
+        ]
+      },
+      {
+        "heading": "Before the game",
+        "items": [
+          "Roll for turn order, as the rulebook says.",
+          "Choose colours in turn order, unless the table agrees another way. Colours are logged, so superstitions can be tested.",
+          "Use the rules for the edition on the table. If people remember them differently, the rulebook decides."
+        ]
+      },
+      {
+        "heading": "When lunch runs out",
+        "items": [
+          "If time runs out, finish the current round so everyone has had the same number of turns.",
+          "The player with the most VPs wins, counting any Victory Point cards they reveal. If tied, the tied player who would have had the next turn wins.",
+          "Log it with 'Ended early' ticked. It counts as a normal league game."
+        ]
+      },
+      {
+        "heading": "Logging results",
+        "items": [
+          "Log the game the same day, with seats in turn order and everyone's final VPs.",
+          "Everyone at the table should be happy with the entry. Mistakes can be corrected at any time, and all ratings then recalculate from scratch.",
+          "Abandoned games that nobody finished or time-called do not count."
+        ]
+      },
+      {
+        "heading": "Fair play",
+        "items": [
+          "Trades happen immediately. Promises about future turns are welcome but cannot be enforced.",
+          "Answer honestly if someone asks how many resource cards you hold. Your cards and unplayed development cards stay hidden.",
+          "No playing to hand a win to a friend. Being a terrible negotiator is allowed, and indeed encouraged."
+        ]
+      },
+      {
+        "heading": "Scoring and variety",
+        "items": [
+          "Every scoring system on the Scoring page runs side by side during the trial period. The group will then choose an official one and retire the rest.",
+          "Repeat match-ups count for less over time, so the league rewards playing against a wide range of people.",
+          "Players are marked provisional until they have played 5 games."
+        ]
+      },
+      {
+        "heading": "Leaving and returning",
+        "items": [
+          "A retired player's history stays in the record, and they drop off the default leaderboard.",
+          "Anyone can come back at any time and carry on from their old rating."
+        ]
+      }
+    ]
+  }
+}

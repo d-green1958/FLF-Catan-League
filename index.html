@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLFOxtan</title>
+<meta name="description" content="The Fun Lunch Friday Oxford Catan group: players, games, rules and leaderboards.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/charts.css">
+<link rel="stylesheet" href="css/pages.css">
+<script>
+  // Set the theme before the first paint, so dark-mode users do not see a white flash.
+  try {
+    const saved = JSON.parse(localStorage.getItem('flfoxtan.settings') || '{}');
+    if (saved.theme) document.documentElement.dataset.theme = saved.theme;
+  } catch {}
+</script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <a class="brand" href="#/">
+      <img class="mark" src="assets/crest.jpeg" alt="" width="36" height="36">
+      <div><b>FLFOxtan</b><small>Fun Lunch Friday Catan</small></div>
+    </a>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <div class="side-foot" id="theme-toggle"></div>
+  </aside>
+  <main class="main" id="main">
+    <div class="demo-banner" id="demo-banner" role="status" hidden></div>
+    <div id="view">
+      <noscript><div class="page"><p>This site needs JavaScript to show the league.</p></div></noscript>
+    </div>
+  </main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+  // Browsers block this kind of app on file:// addresses, so explain what to do instead of showing a blank page.
+  if (location.protocol === 'file:') {
+    document.getElementById('view').innerHTML =
+      '<div class="page"><div class="empty card"><h2>Start the local server first</h2>' +
+      '<p>Browsers will not load the league data from a file opened directly. In a terminal, from this folder, run:</p>' +
+      '<p><code>python3 -m http.server 8000</code></p>' +
+      '<p>Then open <code>http://localhost:8000</code>.</p></div></div>';
+  }
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

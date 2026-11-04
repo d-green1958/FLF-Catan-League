@@ -1,0 +1,68 @@
+{
+  "_readme": "What can be on the table in a game. 'defaultVp' pre-fills the target on the game form; null means it depends on the scenario. The base game is always in play. Player counts and targets were checked against the rulebooks on catan.com in November 2026.",
+  "rulesIndexUrl": "https://www.catan.com/understand-catan/game-rules",
+  "base": {
+    "id": "base",
+    "name": "CATAN: The Game",
+    "players": "3–4, or 5–6 with the extension",
+    "defaultVp": 10,
+    "summary": "The classic game: gather resources, trade with the table and build your way to 10 victory points.",
+    "rulebookUrl": "https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf",
+    "extensionRulebookUrl": "https://www.catan.com/sites/default/files/2025-03/CN3082%20CATAN%20%E2%80%93%205-6%20Rulebook%202025%20reduced.pdf"
+  },
+  "expansions": [
+    {
+      "id": "seafarers",
+      "name": "Seafarers",
+      "players": "3–4, or 5–6 with its extension",
+      "defaultVp": null,
+      "vpNote": "Set by the scenario. The current rulebook's scenarios use several different targets, so check yours.",
+      "summary": "Adds ships, gold fields and the pirate, with a campaign of scenarios across the sea.",
+      "scenarios": ["Heading for New Shores", "The Four Islands", "The Fog Islands", "Through the Desert", "The Forgotten Tribe", "Cloth for Catan", "The Pirate Islands", "The Wonders of Catan", "New World"],
+      "rulebookUrl": "https://www.catan.com/sites/default/files/2025-03/CN3083%20CATAN%E2%80%93Seafarers%20Rulebook%202025%20secured%20reduced.pdf",
+      "extensionRulebookUrl": "https://www.catan.com/sites/default/files/2025-03/CN3084%20CATAN%20%E2%80%93%20Seafarers_%205-6%20Player_%20Rulebook.pdf"
+    },
+    {
+      "id": "cities-knights",
+      "name": "Cities & Knights",
+      "players": "3–4, or 5–6 with its extension",
+      "defaultVp": 13,
+      "vpNote": "13 victory points. There is no Largest Army tile in this expansion.",
+      "summary": "Adds city improvements, commodities, knights and barbarian attacks that everyone must defend against.",
+      "scenarios": [],
+      "noLargestArmy": true,
+      "rulebookUrl": "https://www.catan.com/sites/default/files/2025-03/CN3087%20CATAN%E2%80%93Cities%26Knights_%20Rulebook.pdf",
+      "extensionRulebookUrl": "https://www.catan.com/sites/default/files/2025-03/CN3088%20CATAN%E2%80%93Cities%20%26%20Knights%205-6_%20Rulebook.pdf"
+    },
+    {
+      "id": "traders-barbarians",
+      "name": "Traders & Barbarians",
+      "players": "3–4, or 5–6 with its extension",
+      "defaultVp": null,
+      "vpNote": "Depends on the mix of variants and scenarios. Some raise the target, so check the rulebook.",
+      "summary": "A collection of variants and scenarios that can be mixed together.",
+      "scenarios": ["Fishing on Catan", "Rivers of Catan", "Merchant Trains", "Barbarian Attack", "Traders & Barbarians"],
+      "rulebookUrl": "https://www.catan.com/sites/default/files/2025-04/CN3089%20CATAN%20%E2%80%93%20T%26B%20Rulebook.pdf",
+      "extensionRulebookUrl": "https://www.catan.com/sites/default/files/2025-04/CN3090%20CATAN%20%E2%80%93%20T%26B%205-6%20Expansion%20Rulebook.pdf"
+    },
+    {
+      "id": "explorers-pirates",
+      "name": "Explorers & Pirates",
+      "players": "3–4, or 5–6 with its extension",
+      "defaultVp": null,
+      "vpNote": "Set by the scenario in the Mission Guide.",
+      "summary": "Adds exploration, settlers, crews and missions, taught through a series of scenarios.",
+      "scenarios": [],
+      "rulebookUrl": "https://www.catan.com/sites/default/files/2025-04/CN3085%20CATAN%20%E2%80%93%20E%26P%20Rulebook.pdf",
+      "extensionRulebookUrl": "https://www.catan.com/sites/default/files/2025-04/CN3086%20CATAN%20%E2%80%93%20E%26P%205-6%20Expansion%20Rules.pdf"
+    }
+  ],
+  "extras": [
+    { "id": "sea-robbers", "name": "The Legend of the Sea Robbers", "rulebookUrl": "https://www.catan.com/sites/default/files/2021-06/catan-searobbers_rule_book_171009s_0.pdf" },
+    { "id": "conquerors", "name": "The Legend of the Conquerors", "rulebookUrl": "https://www.catan.com/sites/default/files/2024-06/Legend%20of%20the%20Conquerers%20Rule%20Book%20210112.pdf" },
+    { "id": "helpers", "name": "The Helpers", "rulebookUrl": "https://www.catan.com/sites/default/files/2023-02/Helpers_Rules.pdf" },
+    { "id": "frenemies", "name": "Frenemies", "rulebookUrl": "https://www.catan.com/sites/default/files/2021-07/catan_frenemies_rules_093012s.pdf" },
+    { "id": "oil-springs", "name": "Oil Springs", "rulebookUrl": "https://www.catan.com/sites/default/files/2021-08/catan_oilsprings_rules.pdf" },
+    { "id": "treasures-dragons", "name": "Treasures, Dragons & Adventurers", "rulebookUrl": "https://www.catan.com/sites/default/files/2021-08/Treasure%20Dragons%20and%20Adventurers%20Rulebook_210107-sm.pdf" }
+  ]
+}

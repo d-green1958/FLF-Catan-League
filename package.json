@@ -1,0 +1,10 @@
+{
+  "name": "flfoxtan",
+  "private": true,
+  "type": "module",
+  "description": "League tracker for the Fun Lunch Friday Oxford Catan group. No dependencies and no build step.",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test"
+  }
+}

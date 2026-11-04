@@ -1,0 +1,252 @@
+{
+  "_readme": "The catalogue of scoring systems. Each 'id' matches a file in js/ratings/approaches/. To retire a system, set enabled to false. To add one, add a file there and an entry here. Parameter values here are the league defaults.",
+  "families": [
+    { "id": "index", "name": "Combined index" },
+    { "id": "simple", "name": "Simple tallies" },
+    { "id": "elo", "name": "Elo family" },
+    { "id": "penalty", "name": "Penalty ladders" },
+    { "id": "bayesian", "name": "Skill with uncertainty" }
+  ],
+  "approaches": [
+    {
+      "id": "flf-index",
+      "family": "index",
+      "name": "FLFOxtan Index",
+      "shortName": "Index",
+      "format": "rating",
+      "enabled": true,
+      "summary": "A combined rating using finishing place, table size, repeat-opponent decay and a confidence adjustment.",
+      "howItWorks": "Runs Placement Elo, gives bigger tables more weight, and lets each repeat pairing count for less. The displayed score then starts close to 1000 and moves towards the true rating as you play more games.",
+      "watchOut": "It is the hardest to explain because it does the most. It is only the default during the trial, not the league's official choice.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 },
+        { "key": "referenceTable", "label": "Table size that counts as normal", "value": 4, "min": 3, "max": 6, "step": 1 },
+        { "key": "halfLife", "label": "Repeat half-life (games together)", "value": 5, "min": 0, "max": 50, "step": 1, "help": "After this many games together, a pairing counts half as much. 0 turns decay off." },
+        { "key": "confidenceGames", "label": "Confidence games", "value": 5, "min": 0, "max": 50, "step": 1, "help": "After this many games, the score shows half of the distance from the starting rating to the real one." }
+      ]
+    },
+    {
+      "id": "wins",
+      "family": "simple",
+      "name": "Most wins",
+      "shortName": "Wins",
+      "format": "integer",
+      "enabled": true,
+      "summary": "Total games won.",
+      "howItWorks": "Each win is worth 1. Nothing else matters.",
+      "watchOut": "It rewards turning up often as much as playing well.",
+      "parameters": []
+    },
+    {
+      "id": "win-rate",
+      "family": "simple",
+      "name": "Adjusted win rate",
+      "shortName": "Win %",
+      "format": "percent",
+      "enabled": true,
+      "summary": "Share of games won, adjusted so that one lucky win does not top the table.",
+      "howItWorks": "Adds a few imaginary games at an average win rate to everyone's record, so a small sample stays close to average: (wins + prior games × prior rate) ÷ (games + prior games).",
+      "watchOut": "It ignores who you beat and how big the table was.",
+      "parameters": [
+        { "key": "priorGames", "label": "Imaginary games", "value": 4, "min": 0, "max": 30, "step": 1 },
+        { "key": "priorRate", "label": "Their win rate", "value": 0.25, "min": 0.1, "max": 0.5, "step": 0.05 }
+      ]
+    },
+    {
+      "id": "wins-above-expected",
+      "family": "simple",
+      "name": "Wins above expected",
+      "shortName": "WAE",
+      "format": "signed",
+      "enabled": true,
+      "summary": "How many more games you have won than random chance would give you.",
+      "howItWorks": "At a table of N, everyone is expected to win 1 in N. Each game adds (1 − 1/N) for a win and subtracts 1/N otherwise, so winning at a table of 6 earns more than winning at a table of 3.",
+      "watchOut": "It ignores opponent strength, and it still accumulates, so frequent players can drift further from zero in either direction.",
+      "parameters": []
+    },
+    {
+      "id": "league-points",
+      "family": "simple",
+      "name": "League points",
+      "shortName": "Points",
+      "format": "integer",
+      "enabled": true,
+      "summary": "Points for finishing positions, like a racing championship.",
+      "howItWorks": "Each game awards fixed points by finishing place, and players tied on VPs share the higher place. Everyone below the listed places scores nothing.",
+      "watchOut": "It rewards attendance, and everyone at a bigger table is competing for the same points.",
+      "parameters": [
+        { "key": "first", "label": "1st place", "value": 5, "min": 0, "max": 25, "step": 1 },
+        { "key": "second", "label": "2nd place", "value": 3, "min": 0, "max": 25, "step": 1 },
+        { "key": "third", "label": "3rd place", "value": 2, "min": 0, "max": 25, "step": 1 },
+        { "key": "fourth", "label": "4th place", "value": 1, "min": 0, "max": 25, "step": 1 }
+      ]
+    },
+    {
+      "id": "vp-share",
+      "family": "simple",
+      "name": "Average VP share",
+      "shortName": "VP %",
+      "format": "percent",
+      "enabled": true,
+      "summary": "On average, how close you got to the victory point target.",
+      "howItWorks": "Takes your VPs as a share of that game's target, capped at 100%, and averages it over your games. This keeps a 13 VP Cities & Knights game comparable with a 10 VP base game.",
+      "watchOut": "It rewards consistently strong finishes more than wins, and a small number of games can look very good.",
+      "parameters": []
+    },
+    {
+      "id": "elo-standard",
+      "family": "elo",
+      "name": "Standard Elo",
+      "shortName": "Elo",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Classic Elo: the winner beat each other player, and nothing else is scored.",
+      "howItWorks": "The winner plays a virtual match against each loser. Beating stronger players earns more, and losing to weaker players costs more. K is split across the opponents, so one game has a similar total swing at any table size.",
+      "watchOut": "Second place and last place are treated the same.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 }
+      ]
+    },
+    {
+      "id": "elo-placement",
+      "family": "elo",
+      "name": "Placement Elo",
+      "shortName": "Place",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Elo that also rewards finishing second or third.",
+      "howItWorks": "Every pair at the table is a virtual match: whoever finished higher wins it, and players tied on VPs draw.",
+      "watchOut": "Places depend on VPs at the end, and in Catan these can be shaped by a late rush from someone else.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 }
+      ]
+    },
+    {
+      "id": "elo-table-size",
+      "family": "elo",
+      "name": "Table-size Elo",
+      "shortName": "Table",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Placement Elo where bigger games count for more.",
+      "howItWorks": "Multiplies each game's swing by (players ÷ normal table size). With a normal table of 4, a 6-player game moves ratings 1.5 times as far and a 3-player game 0.75 times as far.",
+      "watchOut": "Big games are also more chaotic, so giving them extra weight amplifies some luck.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 },
+        { "key": "referenceTable", "label": "Table size that counts as normal", "value": 4, "min": 3, "max": 6, "step": 1 }
+      ]
+    },
+    {
+      "id": "elo-experience",
+      "family": "elo",
+      "name": "Experience-adjusted Elo",
+      "shortName": "Exper.",
+      "format": "rating",
+      "enabled": true,
+      "summary": "New players' ratings move quickly, and settle as they play more.",
+      "howItWorks": "Placement Elo, but each player has their own K: higher until they have played enough games, then lower. New players find their level quickly without shaking up established ratings as much.",
+      "watchOut": "Points are no longer exactly zero-sum, so the league's average can drift a little.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "kNew", "label": "K while new", "value": 48, "min": 4, "max": 96, "step": 4 },
+        { "key": "kEstablished", "label": "K once established", "value": 24, "min": 4, "max": 96, "step": 4 },
+        { "key": "establishedGames", "label": "Games until established", "value": 10, "min": 1, "max": 100, "step": 1 }
+      ]
+    },
+    {
+      "id": "elo-confidence",
+      "family": "elo",
+      "name": "Confidence-weighted Elo",
+      "shortName": "Confid.",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Your rating only counts in full once you have played enough games to back it up.",
+      "howItWorks": "Placement Elo underneath. The displayed score is start + (rating − start) × games ÷ (games + confidence games), so one lucky day cannot put you top.",
+      "watchOut": "A strong new player will appear lower than they really are for a while.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 },
+        { "key": "confidenceGames", "label": "Confidence games", "value": 5, "min": 0, "max": 50, "step": 1, "help": "After this many games, the score shows half of the distance from the starting rating to the real one." }
+      ]
+    },
+    {
+      "id": "elo-vp",
+      "family": "elo",
+      "name": "VP-margin Elo",
+      "shortName": "Margin",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Elo where the size of your victory point lead matters.",
+      "howItWorks": "Each pair's virtual result is 0.5 plus half of their VP gap as a share of the target. Finishing 10–8 at a 10 VP target scores 0.6, while 10–2 scores 0.9.",
+      "watchOut": "Winning narrowly can still lose rating against a much weaker opponent, and running up the score gets rewarded.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 }
+      ]
+    },
+    {
+      "id": "elo-repeat-decay",
+      "family": "elo",
+      "name": "Repeat-decay Elo",
+      "shortName": "Decay",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Each time the same two people play, their result counts for less, decaying exponentially.",
+      "howItWorks": "Placement Elo, with each pairing's result multiplied by 2^(−games together ÷ half-life). With a half-life of 5, a pair's 6th game counts half as much, their 11th a quarter, and it keeps on shrinking. Each pair decays separately, so a new opponent at the table still counts in full.",
+      "watchOut": "A group that only plays among itself will see its ratings almost freeze. That is the point, but it can feel odd.",
+      "parameters": [
+        { "key": "start", "label": "Starting rating", "value": 1000, "min": 0, "max": 3000, "step": 50 },
+        { "key": "k", "label": "K (maximum swing)", "value": 32, "min": 4, "max": 96, "step": 4 },
+        { "key": "halfLife", "label": "Repeat half-life (games together)", "value": 5, "min": 0, "max": 50, "step": 1, "help": "After this many games together, a pairing counts half as much. 0 turns decay off." }
+      ]
+    },
+    {
+      "id": "penalty-flat",
+      "family": "penalty",
+      "name": "Flat penalty ladder",
+      "shortName": "Penalty",
+      "format": "rating",
+      "enabled": true,
+      "summary": "Everyone starts on 1000, and each loss takes off the same number of points.",
+      "howItWorks": "Winners lose nothing and everyone else loses a fixed amount. Scores never go up, and cannot go below zero.",
+      "watchOut": "Whoever plays least looks best. It works better as a season-long survival game with a minimum number of games.",
+      "parameters": [
+        { "key": "start", "label": "Starting points", "value": 1000, "min": 100, "max": 3000, "step": 50 },
+        { "key": "penalty", "label": "Points lost per defeat", "value": 25, "min": 1, "max": 200, "step": 1 }
+      ]
+    },
+    {
+      "id": "penalty-weighted",
+      "family": "penalty",
+      "name": "Strength-weighted penalty",
+      "shortName": "Pen. wtd",
+      "format": "rating",
+      "enabled": true,
+      "summary": "A penalty ladder where losing to a stronger player costs less than losing to a weaker one.",
+      "howItWorks": "An Elo rating runs in the background. Each loser's penalty is the base penalty × 2 × their expected score against the winner: about the base penalty against an equal, near zero against a far stronger winner and up to double against a far weaker one. You can also let repeat pairings decay.",
+      "watchOut": "It has the same catch as the flat ladder: whoever plays least looks best.",
+      "parameters": [
+        { "key": "start", "label": "Starting points", "value": 1000, "min": 100, "max": 3000, "step": 50 },
+        { "key": "penalty", "label": "Base points lost per defeat", "value": 25, "min": 1, "max": 200, "step": 1 },
+        { "key": "k", "label": "K for background Elo", "value": 32, "min": 4, "max": 96, "step": 4 },
+        { "key": "halfLife", "label": "Repeat half-life (games together)", "value": 0, "min": 0, "max": 50, "step": 1, "help": "After this many games together, losing to the same winner costs half as much. 0 turns decay off." }
+      ]
+    },
+    {
+      "id": "plackett-luce",
+      "family": "bayesian",
+      "name": "Skill and uncertainty",
+      "shortName": "Skill",
+      "format": "rating",
+      "enabled": true,
+      "summary": "A modern multiplayer rating that also tracks how sure it is about each player.",
+      "howItWorks": "Uses the Plackett-Luce model from Weng and Lin (2011), the approach behind OpenSkill and similar to TrueSkill. Each player has an estimated skill and an uncertainty, which shrinks as they play. The score is deliberately cautious: skill minus three times the uncertainty, shown on a scale that starts at 1000.",
+      "watchOut": "It is the hardest to check by hand. Most players go up in their first games simply because the system becomes more sure about them.",
+      "parameters": []
+    }
+  ]
+}

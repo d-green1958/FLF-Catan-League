@@ -1,0 +1,4 @@
+{
+  "_readme": "Every league game. Seats are listed in turn order, so the first seat is the player who went first. Ratings are never stored: they are recalculated from this file.",
+  "games": []
+}

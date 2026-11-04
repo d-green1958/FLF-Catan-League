@@ -1,0 +1,1367 @@
+{
+  "_readme": "Fictional games for the demo mode.",
+  "games": [
+    {
+      "id": "demo-001",
+      "date": "2026-11-06",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 11
+        },
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 5
+        },
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "ada",
+      "largestArmy": "ada",
+      "notes": "Demo data: everything here is made up."
+    },
+    {
+      "id": "demo-002",
+      "date": "2026-11-13",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "esme",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 6
+        },
+        {
+          "playerId": "dev",
+          "colour": "white",
+          "vp": 8
+        },
+        {
+          "playerId": "finn",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 10
+        }
+      ],
+      "longestRoute": "esme",
+      "largestArmy": "finn"
+    },
+    {
+      "id": "demo-003",
+      "date": "2026-11-20",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 10
+        },
+        {
+          "playerId": "finn",
+          "colour": "white",
+          "vp": 6
+        },
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 7
+        },
+        {
+          "playerId": "dev",
+          "colour": "red",
+          "vp": 5
+        }
+      ],
+      "longestRoute": "dev",
+      "largestArmy": "dev"
+    },
+    {
+      "id": "demo-004",
+      "date": "2026-11-27",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ben",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "ada",
+          "colour": "white",
+          "vp": 8
+        },
+        {
+          "playerId": "ben",
+          "colour": "blue",
+          "vp": 10
+        }
+      ],
+      "longestRoute": "ada",
+      "largestArmy": "ada"
+    },
+    {
+      "id": "demo-005",
+      "date": "2026-12-04",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "cities-knights"
+      ],
+      "scenario": "",
+      "vpTarget": 13,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "dev",
+          "colour": "blue",
+          "vp": 9
+        },
+        {
+          "playerId": "esme",
+          "colour": "red",
+          "vp": 9
+        },
+        {
+          "playerId": "hugo",
+          "colour": "orange",
+          "vp": 5
+        },
+        {
+          "playerId": "cleo",
+          "colour": "white",
+          "vp": 13
+        }
+      ],
+      "longestRoute": "cleo"
+    },
+    {
+      "id": "demo-006",
+      "date": "2026-12-11",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "seafarers"
+      ],
+      "scenario": "Heading for New Shores",
+      "vpTarget": 12,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ada",
+          "colour": "red",
+          "vp": 12
+        },
+        {
+          "playerId": "finn",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "ben",
+          "colour": "brown",
+          "vp": 10
+        },
+        {
+          "playerId": "gwen",
+          "colour": "blue",
+          "vp": 6
+        },
+        {
+          "playerId": "hugo",
+          "colour": "white",
+          "vp": 7
+        }
+      ],
+      "longestRoute": "finn"
+    },
+    {
+      "id": "demo-007",
+      "date": "2026-12-18",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "white",
+          "vp": 6
+        },
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 9
+        },
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 10
+        }
+      ],
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-008",
+      "date": "2026-12-25",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "dev",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "esme",
+          "colour": "brown",
+          "vp": 6
+        },
+        {
+          "playerId": "ada",
+          "colour": "red",
+          "vp": 11
+        },
+        {
+          "playerId": "ben",
+          "colour": "green",
+          "vp": 6
+        },
+        {
+          "playerId": "gwen",
+          "colour": "white",
+          "vp": 9
+        }
+      ],
+      "largestArmy": "ada"
+    },
+    {
+      "id": "demo-009",
+      "date": "2027-01-01",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "dev",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 7
+        },
+        {
+          "playerId": "ben",
+          "colour": "white",
+          "vp": 6
+        },
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 10
+        }
+      ],
+      "longestRoute": "esme",
+      "largestArmy": "dev"
+    },
+    {
+      "id": "demo-010",
+      "date": "2027-01-08",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 9
+        },
+        {
+          "playerId": "ben",
+          "colour": "blue",
+          "vp": 5
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 8
+        }
+      ],
+      "endedEarly": true
+    },
+    {
+      "id": "demo-011",
+      "date": "2027-01-15",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 10
+        },
+        {
+          "playerId": "dev",
+          "colour": "blue",
+          "vp": 8
+        },
+        {
+          "playerId": "esme",
+          "colour": "white",
+          "vp": 5
+        },
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 6
+        }
+      ],
+      "longestRoute": "ada",
+      "largestArmy": "dev"
+    },
+    {
+      "id": "demo-012",
+      "date": "2027-01-22",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "cities-knights"
+      ],
+      "scenario": "",
+      "vpTarget": 13,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 13
+        },
+        {
+          "playerId": "gwen",
+          "colour": "red",
+          "vp": 8
+        },
+        {
+          "playerId": "dev",
+          "colour": "white",
+          "vp": 6
+        }
+      ]
+    },
+    {
+      "id": "demo-013",
+      "date": "2027-01-29",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "white",
+          "vp": 10
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 4
+        },
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 6
+        }
+      ],
+      "longestRoute": "ada",
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-014",
+      "date": "2027-02-05",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "esme",
+      "seats": [
+        {
+          "playerId": "gwen",
+          "colour": "blue",
+          "vp": 8
+        },
+        {
+          "playerId": "cleo",
+          "colour": "white",
+          "vp": 8
+        },
+        {
+          "playerId": "finn",
+          "colour": "red",
+          "vp": 8
+        },
+        {
+          "playerId": "esme",
+          "colour": "green",
+          "vp": 11
+        },
+        {
+          "playerId": "dev",
+          "colour": "brown",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "esme",
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-015",
+      "date": "2027-02-12",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 6
+        },
+        {
+          "playerId": "ada",
+          "colour": "white",
+          "vp": 10
+        },
+        {
+          "playerId": "gwen",
+          "colour": "blue",
+          "vp": 7
+        },
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 7
+        }
+      ],
+      "largestArmy": "gwen"
+    },
+    {
+      "id": "demo-016",
+      "date": "2027-02-19",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 10
+        },
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 4
+        },
+        {
+          "playerId": "ada",
+          "colour": "red",
+          "vp": 7
+        }
+      ],
+      "longestRoute": "cleo",
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-017",
+      "date": "2027-02-26",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "seafarers"
+      ],
+      "scenario": "Heading for New Shores",
+      "vpTarget": 12,
+      "winnerId": "ben",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "blue",
+          "vp": 12
+        },
+        {
+          "playerId": "esme",
+          "colour": "white",
+          "vp": 7
+        },
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 6
+        },
+        {
+          "playerId": "dev",
+          "colour": "red",
+          "vp": 5
+        }
+      ],
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-018",
+      "date": "2027-03-05",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "esme",
+      "seats": [
+        {
+          "playerId": "hugo",
+          "colour": "blue",
+          "vp": 8
+        },
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "finn",
+          "colour": "red",
+          "vp": 6
+        },
+        {
+          "playerId": "esme",
+          "colour": "white",
+          "vp": 11
+        }
+      ],
+      "largestArmy": "esme"
+    },
+    {
+      "id": "demo-019",
+      "date": "2027-03-12",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "cities-knights"
+      ],
+      "scenario": "",
+      "vpTarget": 13,
+      "winnerId": "ben",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 14
+        },
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 9
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 11
+        }
+      ],
+      "longestRoute": "ben"
+    },
+    {
+      "id": "demo-020",
+      "date": "2027-03-19",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "esme",
+          "colour": "red",
+          "vp": 6
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 10
+        },
+        {
+          "playerId": "gwen",
+          "colour": "blue",
+          "vp": 4
+        }
+      ]
+    },
+    {
+      "id": "demo-021",
+      "date": "2027-03-26",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "dev",
+      "seats": [
+        {
+          "playerId": "hugo",
+          "colour": "blue",
+          "vp": 8
+        },
+        {
+          "playerId": "cleo",
+          "colour": "brown",
+          "vp": 9
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 7
+        },
+        {
+          "playerId": "dev",
+          "colour": "green",
+          "vp": 10
+        }
+      ],
+      "largestArmy": "ada"
+    },
+    {
+      "id": "demo-022",
+      "date": "2027-04-02",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 6
+        },
+        {
+          "playerId": "ada",
+          "colour": "white",
+          "vp": 10
+        },
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "ada"
+    },
+    {
+      "id": "demo-023",
+      "date": "2027-04-09",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "dev",
+      "seats": [
+        {
+          "playerId": "gwen",
+          "colour": "blue",
+          "vp": 5
+        },
+        {
+          "playerId": "dev",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "hugo",
+          "colour": "red",
+          "vp": 3
+        }
+      ],
+      "endedEarly": true,
+      "longestRoute": "dev",
+      "largestArmy": "dev"
+    },
+    {
+      "id": "demo-024",
+      "date": "2027-04-16",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "dev",
+          "colour": "red",
+          "vp": 7
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 10
+        },
+        {
+          "playerId": "esme",
+          "colour": "white",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "cleo",
+      "largestArmy": "dev"
+    },
+    {
+      "id": "demo-025",
+      "date": "2027-04-23",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 10
+        },
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 8
+        },
+        {
+          "playerId": "ben",
+          "colour": "blue",
+          "vp": 6
+        }
+      ],
+      "longestRoute": "ada"
+    },
+    {
+      "id": "demo-026",
+      "date": "2027-04-30",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "cities-knights"
+      ],
+      "scenario": "",
+      "vpTarget": 13,
+      "winnerId": "gwen",
+      "seats": [
+        {
+          "playerId": "gwen",
+          "colour": "white",
+          "vp": 14
+        },
+        {
+          "playerId": "hugo",
+          "colour": "blue",
+          "vp": 6
+        },
+        {
+          "playerId": "dev",
+          "colour": "orange",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "gwen"
+    },
+    {
+      "id": "demo-027",
+      "date": "2027-05-07",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "hugo",
+          "colour": "white",
+          "vp": 5
+        },
+        {
+          "playerId": "gwen",
+          "colour": "red",
+          "vp": 5
+        },
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 10
+        },
+        {
+          "playerId": "esme",
+          "colour": "green",
+          "vp": 8
+        },
+        {
+          "playerId": "dev",
+          "colour": "brown",
+          "vp": 4
+        },
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 6
+        }
+      ],
+      "longestRoute": "cleo",
+      "largestArmy": "hugo"
+    },
+    {
+      "id": "demo-028",
+      "date": "2027-05-14",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "seafarers"
+      ],
+      "scenario": "Heading for New Shores",
+      "vpTarget": 12,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 8
+        },
+        {
+          "playerId": "ada",
+          "colour": "white",
+          "vp": 12
+        },
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 10
+        }
+      ],
+      "longestRoute": "cleo",
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-029",
+      "date": "2027-05-21",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "gwen",
+      "seats": [
+        {
+          "playerId": "dev",
+          "colour": "blue",
+          "vp": 5
+        },
+        {
+          "playerId": "ada",
+          "colour": "white",
+          "vp": 9
+        },
+        {
+          "playerId": "hugo",
+          "colour": "red",
+          "vp": 8
+        },
+        {
+          "playerId": "gwen",
+          "colour": "orange",
+          "vp": 10
+        }
+      ],
+      "longestRoute": "gwen"
+    },
+    {
+      "id": "demo-030",
+      "date": "2027-05-28",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "gwen",
+      "seats": [
+        {
+          "playerId": "gwen",
+          "colour": "red",
+          "vp": 10
+        },
+        {
+          "playerId": "ada",
+          "colour": "white",
+          "vp": 4
+        },
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 4
+        },
+        {
+          "playerId": "hugo",
+          "colour": "orange",
+          "vp": 6
+        }
+      ]
+    },
+    {
+      "id": "demo-031",
+      "date": "2027-06-04",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ben",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "white",
+          "vp": 10
+        },
+        {
+          "playerId": "cleo",
+          "colour": "blue",
+          "vp": 7
+        },
+        {
+          "playerId": "ada",
+          "colour": "orange",
+          "vp": 6
+        }
+      ],
+      "longestRoute": "ada",
+      "largestArmy": "ada"
+    },
+    {
+      "id": "demo-032",
+      "date": "2027-06-11",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 7
+        },
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 10
+        },
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 6
+        },
+        {
+          "playerId": "hugo",
+          "colour": "white",
+          "vp": 6
+        }
+      ],
+      "longestRoute": "cleo",
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-033",
+      "date": "2027-06-18",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "cities-knights"
+      ],
+      "scenario": "",
+      "vpTarget": 13,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ada",
+          "colour": "green",
+          "vp": 13
+        },
+        {
+          "playerId": "dev",
+          "colour": "white",
+          "vp": 8
+        },
+        {
+          "playerId": "cleo",
+          "colour": "orange",
+          "vp": 8
+        },
+        {
+          "playerId": "esme",
+          "colour": "red",
+          "vp": 8
+        },
+        {
+          "playerId": "gwen",
+          "colour": "blue",
+          "vp": 10
+        },
+        {
+          "playerId": "hugo",
+          "colour": "brown",
+          "vp": 10
+        }
+      ]
+    },
+    {
+      "id": "demo-034",
+      "date": "2027-06-25",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "blue",
+          "vp": 5
+        },
+        {
+          "playerId": "ada",
+          "colour": "red",
+          "vp": 10
+        },
+        {
+          "playerId": "cleo",
+          "colour": "white",
+          "vp": 5
+        }
+      ],
+      "longestRoute": "ada"
+    },
+    {
+      "id": "demo-035",
+      "date": "2027-07-02",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 6
+        },
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 10
+        },
+        {
+          "playerId": "ben",
+          "colour": "white",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "esme",
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-036",
+      "date": "2027-07-09",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "ada",
+      "seats": [
+        {
+          "playerId": "gwen",
+          "colour": "orange",
+          "vp": 4
+        },
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 8
+        },
+        {
+          "playerId": "esme",
+          "colour": "red",
+          "vp": 6
+        },
+        {
+          "playerId": "dev",
+          "colour": "white",
+          "vp": 5
+        }
+      ],
+      "endedEarly": true
+    },
+    {
+      "id": "demo-037",
+      "date": "2027-07-16",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 10
+        },
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 6
+        },
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 9
+        }
+      ],
+      "longestRoute": "cleo"
+    },
+    {
+      "id": "demo-038",
+      "date": "2027-07-23",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "dev",
+      "seats": [
+        {
+          "playerId": "ben",
+          "colour": "white",
+          "vp": 7
+        },
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 5
+        },
+        {
+          "playerId": "dev",
+          "colour": "orange",
+          "vp": 10
+        },
+        {
+          "playerId": "ada",
+          "colour": "red",
+          "vp": 8
+        }
+      ],
+      "longestRoute": "dev"
+    },
+    {
+      "id": "demo-039",
+      "date": "2027-07-30",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "seafarers"
+      ],
+      "scenario": "Heading for New Shores",
+      "vpTarget": 12,
+      "winnerId": "gwen",
+      "seats": [
+        {
+          "playerId": "gwen",
+          "colour": "white",
+          "vp": 12
+        },
+        {
+          "playerId": "ada",
+          "colour": "red",
+          "vp": 8
+        },
+        {
+          "playerId": "ben",
+          "colour": "blue",
+          "vp": 6
+        },
+        {
+          "playerId": "dev",
+          "colour": "orange",
+          "vp": 9
+        }
+      ],
+      "longestRoute": "gwen",
+      "largestArmy": "ada"
+    },
+    {
+      "id": "demo-040",
+      "date": "2027-08-06",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [
+        "cities-knights"
+      ],
+      "scenario": "",
+      "vpTarget": 13,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "white",
+          "vp": 13
+        },
+        {
+          "playerId": "ada",
+          "colour": "blue",
+          "vp": 7
+        },
+        {
+          "playerId": "ben",
+          "colour": "orange",
+          "vp": 7
+        }
+      ],
+      "longestRoute": "ben"
+    },
+    {
+      "id": "demo-041",
+      "date": "2027-08-13",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "cleo",
+      "seats": [
+        {
+          "playerId": "cleo",
+          "colour": "white",
+          "vp": 10
+        },
+        {
+          "playerId": "ben",
+          "colour": "red",
+          "vp": 6
+        },
+        {
+          "playerId": "esme",
+          "colour": "blue",
+          "vp": 7
+        },
+        {
+          "playerId": "gwen",
+          "colour": "orange",
+          "vp": 7
+        }
+      ],
+      "largestArmy": "cleo"
+    },
+    {
+      "id": "demo-042",
+      "date": "2027-08-20",
+      "time": "12:30",
+      "location": "Common room",
+      "expansions": [],
+      "scenario": "",
+      "vpTarget": 10,
+      "winnerId": "hugo",
+      "seats": [
+        {
+          "playerId": "dev",
+          "colour": "white",
+          "vp": 5
+        },
+        {
+          "playerId": "hugo",
+          "colour": "blue",
+          "vp": 11
+        },
+        {
+          "playerId": "cleo",
+          "colour": "red",
+          "vp": 7
+        }
+      ],
+      "longestRoute": "cleo",
+      "largestArmy": "hugo"
+    }
+  ]
+}

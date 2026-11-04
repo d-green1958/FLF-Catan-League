@@ -1,0 +1,25 @@
+/* Defaults for plain HTML elements. */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; }
+img { max-width: 100%; }
+code { background: var(--surface-3); border-radius: 5px; padding: 2px 6px; font-size: 13px; }
+::selection { background: var(--accent-soft); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.022em; margin: 0; font-weight: 650; }
+h2 { font-size: 15px; letter-spacing: -.01em; margin: 0; font-weight: 600; }
+h3 { font-size: 15px; letter-spacing: -.01em; margin: 0; font-weight: 600; }
+
+.ic { width: 16px; height: 16px; flex: none; }
+.ic.sm { width: 14px; height: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.nowrap { white-space: nowrap; }
+.spacer { flex: 1; }
+.spaced { margin-top: 18px; }
+.spaced-bottom { margin-bottom: 14px; }
+.dim { opacity: .62; }

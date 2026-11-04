@@ -1,0 +1,77 @@
+{
+  "_readme": "Fictional players for the demo mode. Not real people.",
+  "profiles": [
+    {
+      "id": "ada",
+      "name": "Ada",
+      "nickname": "Wheat Baroness",
+      "favouriteColour": "orange",
+      "tagline": "Hoards wheat and calls it strategy.",
+      "joined": "2026-11-04",
+      "active": true
+    },
+    {
+      "id": "ben",
+      "name": "Ben",
+      "nickname": "",
+      "favouriteColour": "blue",
+      "tagline": "Will trade you anything except what you need.",
+      "joined": "2026-11-04",
+      "active": true
+    },
+    {
+      "id": "cleo",
+      "name": "Cleo",
+      "nickname": "Road Queen",
+      "favouriteColour": "red",
+      "tagline": "Has never met a coastline she did not want to pave.",
+      "joined": "2026-11-04",
+      "active": true
+    },
+    {
+      "id": "dev",
+      "name": "Dev",
+      "nickname": "",
+      "favouriteColour": "green",
+      "tagline": "Buys development cards and hopes for the best.",
+      "joined": "2026-11-06",
+      "active": true
+    },
+    {
+      "id": "esme",
+      "name": "Esme",
+      "nickname": "The Robber",
+      "favouriteColour": "white",
+      "tagline": "Always moves the robber \"for balance\".",
+      "joined": "2026-11-06",
+      "active": true
+    },
+    {
+      "id": "finn",
+      "name": "Finn",
+      "nickname": "",
+      "favouriteColour": "brown",
+      "tagline": "Here for the snacks. Occasionally wins.",
+      "joined": "2026-11-06",
+      "active": false
+    },
+    {
+      "id": "gwen",
+      "name": "Gwen",
+      "nickname": "",
+      "favouriteColour": "red",
+      "tagline": "Ports only.",
+      "joined": "2026-11-06",
+      "active": true
+    },
+    {
+      "id": "hugo",
+      "name": "Hugo",
+      "nickname": "Sheep Whisperer",
+      "favouriteColour": "blue",
+      "tagline": "Believes that wool is an undervalued asset.",
+      "joined": "2026-11-06",
+      "active": true
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "_readme": "League-wide settings and the text on the About page. Edit by hand.",
+  "shortName": "FLFOxtan",
+  "fullName": "Fun Lunch Friday Oxford Catan Group",
+  "tagline": "Fun Lunch Friday Oxford Catan",
+  "inceptionDate": "2026-11-04",
+  "home": "Oxford",
+  "meets": "Fridays, at lunch",
+  "settings": {
+    "minPlayers": 3,
+    "maxPlayers": 6,
+    "provisionalGames": 5,
+    "defaultApproach": "flf-index"
+  },
+  "about": {
+    "intro": "FLFOxtan is the Fun Lunch Friday Oxford Catan group: a friendly league for people in Oxford who would like their lunch break to involve more wheat, more brick and considerably more negotiation.",
+    "sections": [
+      {
+        "heading": "What this site is for",
+        "body": "It is the league's shared memory. It keeps track of who played, when they played, which colours they took, how many victory points they finished on and which expansions were on the table. It then turns all of that into leaderboards."
+      },
+      {
+        "heading": "Why there are so many leaderboards",
+        "body": "There is no single right way to rate a game with three to six players, so we are starting with all the sensible ones running side by side. As the league grows we will vote out the ones that do not feel fair."
+      },
+      {
+        "heading": "A founding footnote",
+        "body": "The Fun Lunch Friday group was founded on a Wednesday. We could not wait."
+      }
+    ],
+    "disclaimer": "FLFOxtan is an independent fan league. It is not affiliated with, sponsored by or endorsed by CATAN GmbH, CATAN Studio or the University of Oxford. CATAN is a trademark of its owners. To play, please buy the game."
+  }
+}

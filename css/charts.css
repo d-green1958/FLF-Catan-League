@@ -1,0 +1,41 @@
+/* Line charts, bars and the pairing grid. */
+.chart { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; font-size: 12.5px; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.plot-holder { position: relative; }
+.plot { width: 100%; min-height: 280px; border-radius: var(--r-sm); overflow: hidden; }
+.plot svg { display: block; touch-action: pan-y; }
+.plot .grid { stroke: var(--grid); stroke-width: 1; }
+.plot .tick { fill: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.plot .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.plot .end-dot, .plot .hover-dot { stroke: var(--surface); stroke-width: 2; }
+.plot .crosshair { stroke: var(--border-strong); stroke-width: 1; }
+.plot .direct-label { fill: var(--ink-2); font-size: 12px; font-weight: 500; }
+.chart-tip { position: absolute; top: 8px; pointer-events: none; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--sh-lg); border-radius: var(--r); padding: 8px 10px; font-size: 12.5px; min-width: 130px; z-index: 2; }
+.tip-title { color: var(--muted); margin-bottom: 4px; }
+.tip-row { display: flex; align-items: center; gap: 6px; }
+.tip-name { flex: 1; color: var(--ink-2); padding-right: 10px; }
+.tip-row b { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(84px, 130px) minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.bar-label { color: var(--ink-2); display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.bar-label span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 8px; }
+.bar { display: block; height: 8px; background: var(--series-1); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.bar-val small { display: block; color: var(--muted); font-weight: 400; font-size: 11.5px; line-height: 1.2; }
+
+.matrix-card { overflow-x: auto; padding: 14px 18px; }
+.matrix { border-collapse: separate; border-spacing: 2px; font-size: 12.5px; }
+.matrix th { font-weight: 500; color: var(--ink-2); padding: 3px 8px; white-space: nowrap; }
+.matrix tbody th { text-align: right; }
+.matrix thead th { height: 74px; vertical-align: bottom; padding: 0 0 6px; }
+.matrix thead th span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); }
+.matrix td { width: 36px; min-width: 36px; height: 30px; text-align: center; border-radius: 5px; font-variant-numeric: tabular-nums; }
+.matrix td.cell { background: rgba(var(--heat), calc(.04 + var(--amount) * .8)); }
+.matrix td.cell.strong { color: #fff; }
+:root[data-theme="dark"] .matrix td.cell.strong { color: #0c0d10; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .matrix td.cell.strong { color: #0c0d10; } }
+.matrix td.self { background: var(--surface-3); }
