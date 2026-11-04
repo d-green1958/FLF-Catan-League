@@ -48,7 +48,7 @@ export function renderAbout() {
   return page(
     pageHeader({ eyebrow: fullName, title: `About ${shortName}` }),
     h('section', { class: 'card about-hero' },
-      h('img', { class: 'crest', src: 'assets/crest.jpeg', alt: 'A gold and navy league crest showing hexagonal resource tiles, dice, crossed swords and laurels.', width: 640, height: 640 }),
+      h('img', { class: 'crest', src: 'assets/crest2026.jpeg', alt: 'A gold and navy league crest showing hexagonal resource tiles, dice, crossed swords and laurels.', width: 640, height: 640 }),
       h('div', { class: 'about-text' },
         h('p', { class: 'lead' }, about.intro),
         h('dl', { class: 'facts' },
