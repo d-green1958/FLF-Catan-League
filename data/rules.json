@@ -83,7 +83,7 @@
       {
         "heading": "Who and what counts",
         "items": [
-          "Anyone can join by registering a profile. There is no fee and no try-out.",
+          "Anyone can join: just ask a league admin to register you. There is no fee and no try-out, and you do not need a GitHub account.",
           "A league game has 3 to 6 registered players, all of whom agree before setup that it counts.",
           "Agree the rules before the first settlement goes down: expansions, scenario, victory point target and any house rules."
         ]
@@ -107,8 +107,8 @@
       {
         "heading": "Logging results",
         "items": [
-          "Log the game the same day, with seats in turn order and everyone's final VPs.",
-          "Everyone at the table should be happy with the entry. Mistakes can be corrected at any time, and all ratings then recalculate from scratch.",
+          "A league admin logs the game the same day, with seats in turn order and everyone's final VPs.",
+          "Everyone at the table should be happy with the entry. If you spot a mistake, ask an admin to correct it. All ratings then recalculate from scratch.",
           "Abandoned games that nobody finished or time-called do not count."
         ]
       },

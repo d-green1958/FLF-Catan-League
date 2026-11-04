@@ -1,4 +1,5 @@
 // One player's profile: their record, rating history, colours, rivals and recent games.
+import { canEdit } from '../data/access.js';
 import { settings } from '../data/settings.js';
 import { getLeague, leaderboard, nameOf, paramsFor, selectedApproach } from '../domain/league.js';
 import { winnerSeat } from '../domain/games.js';
@@ -125,7 +126,7 @@ export function renderPlayer(id) {
       eyebrow: [player.nickname, player.active === false ? 'Retired' : null, player.joined ? `Joined ${formatDate(player.joined)}` : null].filter(Boolean).join(' · '),
       title: player.name,
       intro: player.tagline || null,
-      actions: h('button', { class: 'btn', onClick: () => openPlayerForm(player) }, icon('edit'), 'Edit profile'),
+      actions: canEdit() ? h('button', { class: 'btn', onClick: () => openPlayerForm(player) }, icon('edit'), 'Edit profile') : null,
     }));
 
   if (!summary.games) {

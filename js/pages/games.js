@@ -1,4 +1,5 @@
 // The game log, with filters and a detail panel for each game.
+import { canEdit, finishChange } from '../data/access.js';
 import { store } from '../data/store.js';
 import { getLeague, nameOf, selectedApproach } from '../domain/league.js';
 import { winnerSeat } from '../domain/games.js';
@@ -6,7 +7,7 @@ import { openGameForm } from '../forms/game-form.js';
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { changeBadge, colourDot, colourName, emptyState, page, pageHeader, playerLink, table } from '../ui/components.js';
-import { confirmAction, openDrawer, toast } from '../ui/feedback.js';
+import { confirmAction, openDrawer } from '../ui/feedback.js';
 import { formatDate, formatLongDate, formatScore, ordinal, plural } from '../ui/format.js';
 
 // Filters survive a re-render, such as after logging a game.
@@ -45,7 +46,7 @@ export function openGameDetail(gameId) {
       });
       if (!confirmed) return;
       store.deleteGame(game.id);
-      toast('Game deleted. Ratings recalculated.');
+      finishChange('Game deleted. Ratings recalculated.');
       close();
     };
 
@@ -69,7 +70,7 @@ export function openGameDetail(gameId) {
         game.longestRoute && h('li', null, 'Longest Route: ', nameOf(league, game.longestRoute)),
         game.largestArmy && h('li', null, 'Largest Army: ', nameOf(league, game.largestArmy))),
       game.notes && h('p', { class: 'notes' }, game.notes),
-      h('div', { class: 'form-acts' },
+      canEdit() && h('div', { class: 'form-acts' },
         h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, icon('trash'), 'Delete'),
         h('span', { class: 'spacer' }),
         h('button', {
@@ -145,18 +146,19 @@ function gameTable(games, league) {
 
 export function renderGames() {
   const league = getLeague();
+  const logButton = () => (canEdit() ? h('button', { class: 'btn primary', onClick: () => openGameForm() }, icon('plus'), 'Log game') : null);
   const header = pageHeader({
     eyebrow: 'The record',
     title: 'Games',
     intro: 'Every league game, newest first. Corrections recalculate all the ratings that come after them.',
-    actions: h('button', { class: 'btn primary', onClick: () => openGameForm() }, icon('plus'), 'Log game'),
+    actions: logButton(),
   });
 
   if (!league.games.length) {
     return page(header, emptyState({
       title: 'No games yet',
-      message: 'Log your first game and it will appear here.',
-      actions: h('button', { class: 'btn primary', onClick: () => openGameForm() }, icon('plus'), 'Log game'),
+      message: canEdit() ? 'Log your first game and it will appear here.' : 'Games will appear here once a league admin logs them.',
+      actions: logButton(),
     }));
   }
 

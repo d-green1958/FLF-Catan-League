@@ -1,4 +1,5 @@
 // Register a new player, or edit an existing one.
+import { finishChange } from '../data/access.js';
 import { store } from '../data/store.js';
 import { validatePlayer } from '../domain/validate.js';
 import { h } from '../ui/dom.js';
@@ -35,7 +36,7 @@ export function openPlayerForm(existing = null, { onSaved } = {}) {
       errorHolder.replaceChildren(...[errorList(errors)].filter(Boolean));
       if (errors.length) return;
       const saved = store.savePlayer(player);
-      toast(existing ? `${saved.name} updated` : `${saved.name} registered`, 'good');
+      finishChange(existing ? `${saved.name} updated` : `${saved.name} registered`);
       close();
       onSaved?.(saved);
     };
@@ -53,7 +54,7 @@ export function openPlayerForm(existing = null, { onSaved } = {}) {
       });
       if (!confirmed) return;
       store.deletePlayer(existing.id);
-      toast(`${existing.name} deleted`);
+      finishChange(`${existing.name} deleted`);
       close();
       window.location.hash = '#/players';
     };

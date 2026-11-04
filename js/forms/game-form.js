@@ -1,4 +1,5 @@
 // Log a new game, or correct an existing one. Seats are entered in turn order.
+import { finishChange } from '../data/access.js';
 import { store } from '../data/store.js';
 import { validateGame, validatePlayer } from '../domain/validate.js';
 import { h } from '../ui/dom.js';
@@ -240,7 +241,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         return;
       }
       const saved = store.saveGame(game);
-      toast(existing ? 'Game corrected. Ratings recalculated.' : 'Game logged. Ratings updated.', 'good');
+      finishChange(existing ? 'Game corrected. Ratings recalculated.' : 'Game logged. Ratings updated.');
       close();
       onSaved?.(saved);
     };
@@ -280,6 +281,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         h('div', { class: 'form-row' }, field('Longest Route', longestRoute), largestArmyField),
         field('Notes', notes)),
 
+      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, 'Next, GitHub opens with this game filled in, and you press Submit to confirm it.'),
       h('div', { class: 'form-acts' },
         h('span', { class: 'spacer' }),
         h('button', { class: 'btn', type: 'button', onClick: close }, 'Cancel'),

@@ -2,10 +2,9 @@
 //
 // A static site cannot write to its own repo, so data lives in two layers:
 //   1. Published data: the JSON files in data/, which everyone sees.
-//   2. Browser draft:  additions, edits and deletions made in this browser, kept in localStorage.
-// The app shows (1) with (2) applied on top. Exporting from the Save & share page and committing the
-// files moves the draft into the published layer. To move to a shared database later, this is the
-// only file that needs to change.
+//   2. Browser draft:  an admin's additions, edits and deletions, kept in localStorage until they go live.
+// The app shows (1) with (2) applied on top. See js/data/access.js for how a draft gets published, and
+// js/domain/submission.js for how the repo accepts it. Once a change is live it drops out of the draft.
 import * as storage from './browser-storage.js';
 
 const LIVE_DRAFT = 'flfoxtan.draft';
@@ -32,6 +31,22 @@ async function loadPublished() {
   const [profiles, games] = await Promise.all([fetchJson(`${folder}/profiles.json`), fetchJson(`${folder}/games.json`)]);
   published = { profiles: profiles.profiles, games: games.games };
   draft = storage.read(draftKey(), emptyDraft());
+  clearPublishedFromDraft();
+}
+
+/**
+ * Once a change is live, it no longer belongs in the draft. Without this, an old local copy would
+ * keep hiding any later correction made by another admin.
+ */
+function clearPublishedFromDraft() {
+  for (const collection of COLLECTIONS) {
+    const byId = new Map(published[collection].map((item) => [item.id, JSON.stringify(item)]));
+    for (const item of Object.values(draft[collection].saved)) {
+      if (byId.get(item.id) === JSON.stringify(item)) delete draft[collection].saved[item.id];
+    }
+    draft[collection].deleted = draft[collection].deleted.filter((id) => byId.has(id));
+  }
+  storage.write(draftKey(), draft);
 }
 
 const draftKey = () => (mode === 'demo' ? DEMO_DRAFT : LIVE_DRAFT);
@@ -156,6 +171,19 @@ export const store = {
       total += changed.length + deleted.length;
     }
     return { ...summary, total };
+  },
+
+  /** The waiting changes themselves, in the format used by js/domain/submission.js. */
+  pendingPayload() {
+    const payload = {};
+    for (const collection of COLLECTIONS) {
+      const byId = new Map(published[collection].map((item) => [item.id, JSON.stringify(item)]));
+      payload[collection] = {
+        saved: Object.values(draft[collection].saved).filter((item) => byId.get(item.id) !== JSON.stringify(item)),
+        deleted: draft[collection].deleted.filter((id) => byId.has(id)),
+      };
+    }
+    return payload;
   },
 
   exportJson: (collection) => `${JSON.stringify(exportDocument(collection), null, 2)}\n`,

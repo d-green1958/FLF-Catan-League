@@ -1,10 +1,26 @@
-// Moves changes made in this browser into the repo, so everyone can see them. See js/data/store.js.
+// For league admins: switch on the editing tools and send changes to the repo.
+import { canEdit, publishChanges } from '../data/access.js';
+import { settings } from '../data/settings.js';
 import { store } from '../data/store.js';
 import { validateDataset } from '../domain/validate.js';
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { errorList, page, pageHeader, sectionHeader } from '../ui/components.js';
 import { confirmAction, downloadText, toast } from '../ui/feedback.js';
+
+function adminSwitch() {
+  const { admins } = store.reference().league;
+  return h('div', { class: 'card card-b admin-card' },
+    h('label', { class: 'switch' },
+      h('input', {
+        type: 'checkbox',
+        checked: Boolean(settings.get('adminMode')),
+        onChange: (event) => settings.set('adminMode', event.target.checked),
+      }),
+      h('b', null, 'I am a league admin')),
+    h('p', { class: 'field-hint' }, 'This shows the tools for registering players and logging games in this browser. It does not grant access by itself: GitHub checks who you are when you submit.'),
+    h('p', { class: 'field-hint' }, 'Admins: ', admins.join(', '), '. To add one, edit the list in data/league.json.'));
+}
 
 function changeLine(label, counts) {
   const parts = [
@@ -15,16 +31,7 @@ function changeLine(label, counts) {
   return h('li', null, h('b', null, `${label}: `), parts.length ? parts.join(', ') : 'no changes');
 }
 
-function statusCard() {
-  const pending = store.pendingChanges();
-  return h('div', { class: `note ${pending.total ? 'warn' : ''}`.trim() },
-    h('b', null, pending.total ? 'These changes are only in this browser' : 'Everything here matches the published files'),
-    pending.total
-      ? h('ul', { class: 'plain-list' }, changeLine('Players', pending.profiles), changeLine('Games', pending.games))
-      : h('p', null, 'There is nothing to publish.'));
-}
-
-function liveActions() {
+function publishCard() {
   const pending = store.pendingChanges();
   const { colours, league } = store.reference();
   const issues = validateDataset(
@@ -32,23 +39,32 @@ function liveActions() {
     { colours, settings: league.settings },
   );
 
-  const publishSteps = [
-    ['Download both files', 'Use the buttons below.'],
-    ['Replace the old copies', 'Move them into the data folder of the repo, replacing profiles.json and games.json.'],
-    ['Commit and push', 'Once GitHub Pages rebuilds, everyone will see the changes. This browser\'s draft then clears itself, because it matches the published files.'],
-  ];
-
   return [
     issues.length > 0 && h('div', { class: 'note warn' }, h('b', null, 'Problems found in the data'), errorList(issues)),
-    sectionHeader('Publish your changes'),
-    h('ol', { class: 'steps' }, publishSteps.map(([title, text]) => h('li', null, h('b', null, title), h('span', null, text)))),
-    h('div', { class: 'toolbar' },
-      h('button', { class: 'btn primary', type: 'button', onClick: () => downloadText('profiles.json', store.exportJson('profiles')) }, icon('save'), 'profiles.json'),
-      h('button', { class: 'btn primary', type: 'button', onClick: () => downloadText('games.json', store.exportJson('games')) }, icon('save'), 'games.json')),
-    sectionHeader('Back up or restore'),
-    h('p', { class: 'prose' }, 'Browser data can be cleared. A backup holds all your players and games in a single file you can bring back later, including into a different browser.'),
+    h('div', { class: `note ${pending.total ? 'warn' : ''}`.trim() },
+      h('b', null, pending.total ? 'These changes are not live yet' : 'Everything here is live'),
+      pending.total
+        ? h('ul', { class: 'plain-list' }, changeLine('Players', pending.profiles), changeLine('Games', pending.games))
+        : h('p', null, 'There is nothing waiting to go to GitHub.'),
+      pending.total > 0 && h('p', null, 'If you have just submitted them, they will clear by themselves once the site has updated, usually within a few minutes.'),
+      pending.total > 0 && h('button', { class: 'btn primary', type: 'button', onClick: publishChanges }, icon('external'), 'Publish on GitHub')),
+    sectionHeader('How publishing works'),
+    h('ol', { class: 'steps' },
+      h('li', null, h('b', null, 'Log it here'), h('span', null, 'GitHub opens with your changes already filled in. You need to be signed in as a league admin.')),
+      h('li', null, h('b', null, 'Press Submit on GitHub'), h('span', null, 'A GitHub Action checks your username and the details, then saves the changes to the repo.')),
+      h('li', null, h('b', null, 'That is it'), h('span', null, 'The issue closes with a confirmation and the site updates. If there is a problem, the issue explains it and nothing changes.'))),
+  ];
+}
+
+function backupCard() {
+  const pending = store.pendingChanges();
+  return [
+    sectionHeader('Backups and manual edits'),
+    h('p', { class: 'prose' }, 'A backup holds all your players and games in one file. To edit the data by hand instead, download the two data files, change them, and commit them to the data folder.'),
     h('div', { class: 'toolbar' },
       h('button', { class: 'btn', type: 'button', onClick: () => downloadText('flfoxtan-backup.json', store.backupJson()) }, icon('save'), 'Download backup'),
+      h('button', { class: 'btn', type: 'button', onClick: () => downloadText('profiles.json', store.exportJson('profiles')) }, icon('save'), 'profiles.json'),
+      h('button', { class: 'btn', type: 'button', onClick: () => downloadText('games.json', store.exportJson('games')) }, icon('save'), 'games.json'),
       importButton(),
       pending.total > 0 && h('button', {
         class: 'btn ghost danger',
@@ -56,7 +72,7 @@ function liveActions() {
         onClick: async () => {
           const confirmed = await confirmAction({
             title: 'Discard changes in this browser?',
-            message: `This permanently removes ${pending.total} unpublished change${pending.total === 1 ? '' : 's'}. Download a backup first if you might want them later.`,
+            message: `This permanently removes ${pending.total} unpublished change${pending.total === 1 ? '' : 's'}. Anything already submitted on GitHub is not affected. Download a backup first if you might want them later.`,
             confirmLabel: 'Discard changes',
             danger: true,
           });
@@ -95,7 +111,7 @@ function importButton() {
 
         const confirmed = await confirmAction({
           title: 'Import this file?',
-          message: `It holds ${incoming.profiles.length} players and ${incoming.games.length} games. Any with the same id as existing ones will be replaced.`,
+          message: `It holds ${incoming.profiles.length} players and ${incoming.games.length} games. Any with the same id as existing ones will be replaced. They stay in this browser until you publish them.`,
           confirmLabel: 'Import',
         });
         if (!confirmed) return;
@@ -114,12 +130,12 @@ function demoCard() {
   if (store.mode() === 'demo') {
     return h('div', { class: 'note warn' },
       h('b', null, 'You are in demo mode'),
-      h('p', null, 'Everything on the site is made up, and anything you add here is thrown away when you leave.'),
+      h('p', null, 'Everything on the site is made up, and anything you add here is thrown away when you leave. Nothing goes to GitHub.'),
       h('button', { class: 'btn', type: 'button', onClick: () => store.exitDemo() }, 'Leave demo'));
   }
   return [
     sectionHeader('Demo mode'),
-    h('p', { class: 'prose' }, 'See the site full of made-up players and games. Your real league stays untouched and comes straight back when you leave.'),
+    h('p', { class: 'prose' }, 'See the site full of made-up players and games, and try out the forms. The real league stays untouched and comes straight back when you leave.'),
     h('button', { class: 'btn', type: 'button', onClick: () => store.enterDemo() }, icon('flask'), 'Try the demo'),
   ];
 }
@@ -129,10 +145,10 @@ export function renderData() {
   return page(
     pageHeader({
       eyebrow: 'Keeping the record',
-      title: 'Save & share',
-      intro: 'New players and games save straight away, but only in this browser. Publishing them puts them in front of the whole league.',
+      title: 'Admin',
+      intro: 'League admins register players and log games. Everyone else can follow along without an account.',
     }),
-    demo ? null : statusCard(),
-    demo ? null : liveActions(),
+    demo ? null : adminSwitch(),
+    !demo && canEdit() ? [publishCard(), backupCard()] : null,
     demoCard());
 }

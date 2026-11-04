@@ -6,6 +6,8 @@
   "inceptionDate": "2026-11-04",
   "home": "Oxford",
   "meets": "Fridays, at lunch",
+  "repository": { "owner": "d-green1958", "name": "FLF-Catan-League" },
+  "admins": ["bogosimsutwana", "d-green1958"],
   "settings": {
     "minPlayers": 3,
     "maxPlayers": 6,

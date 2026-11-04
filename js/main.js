@@ -28,7 +28,7 @@ const NAV = [
     { path: '/about', label: 'About', icon: 'info' },
   ] },
   { group: 'Data', items: [
-    { path: '/data', label: 'Save & share', icon: 'save', showPending: true },
+    { path: '/data', label: 'Admin', icon: 'edit', showPending: true },
   ] },
 ];
 

@@ -1,4 +1,5 @@
 // The list of everyone registered in the league.
+import { canEdit } from '../data/access.js';
 import { getLeague, leaderboard, selectedApproach } from '../domain/league.js';
 import { openPlayerForm } from '../forms/player-form.js';
 import { h, route } from '../ui/dom.js';
@@ -26,18 +27,18 @@ function playerCard(player, league, approach, standing) {
 
 export function renderPlayers() {
   const league = getLeague();
-  const register = h('button', { class: 'btn primary', onClick: () => openPlayerForm() }, icon('plus'), 'Register player');
+  const register = () => (canEdit() ? h('button', { class: 'btn primary', onClick: () => openPlayerForm() }, icon('plus'), 'Register player') : null);
   const header = pageHeader({
     eyebrow: 'The settlers',
     title: 'Players',
     intro: league.profiles.length ? `${plural(league.profiles.length, 'player')} registered.` : 'Everyone starts here.',
-    actions: register,
+    actions: register(),
   });
   if (!league.profiles.length) {
     return page(header, emptyState({
       title: 'Nobody has registered yet',
-      message: 'Add the first player to get the league going.',
-      actions: h('button', { class: 'btn primary', onClick: () => openPlayerForm() }, icon('plus'), 'Register player'),
+      message: canEdit() ? 'Add the first player to get the league going.' : 'Players will appear here once a league admin registers them.',
+      actions: register(),
     }));
   }
 

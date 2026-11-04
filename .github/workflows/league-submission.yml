@@ -1,0 +1,81 @@
+# When someone opens an issue starting with "[League]", check it and add it to the league.
+# Who may submit is decided by the "admins" list in data/league.json, on the default branch.
+#
+# Security notes:
+# - Issue text is untrusted, so it only ever reaches the script through environment variables.
+#   Never put ${{ github.event.issue.* }} directly inside a "run" block.
+# - GitHub queues one waiting run at a time. If three issues arrive within moments, the middle one can be
+#   cancelled and stay open, and the admin just submits it again. Other issues are ignored completely.
+name: League submission
+
+on:
+  issues:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  apply:
+    if: startsWith(github.event.issue.title, '[League]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    concurrency:
+      group: league-data
+      cancel-in-progress: false
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Check the submission
+        id: check
+        run: node scripts/apply-submission.js
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          REPLY_FILE: ${{ runner.temp }}/reply.md
+
+      - name: Commit the changes
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/profiles.json data/games.json
+          git commit -m "League: $SUMMARY" -m "Submitted by $ISSUE_AUTHOR in issue #$ISSUE_NUMBER"
+          git pull --rebase origin "$DEFAULT_BRANCH"
+          git push origin "HEAD:$DEFAULT_BRANCH"
+        env:
+          SUMMARY: ${{ steps.check.outputs.summary }}
+
+      - name: Reply and close the issue
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body-file "$RUNNER_TEMP/reply.md"
+          gh issue close "$ISSUE_NUMBER" --reason "$CLOSE_REASON"
+        env:
+          CLOSE_REASON: ${{ steps.check.outputs.close_reason }}
+
+      - name: Report a failure
+        if: failure()
+        run: gh issue comment "$ISSUE_NUMBER" --body "Something went wrong while saving this, so it may not have been added. Please check the Actions tab and try again."
+
+  deploy:
+    needs: apply
+    if: needs.apply.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-site.yml
