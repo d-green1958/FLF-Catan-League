@@ -1,4 +1,13 @@
 {
   "_readme": "Who added each player and game, shown on the Review page. The League submission Action writes this file, so there is no need to edit it by hand.",
-  "additions": []
+  "additions": [
+    {
+      "type": "player",
+      "id": "dylantest",
+      "addedBy": "DylanTest",
+      "viaPassword": true,
+      "addedAt": "2026-11-05T17:11:22.242Z",
+      "issue": 1
+    }
+  ]
 }
