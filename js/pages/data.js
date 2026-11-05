@@ -1,5 +1,6 @@
 // Review: anyone can see what has been added and send their own changes, and admins can remove things.
-import { adminCodeIsSet, canManage, isUnlocked, lockAdmin, publishChanges, unlockAdmin } from '../data/access.js';
+import { adminCodeIsSet, canManage, groupAccessIsSet, groupMemberName, isGroupUnlocked, isUnlocked, lockAdmin, lockGroup, publishChanges, sentIssue, unlockAdmin, unlockGroup } from '../data/access.js';
+import { settings } from '../data/settings.js';
 import { store } from '../data/store.js';
 import { MIN_CODE_LENGTH } from '../domain/admin-key.js';
 import { validateDataset } from '../domain/validate.js';
@@ -7,7 +8,7 @@ import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { errorList, field, page, playerLink, pageHeader, sectionHeader, table } from '../ui/components.js';
 import { confirmAction, downloadText, toast } from '../ui/feedback.js';
-import { formatDate, plural } from '../ui/format.js';
+import { addedByLabel, formatDate, plural } from '../ui/format.js';
 import { openGameDetail } from './games.js';
 
 const RECENT_ADDITIONS = 30;
@@ -43,6 +44,7 @@ function pendingNote() {
     h('p', null, locked
       ? 'Some of these change what is already in the league, so they need the admin code below. If you are not an admin, discard them.'
       : 'If you have just submitted them, they will clear by themselves once the site has updated, usually within a few minutes.'),
+    sentIssue() && h('p', null, h('a', { class: 'link', href: sentIssue(), target: '_blank', rel: 'noopener' }, 'See how your last submission went'), '. If there was a problem, the reply there explains it.'),
     h('div', { class: 'toolbar' },
       !locked && h('button', { class: 'btn primary', type: 'button', onClick: publishChanges }, icon('external'), 'Publish on GitHub'),
       h('button', { class: 'btn ghost danger', type: 'button', onClick: () => discardChanges(pending) }, icon('trash'), 'Discard changes')));
@@ -80,7 +82,7 @@ function additionRow(entry) {
       ? h('button', { class: 'link-btn', type: 'button', onClick: () => openGameDetail(item.id) },
         `Game on ${formatDate(item.date)}: ${item.seats.map((seat) => nameOf(seat.playerId)).join(', ')}`)
       : h('span', null, 'Player: ', playerLink(item)),
-    issueLink ? h('a', { class: 'link', href: issueLink, target: '_blank', rel: 'noopener' }, entry.addedBy) : entry.addedBy,
+    issueLink ? h('a', { class: 'link', href: issueLink, target: '_blank', rel: 'noopener' }, addedByLabel(entry)) : addedByLabel(entry),
     canManage() && h('button', { class: 'btn ghost danger sm', type: 'button', onClick: () => removeItem({ type: entry.type, item, label }) }, 'Remove'),
   ];
 }
@@ -107,6 +109,52 @@ function howItWorks() {
       h('li', null, h('b', null, 'Log it here'), h('span', null, 'Use Log game or Register player. GitHub opens with the details filled in. You need a free GitHub account, and your username is shown next to what you add.')),
       h('li', null, h('b', null, 'Press Submit on GitHub'), h('span', null, 'A GitHub Action checks the details and saves them to the repo.')),
       h('li', null, h('b', null, 'That is it'), h('span', null, 'The issue closes with a confirmation and the site updates. If there is a problem, the issue explains it and nothing changes.'))),
+  ];
+}
+
+function groupForm() {
+  const name = h('input', { class: 'input', maxlength: 60, autocomplete: 'off', value: settings.get('groupMemberName') ?? '', 'aria-label': 'Your name' });
+  const password = h('input', { class: 'input', type: 'password', autocomplete: 'off', 'aria-label': 'Group password' });
+  const problem = h('p', { class: 'field-hint', role: 'alert' });
+  const button = h('button', { class: 'btn primary', type: 'submit' }, 'Unlock');
+  const submit = async (event) => {
+    event.preventDefault();
+    problem.textContent = '';
+    if (!name.value.trim() || !password.value.trim()) {
+      problem.textContent = 'Please enter your name and the group password.';
+      return;
+    }
+    button.disabled = true;
+    try {
+      if (await unlockGroup(password.value, name.value)) settings.set('groupMemberName', name.value.trim());
+      else {
+        problem.textContent = 'That password is not right.';
+        password.select();
+      }
+    } catch {
+      problem.textContent = 'This browser could not check the password. Please try an up-to-date browser.';
+    }
+    button.disabled = false;
+  };
+  return h('form', { class: 'code-form', onSubmit: submit },
+    field('Your name', name),
+    field('Group password', password),
+    button,
+    problem);
+}
+
+function groupCard() {
+  if (store.mode() === 'demo' || !groupAccessIsSet()) return null;
+  return [
+    sectionHeader('No GitHub account?'),
+    isGroupUnlocked()
+      ? h('div', { class: 'card card-b admin-card' },
+        h('b', null, `Adding as ${groupMemberName()}`),
+        h('p', { class: 'field-hint' }, 'Anything you log or register in this tab now goes straight to the league, with no GitHub step. Reloading or closing this tab locks it again.'),
+        h('div', null, h('button', { class: 'btn', type: 'button', onClick: lockGroup }, 'Lock')))
+      : h('div', { class: 'card card-b admin-card' },
+        h('p', { class: 'field-hint' }, 'Enter the group password here first, then log games or register players as usual. Your name is shown publicly next to what you add, so a first name or nickname is best.'),
+        groupForm()),
   ];
 }
 
@@ -243,6 +291,7 @@ export function renderData() {
     liveAdmin && dataProblems(),
     recentAdditions(),
     howItWorks(),
+    groupCard(),
     adminCard(),
     liveAdmin && backupCard(),
     demoCard());

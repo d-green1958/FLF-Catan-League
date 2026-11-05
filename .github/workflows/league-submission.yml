@@ -1,6 +1,7 @@
 # When someone opens an issue starting with "[League]", check it and add it to the league.
 # Anyone can add new players and games. Changing or removing anything needs a signature from the admin
 # code, checked against the public key in data/league.json on the default branch.
+# People with the group password send their issues through the repo owner's token, under the same rules.
 #
 # Security notes:
 # - Issue text is untrusted, so it only ever reaches the script through environment variables.
@@ -55,11 +56,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/profiles.json data/games.json data/additions.json
-          git commit -m "League: $SUMMARY" -m "Submitted by $ISSUE_AUTHOR in issue #$ISSUE_NUMBER"
+          git commit -m "League: $SUMMARY" -m "Submitted by $SUBMITTED_BY in issue #$ISSUE_NUMBER"
           git pull --rebase origin "$DEFAULT_BRANCH"
           git push origin "HEAD:$DEFAULT_BRANCH"
         env:
           SUMMARY: ${{ steps.check.outputs.summary }}
+          SUBMITTED_BY: ${{ steps.check.outputs.submitted_by }}
 
       - name: Reply and close the issue
         run: |

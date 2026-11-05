@@ -77,6 +77,9 @@ details .rule-list { margin-top: 8px; }
 .admin-card { display: grid; gap: 8px; margin-bottom: 16px; }
 .code-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .code-form .input { flex: 1 1 200px; max-width: 320px; }
+.code-form .field { flex: 1 1 200px; max-width: 320px; }
+.code-form .field .input { width: 100%; max-width: none; }
+.code-form:has(.field) { align-items: flex-end; }
 .code-form [role=alert] { flex-basis: 100%; }
 .code-form [role=alert]:empty { display: none; }
 .steps { margin: 0 0 14px; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 10px; }

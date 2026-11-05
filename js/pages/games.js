@@ -8,7 +8,7 @@ import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { changeBadge, colourDot, colourName, emptyState, page, pageHeader, playerLink, table } from '../ui/components.js';
 import { confirmAction, openDrawer } from '../ui/feedback.js';
-import { formatDate, formatLongDate, formatScore, ordinal, plural } from '../ui/format.js';
+import { addedByLabel, formatDate, formatLongDate, formatScore, ordinal, plural } from '../ui/format.js';
 
 // Filters survive a re-render, such as after logging a game.
 const filters = { playerId: '', expansionId: '', search: '' };
@@ -71,7 +71,7 @@ export function openGameDetail(gameId) {
         game.longestRoute && h('li', null, 'Longest Route: ', nameOf(league, game.longestRoute)),
         game.largestArmy && h('li', null, 'Largest Army: ', nameOf(league, game.largestArmy))),
       game.notes && h('p', { class: 'notes' }, game.notes),
-      addition && h('p', { class: 'field-hint' }, `Added by ${addition.addedBy} on ${formatDate(addition.addedAt.slice(0, 10))}.`),
+      addition && h('p', { class: 'field-hint' }, `Added by ${addedByLabel(addition)} on ${formatDate(addition.addedAt.slice(0, 10))}.`),
       canManage() && h('div', { class: 'form-acts' },
         h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, icon('trash'), 'Delete'),
         h('span', { class: 'spacer' }),

@@ -26,6 +26,9 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'sh
 const longDateFormat = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const shortDateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 
+/** Who added something. A name typed with the group password is marked, as GitHub has not verified it. */
+export const addedByLabel = ({ addedBy, viaPassword }) => (viaPassword ? `${addedBy} (group password)` : addedBy);
+
 export const formatDate = (iso) => (iso ? dateFormat.format(new Date(`${iso}T00:00:00Z`)) : '–');
 export const formatLongDate = (iso) => (iso ? longDateFormat.format(new Date(`${iso}T00:00:00Z`)) : '–');
 export const formatShortDate = (iso) => (iso ? shortDateFormat.format(new Date(`${iso}T00:00:00Z`)) : '–');

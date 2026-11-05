@@ -45,7 +45,7 @@ js/
   ui/                 Shared building blocks, such as tables and charts
 
 css/                  tokens.css holds all colours and sizes, so start there to re-theme
-scripts/              The script the Action runs, and the one that sets the admin code
+scripts/              The script the Action runs, and those that set the admin code and group password
 .github/workflows/    The Actions that save submissions and publish the site
 tests/                Tests for the scoring maths, validation, submissions and data files
 assets/               The crest and browser icon
@@ -53,7 +53,7 @@ assets/               The crest and browser icon
 
 ## Who can change what
 
-Anyone can view the site without an account. **Anyone with a free GitHub account** can register players and log games, and these go live without waiting for approval. They cannot change or remove anything already in the league.
+Anyone can view the site without an account. **Anyone with a free GitHub account or the group password** can register players and log games, and these go live without waiting for approval. They cannot change or remove anything already in the league.
 
 **Admins** are whoever knows the admin code. They check the **Review** page, which lists what was added and by whom, and can correct or remove anything spurious.
 
@@ -66,6 +66,31 @@ node scripts/set-admin-code.js
 Type the code at the hidden prompt, using at least 12 characters and ideally four or more random words. Then commit and push `data/league.json`. Changing the code stops the old one working, so do this if it leaks or when an admin leaves.
 
 Your code is never published: the repo holds only a public key made from it. The browser uses the code to sign an admin's changes, and the Action checks the signature. Because the public key is public, someone could try guessing the code on their own computer, so a long code matters. Signatures expire after an hour, so an old one copied from an issue cannot be reused later.
+
+### Add without a GitHub account
+
+People who know the group password can enter it on the Review page, with their name, and then add without a GitHub account. The site opens the GitHub issue for them using a token belonging to the repo owner, so those issues appear under the owner's account. The typed name is shown on the site, marked "(group password)". GitHub has not verified it, so anyone with the password could type any name.
+
+To turn this on, the repo owner creates the token, because a fine-grained token can only reach repos its owner controls:
+
+1. Go to **GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
+2. Set **Repository access** to **Only select repositories** and choose this repo.
+3. Under **Repository permissions**, set **Issues** to **Read and write**. Give it nothing else.
+4. Set an expiry date, and note it. The group password stops working when the token expires.
+
+Then run this and commit and push `data/league.json`:
+
+```bash
+node scripts/set-group-password.js
+```
+
+It asks for the new password, which must differ from the admin code, and the token, at hidden prompts. Only the token encrypted with the password goes in the file.
+
+The encrypted token is in the public repo, so someone could try guessing the password on their own computer, and a long password matters. Anyone who gets the token could open, edit, close and comment on issues in this repo under the owner's name, but could not change code or data other than by adding entries as usual, and could not remove anything.
+
+If the password leaks, or when someone leaves the group, **delete the token on GitHub first**, because anyone who already has it can keep using it even after the password changes. Then create a new token and run the script again.
+
+To turn the route off completely, delete the token and set `"groupAccess": null` in `data/league.json`.
 
 ## How results get saved
 

@@ -1,5 +1,5 @@
 // Register a new player, or edit an existing one.
-import { finishChange } from '../data/access.js';
+import { finishChange, sendingHint } from '../data/access.js';
 import { store } from '../data/store.js';
 import { validatePlayer } from '../domain/validate.js';
 import { h } from '../ui/dom.js';
@@ -69,7 +69,7 @@ export function openPlayerForm(existing = null, { onSaved } = {}) {
         field('Joined', joined)),
       h('label', { class: 'switch' }, active, 'Active in the league'),
       h('p', { class: 'field-hint' }, 'Retired players keep their history and drop off the default leaderboard.'),
-      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, 'Next, GitHub opens with this filled in, and you press Submit to confirm it. You need a free GitHub account, and your username is shown next to the entry.'),
+      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, sendingHint('this')),
       h('div', { class: 'form-acts' },
         existing && h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, 'Delete'),
         h('span', { class: 'spacer' }),

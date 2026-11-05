@@ -107,7 +107,7 @@
       {
         "heading": "Logging results",
         "items": [
-          "Someone at the table logs the game the same day, with seats in turn order and everyone's final VPs. This needs a free GitHub account.",
+          "Someone at the table logs the game the same day, with seats in turn order and everyone's final VPs. This needs a free GitHub account or the group password.",
           "Everyone at the table should be happy with the entry. If you spot a mistake or something spurious, ask an admin to correct or remove it. All ratings then recalculate from scratch.",
           "Abandoned games that nobody finished or time-called do not count."
         ]

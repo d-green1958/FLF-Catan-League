@@ -9,7 +9,7 @@
 // Works in browsers and in Node, which share the same Web Crypto API.
 
 export const MIN_CODE_LENGTH = 12;
-const ITERATIONS = 600_000;
+export const ITERATIONS = 600_000;
 
 // A signature can be replayed by anyone who copies it from the issue, so each one expires.
 const SIGNATURE_LIFETIME_MS = 60 * 60 * 1000;
@@ -18,12 +18,17 @@ const CLOCK_TOLERANCE_MS = 10 * 60 * 1000;
 // The fixed header that wraps a 32-byte seed into a standard Ed25519 private key.
 const PKCS8_HEADER = [0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20];
 
-const toBase64 = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)));
-const fromBase64 = (text) => Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
+export const toBase64 = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)));
+export const fromBase64 = (text) => Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
 
-async function deriveKeys(code, { salt, iterations }) {
-  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(code.trim().normalize('NFKC')), 'PBKDF2', false, ['deriveBits']);
-  const seed = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromBase64(salt), iterations }, material, 256);
+/** Slowly turns a code or password into 32 bytes, which is what makes guessing expensive. */
+export async function stretch(secret, { salt, iterations }) {
+  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret.trim().normalize('NFKC')), 'PBKDF2', false, ['deriveBits']);
+  return crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromBase64(salt), iterations }, material, 256);
+}
+
+async function deriveKeys(code, adminKey) {
+  const seed = await stretch(code, adminKey);
   const pkcs8 = new Uint8Array([...PKCS8_HEADER, ...new Uint8Array(seed)]);
   const readable = await crypto.subtle.importKey('pkcs8', pkcs8, 'Ed25519', true, ['sign']);
   const { x: publicKey } = await crypto.subtle.exportKey('jwk', readable);

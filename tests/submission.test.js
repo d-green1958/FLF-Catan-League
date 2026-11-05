@@ -7,7 +7,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { createAdminKey, signChanges, unlockWithCode } from '../js/domain/admin-key.js';
-import { buildIssueLink, describeChanges, processSubmission, TITLE_PREFIX } from '../js/domain/submission.js';
+import { createGroupAccess, openGroupAccess } from '../js/domain/group-access.js';
+import { buildIssue, buildIssueLink, describeChanges, processSubmission, TITLE_PREFIX } from '../js/domain/submission.js';
 
 const load = async (name) => JSON.parse(await readFile(new URL(`../data/${name}`, import.meta.url)));
 const CODE = 'a test code that is long enough';
@@ -261,6 +262,93 @@ test('HTML in a name is stored as plain text, because the site never renders it 
   const outcome = await submit({ changes: payload({ savedPlayers: [{ name, active: true, id: 'imgx' }] }) });
   assert.equal(outcome.status, 'applied');
   assert.equal(outcome.profiles.at(-1).name, name);
+});
+
+const OWNER = league.repository.owner;
+const FAKE_TOKEN = 'github_pat_11AAAAAAA0exampleonlynotarealtoken';
+const groupPlayer = { id: 'sam', name: 'Sam', active: true };
+
+test('a name is believed only on issues sent with the group password', async () => {
+  const changes = payload({ savedPlayers: [groupPlayer] });
+  const body = buildIssue(changes, { submittedBy: 'Priya' }).body;
+
+  const viaToken = await submit({ body, author: OWNER });
+  assert.equal(viaToken.status, 'applied');
+  assert.equal(viaToken.submittedBy, 'Priya');
+  assert.equal(viaToken.additions[0].addedBy, 'Priya');
+  assert.equal(viaToken.additions[0].viaPassword, true);
+
+  // Someone else typing a name into their own issue cannot pose as anyone: GitHub's username wins.
+  const impostor = await submit({ body, author: 'impostor' });
+  assert.equal(impostor.status, 'applied');
+  assert.equal(impostor.submittedBy, 'impostor');
+  assert.equal(impostor.additions[0].addedBy, 'impostor');
+  assert.equal(impostor.additions[0].viaPassword, undefined);
+});
+
+test('the owner adding normally is shown under their own username', async () => {
+  const outcome = await submit({ changes: payload({ savedPlayers: [groupPlayer] }), author: OWNER });
+  assert.equal(outcome.additions[0].addedBy, OWNER);
+  assert.equal(outcome.additions[0].viaPassword, undefined);
+});
+
+test('the group password can add but cannot change or remove anything', async () => {
+  const game = newGame();
+  for (const changes of [payload({ deletedGames: [game.id] }), payload({ savedGames: [newGame({ notes: 'Edited' })] })]) {
+    const body = buildIssue(changes, { submittedBy: 'Priya' }).body;
+    const outcome = await submit({ body, author: OWNER, games: [game] });
+    assert.equal(outcome.status, 'needs-code', JSON.stringify(changes));
+    assert.equal(outcome.games, undefined);
+  }
+});
+
+test('bad names are refused', async () => {
+  for (const submittedBy of ['L'.repeat(61), 'line\nbreak', 7, { name: 'x' }]) {
+    const body = `<!-- flfoxtan-submission -->\n\`\`\`json\n${JSON.stringify({ ...payload({ savedPlayers: [groupPlayer] }), submittedBy })}\n\`\`\``;
+    const outcome = await submit({ body, author: OWNER });
+    assert.equal(outcome.status, 'rejected', JSON.stringify(submittedBy));
+  }
+});
+
+test('the group token opens only with the right password, and is never stored readable', async () => {
+  const access = await createGroupAccess('the group password for tests', FAKE_TOKEN);
+  assert.equal(await openGroupAccess('the group password for tests', access), FAKE_TOKEN);
+  assert.equal(await openGroupAccess(' the group password for tests ', access), FAKE_TOKEN, 'stray spaces do not matter');
+  assert.equal(await openGroupAccess('a completely wrong password', access), null);
+  const stored = JSON.stringify(access);
+  assert.ok(!stored.includes(FAKE_TOKEN) && !stored.includes('github_pat_') && !stored.includes('the group password'));
+});
+
+test('weak passwords and over-powered tokens are refused', async () => {
+  await assert.rejects(createGroupAccess('too short', FAKE_TOKEN), /at least 12/);
+  await assert.rejects(createGroupAccess('a long enough password', 'ghp_classictokenwithwideaccess'), /fine-grained/);
+  await assert.rejects(createGroupAccess('a long enough password', ''), /fine-grained/);
+});
+
+test('the set-group-password script stores working access and leaves the rest alone', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'flf-group-'));
+  try {
+    const file = join(dir, 'league.json');
+    const original = readFileSync(fileURLToPath(new URL('../data/league.json', import.meta.url)), 'utf8');
+    const start = original.replace(/"adminKey": (null|\{[^}]*\})/, `"adminKey": ${JSON.stringify(adminKey)}`);
+    writeFileSync(file, start);
+    const script = fileURLToPath(new URL('../scripts/set-group-password.js', import.meta.url));
+    const run = (input) => execFileSync(process.execPath, [script], { env: { ...process.env, DATA_DIR: dir }, input, encoding: 'utf8', stdio: 'pipe' });
+
+    assert.throws(() => run(`${CODE}\n${FAKE_TOKEN}\n`), /different from the admin code/);
+    assert.throws(() => run('short\n' + FAKE_TOKEN + '\n'));
+    assert.throws(() => run('a long enough password\nghp_classic\n'));
+    assert.equal(readFileSync(file, 'utf8'), start, 'a refused attempt changes nothing');
+
+    run(`a long enough password\n${FAKE_TOKEN}\n`);
+    const text = readFileSync(file, 'utf8');
+    assert.equal(await openGroupAccess('a long enough password', JSON.parse(text).groupAccess), FAKE_TOKEN);
+    assert.ok(!text.includes(FAKE_TOKEN) && !text.includes('a long enough password'));
+    const withoutAccess = (json) => json.replace(/"groupAccess": (null|\{[^}]*\})/, '"groupAccess": null');
+    assert.equal(withoutAccess(text), withoutAccess(start), 'only the access line changes');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('the set-admin-code script stores a working key in league.json and leaves the rest alone', async () => {

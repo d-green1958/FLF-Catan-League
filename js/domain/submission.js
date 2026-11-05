@@ -6,6 +6,9 @@
 // Anyone can add new players and games. Changing or removing what is already there needs the admin code,
 // proved by a signature (see admin-key.js).
 //
+// People with the group password skip steps 1 and 2: the site opens the issue for them using the repo
+// owner's token (see group-access.js), and they give their name. The same rules apply.
+//
 // Both ends use this file, so they always agree on the format and the rules. The site's own checks are
 // a convenience: processSubmission() below is the real gatekeeper, and it trusts nothing in the issue.
 import { checkAuthorisation } from './admin-key.js';
@@ -78,17 +81,25 @@ export function describeChanges(changes) {
   return parts.join(', ') || 'No changes';
 }
 
+/** The issue's title and text, whichever way it gets sent. */
+export function buildIssue(changes, { authorisation = null, submittedBy = null } = {}) {
+  const submission = { ...changes, ...(authorisation && { authorisation }), ...(submittedBy && { submittedBy }) };
+  return {
+    title: `${TITLE_PREFIX} ${describeChanges(changes)}`,
+    body: [
+      submittedBy ? `Sent from the site by ${submittedBy}, using the group password.` : 'Press **Submit** to send this to the league. The rest is automatic.',
+      '',
+      MARKER,
+      '```json',
+      JSON.stringify(submission),
+      '```',
+    ].join('\n'),
+  };
+}
+
 /** Builds the link that opens GitHub with the issue filled in. Returns null if it would be too long. */
 export function buildIssueLink(repository, changes, authorisation = null) {
-  const title = `${TITLE_PREFIX} ${describeChanges(changes)}`;
-  const body = [
-    'Press **Submit** to send this to the league. The rest is automatic.',
-    '',
-    MARKER,
-    '```json',
-    JSON.stringify(authorisation ? { ...changes, authorisation } : changes),
-    '```',
-  ].join('\n');
+  const { title, body } = buildIssue(changes, { authorisation });
   const url = `https://github.com/${repository.owner}/${repository.name}/issues/new`
     + `?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   return url.length > MAX_URL_LENGTH ? null : { url, title };
@@ -124,9 +135,14 @@ function parseSubmission(body) {
   if (authorisation !== null && !(Number.isSafeInteger(authorisation.signedAt) && isText(200)(authorisation.signature))) {
     throw new SubmissionError('The admin signature on this submission is not in the expected format.');
   }
+  const submittedBy = raw?.submittedBy ?? null;
+  if (submittedBy !== null && !(typeof submittedBy === 'string' && /^[^\r\n]{1,60}$/.test(submittedBy))) {
+    throw new SubmissionError('The name on this submission is not in the expected format.');
+  }
   return {
     changes: { profiles: section('profiles', PLAYER_FIELDS, 'player'), games: section('games', GAME_FIELDS, 'game') },
     authorisation,
+    submittedBy,
   };
 }
 
@@ -149,10 +165,10 @@ function touchesExisting(changes, { profiles, games }) {
 }
 
 /** Keeps the record of who added what: new items are logged, and removed ones drop off. */
-function updateAdditions(additions, before, next, { author, issue, now }) {
+function updateAdditions(additions, before, next, { sender, issue, now }) {
   const entries = (type, previous, current) => current
     .filter((item) => !previous.some((other) => other.id === item.id))
-    .map((item) => ({ type, id: item.id, addedBy: author, addedAt: new Date(now).toISOString(), issue }));
+    .map((item) => ({ type, id: item.id, ...sender, addedAt: new Date(now).toISOString(), issue }));
   const stillThere = ({ type, id }) => (type === 'game' ? next.games : next.profiles).some((item) => item.id === id);
   return [
     ...additions.filter(stillThere),
@@ -171,10 +187,15 @@ const SIGNATURE_PROBLEMS = {
  *   status: 'needs-code' | 'rejected' | 'unchanged' | 'applied'
  */
 export async function processSubmission({ body, author, profiles, games, additions = [], league, colours, expansions, issue = null, now = Date.now() }) {
-  const { adminKey, settings } = league;
+  const { adminKey, repository, settings } = league;
 
   try {
-    const { changes, authorisation } = parseSubmission(body);
+    const { changes, authorisation, submittedBy } = parseSubmission(body);
+
+    // Group password issues come from the owner's token, so a typed name is only believed on those.
+    // Anyone else's name comes from GitHub, and whatever they typed is ignored, so nobody can pose as someone.
+    const viaPassword = Boolean(submittedBy) && String(author).toLowerCase() === repository.owner.toLowerCase();
+    const sender = viaPassword ? { addedBy: submittedBy, viaPassword: true } : { addedBy: author };
 
     if (authorisation) {
       const result = await checkAuthorisation(adminKey, changes, authorisation, now);
@@ -211,8 +232,9 @@ export async function processSubmission({ body, author, profiles, games, additio
         status: 'applied',
         message: `Saved to the league: ${describeChanges(changes)}. The site will update shortly.`,
         summary: describeChanges(changes),
+        submittedBy: sender.addedBy,
         ...next,
-        additions: updateAdditions(additions, { profiles, games }, next, { author, issue, now }),
+        additions: updateAdditions(additions, { profiles, games }, next, { sender, issue, now }),
       };
   } catch (error) {
     if (error instanceof SubmissionError) return { status: 'rejected', message: error.message };

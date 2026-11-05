@@ -42,6 +42,7 @@ if (process.env.GITHUB_OUTPUT) {
     `changed=${outcome.status === 'applied'}`,
     `close_reason=${closeReason}`,
     `summary=${(outcome.summary ?? '').replace(/[\r\n]+/g, ' ')}`,
+    `submitted_by=${(outcome.submittedBy ?? '').replace(/[\r\n]+/g, ' ')}`,
     '',
   ].join('\n'));
 }
