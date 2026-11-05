@@ -1,11 +1,12 @@
 # When someone opens an issue starting with "[League]", check it and add it to the league.
-# Who may submit is decided by the "admins" list in data/league.json, on the default branch.
+# Anyone can add new players and games. Changing or removing anything needs a signature from the admin
+# code, checked against the public key in data/league.json on the default branch.
 #
 # Security notes:
 # - Issue text is untrusted, so it only ever reaches the script through environment variables.
 #   Never put ${{ github.event.issue.* }} directly inside a "run" block.
 # - GitHub queues one waiting run at a time. If three issues arrive within moments, the middle one can be
-#   cancelled and stay open, and the admin just submits it again. Other issues are ignored completely.
+#   cancelled and stay open, and it just needs submitting again. Other issues are ignored completely.
 name: League submission
 
 on:
@@ -53,7 +54,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/profiles.json data/games.json
+          git add data/profiles.json data/games.json data/additions.json
           git commit -m "League: $SUMMARY" -m "Submitted by $ISSUE_AUTHOR in issue #$ISSUE_NUMBER"
           git pull --rebase origin "$DEFAULT_BRANCH"
           git push origin "HEAD:$DEFAULT_BRANCH"

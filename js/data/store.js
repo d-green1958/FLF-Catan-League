@@ -2,7 +2,7 @@
 //
 // A static site cannot write to its own repo, so data lives in two layers:
 //   1. Published data: the JSON files in data/, which everyone sees.
-//   2. Browser draft:  an admin's additions, edits and deletions, kept in localStorage until they go live.
+//   2. Browser draft:  someone's additions, edits and deletions, kept in localStorage until they go live.
 // The app shows (1) with (2) applied on top. See js/data/access.js for how a draft gets published, and
 // js/domain/submission.js for how the repo accepts it. Once a change is live it drops out of the draft.
 import * as storage from './browser-storage.js';
@@ -17,7 +17,7 @@ const emptyDraft = () => ({ profiles: { saved: {}, deleted: [] }, games: { saved
 const listeners = new Set();
 let reference = null;
 let mode = 'live';
-let published = { profiles: [], games: [] };
+let published = { profiles: [], games: [], additions: [] };
 let draft = emptyDraft();
 
 async function fetchJson(path) {
@@ -28,8 +28,10 @@ async function fetchJson(path) {
 
 async function loadPublished() {
   const folder = mode === 'demo' ? 'data/demo' : 'data';
-  const [profiles, games] = await Promise.all([fetchJson(`${folder}/profiles.json`), fetchJson(`${folder}/games.json`)]);
-  published = { profiles: profiles.profiles, games: games.games };
+  const [profiles, games, additions] = await Promise.all(
+    ['profiles', 'games', 'additions'].map((name) => fetchJson(`${folder}/${name}.json`)),
+  );
+  published = { profiles: profiles.profiles, games: games.games, additions: additions.additions };
   draft = storage.read(draftKey(), emptyDraft());
   clearPublishedFromDraft();
 }
@@ -131,12 +133,19 @@ export const store = {
     return () => listeners.delete(listener);
   },
 
+  /** Redraws the page when something outside the store changes what it should show. */
+  refresh: announce,
+
   reference: () => reference,
   mode: () => mode,
   profiles: () => merged('profiles'),
   games: () => merged('games'),
   player: (id) => merged('profiles').find((player) => player.id === id),
   game: (id) => merged('games').find((game) => game.id === id),
+
+  /** Who added each published item, oldest first. Removed items have no entry. */
+  additions: () => published.additions.filter(({ type, id }) => (type === 'game' ? store.game(id) : store.player(id))),
+  additionFor: (type, id) => published.additions.find((entry) => entry.type === type && entry.id === id),
 
   savePlayer(player) {
     const saved = { ...player, id: player.id || newPlayerId(player.name) };
@@ -159,6 +168,7 @@ export const store = {
   pendingChanges() {
     const summary = {};
     let total = 0;
+    let needsCode = false;
     for (const collection of COLLECTIONS) {
       const byId = new Map(published[collection].map((item) => [item.id, JSON.stringify(item)]));
       const changed = Object.values(draft[collection].saved).filter((item) => byId.get(item.id) !== JSON.stringify(item));
@@ -169,8 +179,9 @@ export const store = {
         deleted: deleted.length,
       };
       total += changed.length + deleted.length;
+      if (summary[collection].edited || summary[collection].deleted) needsCode = true;
     }
-    return { ...summary, total };
+    return { ...summary, total, needsCode };
   },
 
   /** The waiting changes themselves, in the format used by js/domain/submission.js. */

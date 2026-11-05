@@ -1,5 +1,5 @@
 // The game log, with filters and a detail panel for each game.
-import { canEdit, finishChange } from '../data/access.js';
+import { canManage, finishChange } from '../data/access.js';
 import { store } from '../data/store.js';
 import { getLeague, nameOf, selectedApproach } from '../domain/league.js';
 import { winnerSeat } from '../domain/games.js';
@@ -51,6 +51,7 @@ export function openGameDetail(gameId) {
     };
 
     const finishing = [...game.seats].sort((a, b) => a.place - b.place);
+    const addition = store.additionFor('game', game.id);
     return h('div', { class: 'detail' },
       h('p', { class: 'detail-meta' },
         [game.time, game.location].filter(Boolean).join(' · ') || null),
@@ -70,7 +71,8 @@ export function openGameDetail(gameId) {
         game.longestRoute && h('li', null, 'Longest Route: ', nameOf(league, game.longestRoute)),
         game.largestArmy && h('li', null, 'Largest Army: ', nameOf(league, game.largestArmy))),
       game.notes && h('p', { class: 'notes' }, game.notes),
-      canEdit() && h('div', { class: 'form-acts' },
+      addition && h('p', { class: 'field-hint' }, `Added by ${addition.addedBy} on ${formatDate(addition.addedAt.slice(0, 10))}.`),
+      canManage() && h('div', { class: 'form-acts' },
         h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, icon('trash'), 'Delete'),
         h('span', { class: 'spacer' }),
         h('button', {
@@ -146,7 +148,7 @@ function gameTable(games, league) {
 
 export function renderGames() {
   const league = getLeague();
-  const logButton = () => (canEdit() ? h('button', { class: 'btn primary', onClick: () => openGameForm() }, icon('plus'), 'Log game') : null);
+  const logButton = () => h('button', { class: 'btn primary', onClick: () => openGameForm() }, icon('plus'), 'Log game');
   const header = pageHeader({
     eyebrow: 'The record',
     title: 'Games',
@@ -157,7 +159,7 @@ export function renderGames() {
   if (!league.games.length) {
     return page(header, emptyState({
       title: 'No games yet',
-      message: canEdit() ? 'Log your first game and it will appear here.' : 'Games will appear here once a league admin logs them.',
+      message: 'Log your first game and it will appear here.',
       actions: logButton(),
     }));
   }

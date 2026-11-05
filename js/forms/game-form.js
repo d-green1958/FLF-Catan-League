@@ -281,7 +281,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         h('div', { class: 'form-row' }, field('Longest Route', longestRoute), largestArmyField),
         field('Notes', notes)),
 
-      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, 'Next, GitHub opens with this game filled in, and you press Submit to confirm it.'),
+      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, 'Next, GitHub opens with this game filled in, and you press Submit to confirm it. You need a free GitHub account, and your username is shown next to the game.'),
       h('div', { class: 'form-acts' },
         h('span', { class: 'spacer' }),
         h('button', { class: 'btn', type: 'button', onClick: close }, 'Cancel'),

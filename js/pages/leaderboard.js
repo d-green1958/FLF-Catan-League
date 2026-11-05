@@ -1,5 +1,4 @@
 // The home page: one scoring system in detail, or every system side by side.
-import { canEdit } from '../data/access.js';
 import { store } from '../data/store.js';
 import { settings } from '../data/settings.js';
 import { getLeague, leaderboard, selectedApproach } from '../domain/league.js';
@@ -15,7 +14,6 @@ import { formatDate, formatScore, formatShortDate, ordinal, percent, plural } fr
 const CHART_PLAYERS = 4;
 
 function headerActions() {
-  if (!canEdit()) return null;
   return [
     h('button', { class: 'btn', onClick: () => openPlayerForm() }, icon('users'), 'Register player'),
     h('button', { class: 'btn primary', onClick: () => openGameForm() }, icon('plus'), 'Log game'),
@@ -171,9 +169,7 @@ function compareSystems(league) {
 function welcome() {
   return emptyState({
     title: 'The league starts here',
-    message: canEdit()
-      ? 'No games have been logged yet. Register the players, log your first game and the leaderboards will fill themselves in. To see the site with data first, try the demo: it uses made-up players and leaves the real league untouched.'
-      : 'No games have been logged yet. The leaderboards will fill themselves in as league admins add results. To see how it will look, try the demo: it uses made-up players and leaves the real league untouched.',
+    message: 'No games have been logged yet. Register the players, log your first game and the leaderboards will fill themselves in. To see the site with data first, try the demo: it uses made-up players and leaves the real league untouched.',
     actions: [
       h('button', { class: 'btn', onClick: () => store.enterDemo() }, icon('flask'), 'Try the demo'),
       headerActions(),

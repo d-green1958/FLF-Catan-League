@@ -69,6 +69,7 @@ export function openPlayerForm(existing = null, { onSaved } = {}) {
         field('Joined', joined)),
       h('label', { class: 'switch' }, active, 'Active in the league'),
       h('p', { class: 'field-hint' }, 'Retired players keep their history and drop off the default leaderboard.'),
+      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, 'Next, GitHub opens with this filled in, and you press Submit to confirm it. You need a free GitHub account, and your username is shown next to the entry.'),
       h('div', { class: 'form-acts' },
         existing && h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, 'Delete'),
         h('span', { class: 'spacer' }),

@@ -1,9 +1,14 @@
 // How changes travel from the site to the repo:
-//   1. The site turns an admin's changes into a pre-filled GitHub issue.
-//   2. The admin presses Submit on GitHub, which proves who they are.
+//   1. The site turns someone's changes into a pre-filled GitHub issue.
+//   2. They press Submit on GitHub, which records who sent it.
 //   3. A GitHub Action (scripts/apply-submission.js) checks the issue and commits the changes.
+//
+// Anyone can add new players and games. Changing or removing what is already there needs the admin code,
+// proved by a signature (see admin-key.js).
+//
 // Both ends use this file, so they always agree on the format and the rules. The site's own checks are
 // a convenience: processSubmission() below is the real gatekeeper, and it trusts nothing in the issue.
+import { checkAuthorisation } from './admin-key.js';
 import { validateDataset } from './validate.js';
 
 export const TITLE_PREFIX = '[League]';
@@ -12,6 +17,8 @@ const MARKER = '<!-- flfoxtan-submission -->';
 // GitHub refuses new-issue links that are too long. Normal use comes nowhere near this.
 const MAX_URL_LENGTH = 7500;
 const MAX_ITEMS = 200;
+// A cap on what one submission without the code can add, to limit the clean-up after any misuse.
+const MAX_PUBLIC_ADDITIONS = 25;
 
 const isId = (value) => typeof value === 'string' && /^[a-z0-9][a-z0-9-]{0,80}$/.test(value);
 const isText = (limit) => (value) => typeof value === 'string' && value.length <= limit;
@@ -72,14 +79,14 @@ export function describeChanges(changes) {
 }
 
 /** Builds the link that opens GitHub with the issue filled in. Returns null if it would be too long. */
-export function buildIssueLink(repository, changes) {
+export function buildIssueLink(repository, changes, authorisation = null) {
   const title = `${TITLE_PREFIX} ${describeChanges(changes)}`;
   const body = [
-    'Press **Submit** to add this to the league. Only league admins can submit, and the rest is automatic.',
+    'Press **Submit** to send this to the league. The rest is automatic.',
     '',
     MARKER,
     '```json',
-    JSON.stringify(changes),
+    JSON.stringify(authorisation ? { ...changes, authorisation } : changes),
     '```',
   ].join('\n');
   const url = `https://github.com/${repository.owner}/${repository.name}/issues/new`
@@ -87,14 +94,9 @@ export function buildIssueLink(repository, changes) {
   return url.length > MAX_URL_LENGTH ? null : { url, title };
 }
 
-export function isAdmin(username, admins) {
-  const lowered = String(username).toLowerCase();
-  return admins.some((admin) => admin.toLowerCase() === lowered);
-}
-
 class SubmissionError extends Error {}
 
-function parseChanges(body) {
+function parseSubmission(body) {
   const match = String(body).split(MARKER)[1]?.match(/```json\s*\n([\s\S]*?)\n```/);
   if (!match) throw new SubmissionError('This issue does not contain a league submission. Please send it from the site.');
 
@@ -118,7 +120,14 @@ function parseChanges(body) {
     }
     return { saved: part.saved, deleted: part.deleted };
   };
-  return { profiles: section('profiles', PLAYER_FIELDS, 'player'), games: section('games', GAME_FIELDS, 'game') };
+  const authorisation = raw?.authorisation ?? null;
+  if (authorisation !== null && !(Number.isSafeInteger(authorisation.signedAt) && isText(200)(authorisation.signature))) {
+    throw new SubmissionError('The admin signature on this submission is not in the expected format.');
+  }
+  return {
+    changes: { profiles: section('profiles', PLAYER_FIELDS, 'player'), games: section('games', GAME_FIELDS, 'game') },
+    authorisation,
+  };
 }
 
 function applyToList(list, { saved, deleted }) {
@@ -130,21 +139,58 @@ function applyToList(list, { saved, deleted }) {
   return [...kept, ...saved.filter((item) => !existing.has(item.id))];
 }
 
+/** Without the code, a submission can only add. Sending something already there, unchanged, is harmless. */
+function touchesExisting(changes, { profiles, games }) {
+  const alters = (list, { saved, deleted }) => {
+    const current = new Map(list.map((item) => [item.id, JSON.stringify(item)]));
+    return deleted.length > 0 || saved.some((item) => current.has(item.id) && current.get(item.id) !== JSON.stringify(item));
+  };
+  return alters(profiles, changes.profiles) || alters(games, changes.games);
+}
+
+/** Keeps the record of who added what: new items are logged, and removed ones drop off. */
+function updateAdditions(additions, before, next, { author, issue, now }) {
+  const entries = (type, previous, current) => current
+    .filter((item) => !previous.some((other) => other.id === item.id))
+    .map((item) => ({ type, id: item.id, addedBy: author, addedAt: new Date(now).toISOString(), issue }));
+  const stillThere = ({ type, id }) => (type === 'game' ? next.games : next.profiles).some((item) => item.id === id);
+  return [
+    ...additions.filter(stillThere),
+    ...entries('player', before.profiles, next.profiles),
+    ...entries('game', before.games, next.games),
+  ];
+}
+
+const SIGNATURE_PROBLEMS = {
+  invalid: 'The admin code on this submission did not check out, so nothing has been changed.',
+  expired: 'This admin submission was signed more than an hour ago, so it has expired and nothing has been changed. Please send it again from the site.',
+};
+
 /**
  * Decides what happens to a submitted issue. Nothing is written here: the caller gets the outcome back.
- *   status: 'not-admin' | 'rejected' | 'unchanged' | 'applied'
+ *   status: 'needs-code' | 'rejected' | 'unchanged' | 'applied'
  */
-export function processSubmission({ body, author, profiles, games, league, colours, expansions }) {
-  const { admins, settings } = league;
-  if (!isAdmin(author, admins)) {
-    return {
-      status: 'not-admin',
-      message: `Only league admins can add results, so nothing has been changed. Please ask one of them to log this: ${admins.join(', ')}.`,
-    };
-  }
+export async function processSubmission({ body, author, profiles, games, additions = [], league, colours, expansions, issue = null, now = Date.now() }) {
+  const { adminKey, settings } = league;
 
   try {
-    const changes = parseChanges(body);
+    const { changes, authorisation } = parseSubmission(body);
+
+    if (authorisation) {
+      const result = await checkAuthorisation(adminKey, changes, authorisation, now);
+      if (result !== 'valid') return { status: 'needs-code', message: SIGNATURE_PROBLEMS[result] };
+    } else {
+      if (touchesExisting(changes, { profiles, games })) {
+        return {
+          status: 'needs-code',
+          message: 'Anyone can add new players and games, but changing or removing what is already in the league needs the admin code, so nothing has been changed. Please ask a league admin.',
+        };
+      }
+      if (changes.profiles.saved.length + changes.games.saved.length > MAX_PUBLIC_ADDITIONS) {
+        throw new SubmissionError(`A single submission can add up to ${MAX_PUBLIC_ADDITIONS} players and games. Please send them in smaller batches.`);
+      }
+    }
+
     const known = new Set([...expansions.expansions, ...expansions.extras].map((option) => option.id));
     for (const game of changes.games.saved) {
       const unknown = (game.expansions || []).find((id) => !known.has(id));
@@ -161,7 +207,13 @@ export function processSubmission({ body, author, profiles, games, league, colou
       && JSON.stringify(next.games) === JSON.stringify(games);
     return unchanged
       ? { status: 'unchanged', message: 'These changes are already in the league, so there was nothing to add.' }
-      : { status: 'applied', message: `Added to the league: ${describeChanges(changes)}. The site will update shortly.`, summary: describeChanges(changes), ...next };
+      : {
+        status: 'applied',
+        message: `Saved to the league: ${describeChanges(changes)}. The site will update shortly.`,
+        summary: describeChanges(changes),
+        ...next,
+        additions: updateAdditions(additions, { profiles, games }, next, { author, issue, now }),
+      };
   } catch (error) {
     if (error instanceof SubmissionError) return { status: 'rejected', message: error.message };
     return { status: 'rejected', message: 'The submission could not be processed, so nothing has been changed.' };

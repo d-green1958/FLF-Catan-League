@@ -1,6 +1,6 @@
 // Run by .github/workflows/league-submission.yml when an issue is opened.
 // Checks the issue, updates the data files if it is valid, and leaves a reply for the workflow to post.
-// It only ever writes data/profiles.json and data/games.json.
+// It only ever writes data/profiles.json, data/games.json and data/additions.json.
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { processSubmission } from '../js/domain/submission.js';
@@ -17,11 +17,13 @@ function writeCollection(file, collection, items) {
   writeFileSync(join(dataDir, file), `${JSON.stringify({ _readme, [collection]: sorted }, null, 2)}\n`);
 }
 
-const outcome = processSubmission({
+const outcome = await processSubmission({
   body: process.env.ISSUE_BODY ?? '',
   author: process.env.ISSUE_AUTHOR ?? '',
+  issue: Number(process.env.ISSUE_NUMBER) || null,
   profiles: read('profiles.json').profiles,
   games: read('games.json').games,
+  additions: read('additions.json').additions,
   league: read('league.json'),
   colours: read('colours.json').colours,
   expansions: read('expansions.json'),
@@ -30,6 +32,7 @@ const outcome = processSubmission({
 if (outcome.status === 'applied') {
   writeCollection('profiles.json', 'profiles', outcome.profiles);
   writeCollection('games.json', 'games', outcome.games);
+  writeCollection('additions.json', 'additions', outcome.additions);
 }
 
 if (process.env.REPLY_FILE) writeFileSync(process.env.REPLY_FILE, `${outcome.message}\n`);

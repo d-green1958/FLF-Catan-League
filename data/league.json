@@ -7,7 +7,7 @@
   "home": "Oxford",
   "meets": "Fridays, at lunch",
   "repository": { "owner": "d-green1958", "name": "FLF-Catan-League" },
-  "admins": ["bogosimsutwana", "d-green1958"],
+  "adminKey": {"salt":"2WndY3ZUThTmo6RkO8A9Dg==","iterations":600000,"publicKey":"HN2bt48q0taCQXdNwabkBWHcIWrYUU_muU5OB3bwWuU"},
   "settings": {
     "minPlayers": 3,
     "maxPlayers": 6,

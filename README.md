@@ -26,6 +26,7 @@ node --test
 data/               The databases. Plain JSON that you can read and edit by hand.
   profiles.json       Players
   games.json          Games, with seats listed in turn order
+  additions.json      Who added each player and game (written by the Action)
   rating-approaches.json  Every scoring system: description, settings, on or off
   rules.json          Text for the Rules page
   expansions.json     Expansions, scenarios and links to official rulebooks
@@ -44,7 +45,7 @@ js/
   ui/                 Shared building blocks, such as tables and charts
 
 css/                  tokens.css holds all colours and sizes, so start there to re-theme
-scripts/              The script the League submission Action runs
+scripts/              The script the Action runs, and the one that sets the admin code
 .github/workflows/    The Actions that save submissions and publish the site
 tests/                Tests for the scoring maths, validation, submissions and data files
 assets/               The crest and browser icon
@@ -52,20 +53,31 @@ assets/               The crest and browser icon
 
 ## Who can change what
 
-Anyone can view the site, and players do not need an account. Only **league admins** can register players or log and correct games. Admins are the GitHub usernames in `data/league.json`. To add one, edit that list and commit it.
+Anyone can view the site without an account. **Anyone with a free GitHub account** can register players and log games, and these go live without waiting for approval. They cannot change or remove anything already in the league.
+
+**Admins** are whoever knows the admin code. They check the **Review** page, which lists what was added and by whom, and can correct or remove anything spurious.
+
+### Set or change the admin code
+
+```bash
+node scripts/set-admin-code.js
+```
+
+Type the code at the hidden prompt, using at least 12 characters and ideally four or more random words. Then commit and push `data/league.json`. Changing the code stops the old one working, so do this if it leaks or when an admin leaves.
+
+Your code is never published: the repo holds only a public key made from it. The browser uses the code to sign an admin's changes, and the Action checks the signature. Because the public key is public, someone could try guessing the code on their own computer, so a long code matters. Signatures expire after an hour, so an old one copied from an issue cannot be reused later.
 
 ## How results get saved
 
-Everything stays on GitHub, with no other services or passwords. A static site cannot write to its repo or tell who is using it, so GitHub does both of those jobs:
+Everything stays on GitHub, with no other services. A static site cannot write to its repo or tell who is using it, so GitHub does both of those jobs:
 
-1. An admin switches on **I am a league admin** on the Admin page, which shows the editing tools in that browser. This only reveals buttons, and grants no access by itself.
-2. Logging a game opens GitHub with an issue already filled in, and the admin presses **Submit**. The admin needs to be signed in to GitHub.
-3. The [League submission](.github/workflows/league-submission.yml) Action checks the username and the details, using [`js/domain/submission.js`](js/domain/submission.js). If all is well, it commits to `data/profiles.json` and `data/games.json`, then republishes the site.
-4. The issue closes with a confirmation. If there is a problem, the issue explains it and nothing changes.
+1. Logging a game opens GitHub with an issue already filled in, and the person presses **Submit**. They need to be signed in to GitHub.
+2. The [League submission](.github/workflows/league-submission.yml) Action checks the details, using [`js/domain/submission.js`](js/domain/submission.js). If all is well, it commits to the `data` folder, then republishes the site.
+3. The issue closes with a confirmation. If there is a problem, the issue explains it and nothing changes.
 
-The change shows in the admin's own browser straight away, and for everyone else once the site has republished. If someone who is not an admin opens a submission, it is closed with a polite note and nothing changes. Ordinary issues are ignored.
+The change shows in the person's own browser straight away, and for everyone else once the site has republished. Corrections and removals work the same way, with the admin's signature in the issue. Ordinary issues are ignored.
 
-The repo and site are public, so use first names or nicknames in profiles. Names also stay in the Git history after a player is deleted.
+The repo and site are public, so use first names or nicknames in profiles. Names and GitHub usernames stay in the Git history and on the issues after an entry is removed.
 
 ## How scoring works
 
