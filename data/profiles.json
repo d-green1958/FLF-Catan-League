@@ -1,4 +1,14 @@
 {
   "_readme": "Registered players. Export from the Save & share page, or edit by hand. This repo is public, so use first names or nicknames.",
-  "profiles": []
+  "profiles": [
+    {
+      "name": "Dylan",
+      "nickname": "",
+      "tagline": "",
+      "joined": "2026-11-05",
+      "favouriteColour": "red",
+      "active": true,
+      "id": "dylan"
+    }
+  ]
 }
