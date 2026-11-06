@@ -9,6 +9,15 @@
       "by": "d-green1958",
       "at": "2026-11-05T17:24:40.229Z",
       "issue": 4
+    },
+    {
+      "action": "added",
+      "type": "player",
+      "id": "bogosi",
+      "label": "Bogosi",
+      "by": "bogosimsutwana",
+      "at": "2026-11-06T14:30:50.337Z",
+      "issue": 5
     }
   ]
 }

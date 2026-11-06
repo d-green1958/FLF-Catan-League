@@ -9,6 +9,15 @@
       "favouriteColour": "red",
       "active": true,
       "id": "dylan"
+    },
+    {
+      "name": "Bogosi",
+      "nickname": "",
+      "tagline": "Vibe coding websites",
+      "joined": "2026-11-06",
+      "favouriteColour": "blue",
+      "active": true,
+      "id": "bogosi"
     }
   ]
 }
