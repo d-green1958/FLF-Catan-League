@@ -1,16 +1,16 @@
-// One player's profile: their record, rating history, colours, rivals and recent games.
-import { canManage } from '../data/access.js';
+// One player's profile: who they are, then their record, form, honours, rating history, colours, rivals and recent games.
+import { store } from '../data/store.js';
 import { settings } from '../data/settings.js';
 import { getLeague, leaderboard, nameOf, paramsFor, selectedApproach } from '../domain/league.js';
 import { winnerSeat } from '../domain/games.js';
-import { colourStats, headToHead } from '../domain/stats.js';
+import { colourStats, headToHead, milestonesEarned, playerDetails, records } from '../domain/stats.js';
 import { scoreHistory } from '../ratings/engine.js';
 import { openPlayerForm } from '../forms/player-form.js';
 import { h, route } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { avatar, colourDot, colourName, emptyState, kpi, page, pageHeader, playerLink, sectionHeader, table } from '../ui/components.js';
 import { barList, lineChart } from '../ui/charts.js';
-import { formatDate, formatScore, formatShortDate, ordinal, percent, plural } from '../ui/format.js';
+import { byLabel, formatDate, formatScore, formatShortDate, ordinal, percent, plural } from '../ui/format.js';
 import { openGameDetail } from './games.js';
 
 const RECENT_GAMES = 8;
@@ -105,6 +105,87 @@ function recentGames(league, player) {
   ));
 }
 
+/** Who they are: everything people fill in themselves. */
+function aboutCard(player) {
+  const { resources, playStyles } = store.reference().profileOptions;
+  const optionName = (options, id) => options.find((option) => option.id === id)?.name;
+  const addedBy = store.additionFor('player', player.id);
+  const facts = [
+    ['Signature move', player.tagline],
+    ['Play style', optionName(playStyles, player.playStyle)],
+    ['Favourite resource', optionName(resources, player.favouriteResource)],
+    ['Favourite colour', player.favouriteColour && h('span', { class: 'seat-name' }, colourDot(player.favouriteColour), colourName(player.favouriteColour))],
+    ['Joined', player.joined && formatDate(player.joined)],
+    ['Registered by', addedBy && byLabel(addedBy)],
+  ].filter(([, value]) => value);
+  const unfinished = !player.photo || !player.bio || !player.tagline;
+  return h('section', { class: 'card card-b about-card' },
+    player.bio && h('p', { class: 'bio' }, player.bio),
+    h('dl', { class: 'profile-facts' }, facts.map(([label, value]) => h('div', null, h('dt', null, label), h('dd', null, value)))),
+    unfinished && h('p', { class: 'field-hint' },
+      'Is this you? ',
+      h('button', { class: 'link-btn', type: 'button', onClick: () => openPlayerForm(player) }, 'Add a photo, a signature move and more.')));
+}
+
+function formCard(details) {
+  const { recentForm, streak, longestWinStreak, bestScore, biggestWin } = details;
+  const streakText = streak.won
+    ? (streak.length > 1 ? `Won the last ${streak.length}` : 'Won their last game')
+    : `${plural(streak.length, 'game')} since a win`;
+  return h('div', { class: 'card card-b' },
+    h('div', { class: 'form-chips' }, recentForm.map((game) => h('button', {
+      class: `form-chip ${game.won ? 'won' : ''}`.trim(),
+      type: 'button',
+      title: `${formatDate(game.date)}: ${ordinal(game.place)} of ${game.size}, ${game.vp} VP`,
+      'aria-label': `${formatDate(game.date)}: ${ordinal(game.place)} of ${game.size}, ${game.vp} VP`,
+      onClick: () => openGameDetail(game.gameId),
+    }, ordinal(game.place)))),
+    h('p', { class: 'field-hint' }, `Last ${plural(recentForm.length, 'game')}, oldest first. ${streakText}.`),
+    h('dl', { class: 'profile-facts' },
+      h('div', null, h('dt', null, 'Best win streak'), h('dd', null, plural(longestWinStreak, 'game'))),
+      h('div', null, h('dt', null, 'Highest score'), h('dd', null, `${bestScore} VP`)),
+      biggestWin > 0 && h('div', null, h('dt', null, 'Biggest win'), h('dd', null, `by ${biggestWin} VP`))));
+}
+
+function rivalryCard(league, details) {
+  const { nemesis, favouriteOpponent } = details;
+  const person = (row) => playerLink(league.profiles.find((other) => other.id === row.playerId));
+  return h('div', { class: 'card card-b' },
+    h('dl', { class: 'profile-facts' },
+      h('div', null, h('dt', null, 'Nemesis'), h('dd', null, nemesis ? [person(nemesis), `, who has won ${nemesis.theirWins} of their ${plural(nemesis.games, 'game')} together`] : 'Nobody has beaten them yet')),
+      h('div', null, h('dt', null, 'Favourite opponent'), h('dd', null, favouriteOpponent ? [person(favouriteOpponent), `, beaten in ${favouriteOpponent.wins} of ${plural(favouriteOpponent.games, 'game')}`] : 'Still looking for one'))));
+}
+
+function winRateBars(rows, labelOf) {
+  return h('div', { class: 'card card-b' }, barList(rows.map((row) => ({
+    label: labelOf(row.key),
+    value: row.winRate,
+    display: percent(row.winRate),
+    detail: `${row.wins} of ${plural(row.games, 'game')}`,
+  })), { max: 1 }));
+}
+
+function finishesBars(rows, total) {
+  return h('div', { class: 'card card-b' }, barList(rows.map((row) => ({
+    label: ordinal(row.key),
+    value: row.games,
+    display: plural(row.games, 'game'),
+    detail: percent(row.games / total),
+  }))));
+}
+
+function honours(league, player, summary, details) {
+  const held = records(league.games, league.profiles).filter((record) => record.playerId === player.id);
+  const earned = milestonesEarned(summary, details);
+  if (!held.length && !earned.length) return null;
+  return [
+    sectionHeader('Honours', 'League records they hold right now, and milestones they have reached'),
+    h('div', { class: 'records honours' },
+      held.map((record) => h('div', { class: 'card record' }, h('span', { class: 'record-title' }, icon('trophy'), ' League record'), h('b', null, record.title), h('span', { class: 'muted' }, record.value))),
+      earned.map((milestone) => h('div', { class: 'card record' }, h('span', { class: 'record-title' }, 'Milestone'), h('b', null, milestone.title), h('span', { class: 'muted' }, milestone.detail)))),
+  ];
+}
+
 export function renderPlayer(id) {
   const league = getLeague();
   const player = league.profiles.find((item) => item.id === id);
@@ -123,32 +204,42 @@ export function renderPlayer(id) {
   const header = h('div', { class: 'profile-head' },
     avatar(player, 'xl'),
     pageHeader({
-      eyebrow: [player.nickname, player.active === false ? 'Retired' : null, player.joined ? `Joined ${formatDate(player.joined)}` : null].filter(Boolean).join(' · '),
+      eyebrow: [player.nickname, player.active === false ? 'Retired' : null].filter(Boolean).join(' · '),
       title: player.name,
-      intro: player.tagline || null,
-      actions: canManage() ? h('button', { class: 'btn', onClick: () => openPlayerForm(player) }, icon('edit'), 'Edit profile') : null,
+      actions: h('button', { class: 'btn', onClick: () => openPlayerForm(player) }, icon('edit'), 'Edit profile'),
     }));
 
   if (!summary.games) {
-    return page(header, emptyState({
+    return page(header, aboutCard(player), emptyState({
       title: `${player.name} has not played yet`,
       message: 'Their record will start with their first logged game.',
     }));
   }
 
   const hasBonuses = summary.longestRoutes || summary.largestArmies;
+  const details = playerDetails(league.games, player.id);
   return page(
     header,
+    aboutCard(player),
     h('section', { class: 'kpis' },
       kpi(approach.name, formatScore(standing.score, approach.format), `${ordinal(standing.rank)} in the league`, 'trophy'),
       kpi('Record', `${summary.wins}–${summary.losses}`, `${plural(summary.games, 'game')}, ${percent(summary.winRate)} won`, 'dice'),
       kpi('Average VP', summary.averageVp.toFixed(1), `Average finish: ${summary.averagePlace.toFixed(1)}`, 'chart'),
       hasBonuses ? kpi('Bonus tiles', summary.longestRoutes + summary.largestArmies, `${plural(summary.longestRoutes, 'Longest Route')}, ${summary.largestArmies} Largest Army`, 'scale') : null),
+    h('div', { class: 'two-col' },
+      h('div', null, sectionHeader('Form'), formCard(details)),
+      h('div', null, sectionHeader('Rivalries'), rivalryCard(league, details))),
+    honours(league, player, summary, details),
     ratingChart(league, player, approach),
     h('div', { class: 'two-col' },
       h('div', null, sectionHeader('Standing in every system'), standingsTable(league, player)),
       h('div', null,
         sectionHeader('Colours played'), colourSection(league, player))),
+    h('div', { class: 'two-col' },
+      h('div', null, sectionHeader('Where they finish'), finishesBars(details.finishes, summary.games)),
+      h('div', null, sectionHeader('Win rate by table size'), winRateBars(details.byTableSize, (size) => `${size} players`))),
+    sectionHeader('Win rate by turn order', 'Where they sat in the turn order, with 1st going first'),
+    winRateBars(details.byTurnOrder, (position) => ordinal(position)),
     sectionHeader('Head to head', 'Who they meet the most, and how much the next game with each person counts towards repeat-decay ratings'),
     rivalsTable(league, player),
     sectionHeader('Recent games'),

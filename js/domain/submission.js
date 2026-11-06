@@ -3,8 +3,8 @@
 //   2. They press Submit on GitHub, which records who sent it.
 //   3. A GitHub Action (scripts/apply-submission.js) checks the issue and commits the changes.
 //
-// Anyone can add new players and games. Changing or removing what is already there needs the admin code,
-// proved by a signature (see admin-key.js).
+// Anyone can add new players and games, and edit the personal details on a profile. Changing or removing
+// anything else needs the admin code, proved by a signature (see admin-key.js).
 //
 // People with the group password skip steps 1 and 2: the site opens the issue for them using the repo
 // owner's token (see group-access.js), and they give their name. The same rules apply. Admins who have
@@ -13,13 +13,14 @@
 // Both ends use this file, so they always agree on the format and the rules. The site's own checks are
 // a convenience: processSubmission() below is the real gatekeeper, and it trusts nothing in the issue.
 import { checkAuthorisation } from './admin-key.js';
-import { validateDataset } from './validate.js';
+import { changedFields, isPersonalEdit, isPhoto, validateDataset } from './validate.js';
 
 export const TITLE_PREFIX = '[League]';
 const MARKER = '<!-- flfoxtan-submission -->';
 
-// GitHub refuses new-issue links that are too long. Normal use comes nowhere near this.
-const MAX_URL_LENGTH = 7500;
+// GitHub starts failing on new-issue links of about 6,900 characters. A GitHub issue can hold 65,536.
+const MAX_URL_LENGTH = 6400;
+const MAX_ISSUE_BODY = 60000;
 const MAX_ITEMS = 200;
 // A cap on what one submission without the code can add, to limit the clean-up after any misuse.
 const MAX_PUBLIC_ADDITIONS = 25;
@@ -35,6 +36,10 @@ const PLAYER_FIELDS = {
   name: isText(60),
   nickname: isText(40),
   tagline: isText(120),
+  bio: isText(280),
+  photo: isPhoto,
+  favouriteResource: isText(20),
+  playStyle: isText(40),
   joined: isText(10),
   favouriteColour: isText(20),
   active: isBoolean,
@@ -83,7 +88,7 @@ export function describeChanges(changes) {
 }
 
 function issueIntro({ authorisation, submittedBy }) {
-  if (!submittedBy) return 'Press **Submit** to send this to the league. The rest is automatic.';
+  if (!submittedBy) return '**Last step: press the green button below (Ctrl+Enter also works), then go back to the site.** There is nothing to fill in.';
   return `Sent from the site by ${submittedBy}, using ${authorisation ? 'the admin code' : 'the group password'}.`;
 }
 
@@ -109,6 +114,39 @@ export function buildIssueLink(repository, changes, authorisation = null) {
   const url = `https://github.com/${repository.owner}/${repository.name}/issues/new`
     + `?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   return url.length > MAX_URL_LENGTH ? null : { url, title };
+}
+
+/**
+ * Takes as much as will fit in one submission, for when too much is waiting to go at once.
+ * Players come first, as games can depend on them. Returns what fits, and how many items are left over.
+ */
+export function fitChanges(changes, fits) {
+  const fitted = {
+    profiles: { saved: [], deleted: changes.profiles.deleted },
+    games: { saved: [], deleted: changes.games.deleted },
+  };
+  let left = 0;
+  for (const collection of ['profiles', 'games']) {
+    for (const item of changes[collection].saved) {
+      if (!left) {
+        fitted[collection].saved.push(item);
+        if (fits(fitted)) continue;
+        fitted[collection].saved.pop();
+      }
+      left += 1;
+    }
+  }
+  return { changes: fitted, left };
+}
+
+/** Whether changes fit in one issue sent directly, or in one GitHub link. Pass a stand-in signature for an admin. */
+export function fitsInIssue(changes, { signed = false, viaLink = null } = {}) {
+  const added = changes.profiles.saved.length + changes.games.saved.length;
+  if (!signed && added > MAX_PUBLIC_ADDITIONS) return false;
+  const authorisation = signed ? { signedAt: Date.now(), signature: 'x'.repeat(100) } : null;
+  return viaLink
+    ? Boolean(buildIssueLink(viaLink, changes, authorisation))
+    : buildIssue(changes, { authorisation, submittedBy: 'x'.repeat(60) }).body.length <= MAX_ISSUE_BODY;
 }
 
 class SubmissionError extends Error {}
@@ -161,13 +199,13 @@ function applyToList(list, { saved, deleted }) {
   return [...kept, ...saved.filter((item) => !existing.has(item.id))];
 }
 
-/** Without the code, a submission can only add. Sending something already there, unchanged, is harmless. */
+/** Without the code, a submission can only add, or edit personal details on a profile. */
 function touchesExisting(changes, { profiles, games }) {
-  const alters = (list, { saved, deleted }) => {
-    const current = new Map(list.map((item) => [item.id, JSON.stringify(item)]));
-    return deleted.length > 0 || saved.some((item) => current.has(item.id) && current.get(item.id) !== JSON.stringify(item));
+  const alters = (list, { saved, deleted }, allowed = () => false) => {
+    const current = new Map(list.map((item) => [item.id, item]));
+    return deleted.length > 0 || saved.some((item) => current.has(item.id) && !allowed(current.get(item.id), item) && changedFields(current.get(item.id), item).length > 0);
   };
-  return alters(profiles, changes.profiles) || alters(games, changes.games);
+  return alters(profiles, changes.profiles, isPersonalEdit) || alters(games, changes.games);
 }
 
 /** The name stored for each thing in the log, so it can still be read after that thing is removed. */
@@ -176,18 +214,18 @@ function activityLabel(type, item, nameOf) {
   return `Game on ${item.date}: ${item.seats.map((seat) => nameOf(seat.playerId)).join(', ')}`;
 }
 
-/** Adds what this submission did to the log of everything added, corrected and removed. */
+/** Adds what this submission did to the log of everything added, edited and removed. */
 function logActivity(activity, before, next, { sender, issue, now }) {
   const names = new Map([...before.profiles, ...next.profiles].map((player) => [player.id, player.name]));
   const nameOf = (id) => names.get(id) ?? id;
   const at = new Date(now).toISOString();
-  const entry = (action, type, item) => ({ action, type, id: item.id, label: activityLabel(type, item, nameOf), ...sender, at, issue });
+  const entry = (action, type, item, extra = {}) => ({ action, type, id: item.id, label: activityLabel(type, item, nameOf), ...extra, ...sender, at, issue });
   const changesIn = (type, previous, current) => {
-    const old = new Map(previous.map((item) => [item.id, JSON.stringify(item)]));
+    const old = new Map(previous.map((item) => [item.id, item]));
     const stillThere = new Set(current.map((item) => item.id));
     return [
       ...current.filter((item) => !old.has(item.id)).map((item) => entry('added', type, item)),
-      ...current.filter((item) => old.has(item.id) && old.get(item.id) !== JSON.stringify(item)).map((item) => entry('corrected', type, item)),
+      ...current.filter((item) => old.has(item.id) && JSON.stringify(old.get(item.id)) !== JSON.stringify(item)).map((item) => entry('edited', type, item, { changed: changedFields(old.get(item.id), item) })),
       ...previous.filter((item) => !stillThere.has(item.id)).map((item) => entry('removed', type, item)),
     ];
   };
@@ -226,7 +264,7 @@ export async function processSubmission({ body, author, profiles, games, activit
       if (touchesExisting(changes, { profiles, games })) {
         return {
           status: 'needs-code',
-          message: 'Anyone can add new players and games, but changing or removing what is already in the league needs the admin code, so nothing has been changed. Please ask a league admin.',
+          message: 'Anyone can add players and games and edit the personal details on a profile, but anything else already in the league needs the admin code, so nothing has been changed. Please ask a league admin.',
         };
       }
       if (changes.profiles.saved.length + changes.games.saved.length > MAX_PUBLIC_ADDITIONS) {
@@ -252,7 +290,7 @@ export async function processSubmission({ body, author, profiles, games, activit
       ? { status: 'unchanged', message: 'These changes are already in the league, so there was nothing to add.' }
       : {
         status: 'applied',
-        message: `Saved to the league: ${describeChanges(changes)}. The site will update shortly.`,
+        message: `Saved to the league: ${describeChanges(changes)}.`,
         summary: describeChanges(changes),
         submittedBy: sender.by,
         ...next,

@@ -24,6 +24,22 @@
 .mini-stats dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .profile-head { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 4px; }
 .profile-head .avatar { margin: 0 6px 24px 4px; }
+.about-card { display: grid; gap: 14px; margin-bottom: 8px; }
+.bio { margin: 0; color: var(--ink-2); white-space: pre-line; overflow-wrap: anywhere; }
+.profile-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 18px; margin: 0; }
+.profile-facts > div { display: block; }
+.profile-facts dt { font-size: 12px; color: var(--muted); }
+.profile-facts dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.honours { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.honours .record { padding: 10px 12px; }
+.honours .record b { font-size: 14.5px; }
+.honours .record .muted, .honours .record-title { font-size: 12px; }
+.form-chips { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.form-chip { min-width: 40px; height: 32px; padding: 0 8px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-2); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.form-chip:hover { border-color: var(--border-strong); }
+.form-chip.won { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.photo-picker { display: flex; align-items: center; gap: 14px; }
+.photo-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-head .ph { flex: 1; min-width: 0; }
 
 /* Insights */
@@ -91,5 +107,5 @@ details .rule-list { margin-top: 8px; }
   .approach-body > div { grid-template-columns: minmax(0, 1fr); gap: 1px; }
   .rule-grid { grid-template-columns: minmax(0, 1fr); }
   .profile-head { gap: 12px; }
-  .profile-head .avatar { width: 44px; height: 44px; font-size: 15px; margin-right: 2px; }
+  .profile-head .avatar { width: 64px; height: 64px; font-size: 20px; margin-right: 2px; }
 }

@@ -3,12 +3,32 @@
 
 const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value || '') && !Number.isNaN(Date.parse(value));
 
+// Photos are kept small enough that one fits in a GitHub link, and only real JPEG or WebP pictures are allowed.
+export const MAX_PHOTO_CHARS = 4000;
+const PHOTO_START = /^data:image\/(?:jpeg;base64,\/9j\/|webp;base64,UklGR)[A-Za-z0-9+/]*={0,2}$/;
+
+export const isPhoto = (value) => typeof value === 'string' && value.length <= MAX_PHOTO_CHARS && PHOTO_START.test(value);
+
+// What anyone can edit on a profile. Name, joining date and retirement stay with the admins, since
+// they affect the league itself and could be used to pass one player off as another.
+export const PERSONAL_FIELDS = ['nickname', 'tagline', 'bio', 'photo', 'favouriteColour', 'favouriteResource', 'playStyle'];
+
+/** The fields that differ between two versions of a record. A missing field counts the same as an empty one. */
+export function changedFields(before, after) {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  return [...keys].filter((key) => JSON.stringify(before[key] ?? '') !== JSON.stringify(after[key] ?? ''));
+}
+
+export const isPersonalEdit = (before, after) => changedFields(before, after).every((key) => PERSONAL_FIELDS.includes(key));
+
 export function validatePlayer(player, allPlayers = []) {
   const errors = [];
   const name = (player.name || '').trim();
   if (!name) errors.push('Add a name.');
   if (name.length > 60) errors.push('Keep the name to 60 characters or fewer.');
   if (player.joined && !isDate(player.joined)) errors.push('Use a real joining date.');
+  if (player.photo && !isPhoto(player.photo)) errors.push('That photo could not be used. Please choose another.');
+  if ((player.bio || '').length > 280) errors.push('Keep the "about" section to 280 characters or fewer.');
 
   const clash = allPlayers.find((other) =>
     other.id !== player.id && other.name.trim().toLowerCase() === name.toLowerCase());

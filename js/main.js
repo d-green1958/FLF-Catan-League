@@ -1,5 +1,5 @@
 // Starts the app: loads the data, draws the sidebar and shows the page named in the URL.
-import { watchUntilLive } from './data/access.js';
+import { startLiveUpdates } from './data/access.js';
 import { store } from './data/store.js';
 import { settings } from './data/settings.js';
 import { useApproachModules } from './domain/league.js';
@@ -150,7 +150,7 @@ async function start() {
   window.addEventListener('hashchange', showPage);
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderThemeToggle);
   showPage();
-  watchUntilLive();
+  startLiveUpdates();
 }
 
 start();

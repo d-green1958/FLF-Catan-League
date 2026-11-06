@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile, access } from 'node:fs/promises';
 import { normaliseGames } from '../js/domain/games.js';
 import { validateDataset, validateGame, validatePlayer } from '../js/domain/validate.js';
-import { colourStats, headToHead, pairStats, playerSummary, records, turnOrderStats } from '../js/domain/stats.js';
+import { colourStats, headToHead, milestonesEarned, pairStats, playerDetails, playerSummary, records, turnOrderStats } from '../js/domain/stats.js';
 
 const load = async (path) => JSON.parse(await readFile(new URL(`../data/${path}`, import.meta.url)));
 const { colours } = await load('colours.json');
@@ -96,6 +96,34 @@ test('records are empty until there is a game', () => assert.deepEqual(records([
 test('the real league data is valid', async () => {
   const [{ profiles: live }, { games }] = await Promise.all([load('profiles.json'), load('games.json')]);
   assert.deepEqual(validateDataset({ profiles: live, games }, { colours, settings }), []);
+});
+
+test('a profile adds up: finishes, form, streaks, rivals and milestones', () => {
+  const seat = (playerId, colour, vp) => ({ playerId, colour, vp });
+  const game = (id, winnerId, a, b, c) => ({ id, date: `2026-11-${id}`, expansions: [], vpTarget: 10, winnerId, seats: [seat('a', 'red', a), seat('b', 'blue', b), seat('c', 'white', c)] });
+  const played = normaliseGames([game('01', 'a', 10, 3, 4), game('02', 'a', 10, 8, 7), game('03', 'a', 11, 9, 2), game('04', 'b', 7, 10, 8), game('05', 'b', 5, 10, 6)]);
+  const details = playerDetails(played, 'a');
+  assert.deepEqual(details.finishes.map(({ key, games }) => [key, games]), [[1, 3], [3, 2]]);
+  assert.equal(details.recentForm.length, 5);
+  assert.equal(details.recentForm[0].gameId, '01');
+  assert.deepEqual(details.streak, { won: false, length: 2 });
+  assert.equal(details.longestWinStreak, 3);
+  assert.equal(details.bestScore, 11);
+  assert.equal(details.biggestWin, 6);
+  assert.equal(details.nemesis.playerId, 'b');
+  assert.equal(details.nemesis.theirWins, 2);
+  assert.equal(details.favouriteOpponent.wins, 3);
+  assert.deepEqual(details.byTableSize.map(({ key, wins, games }) => [key, wins, games]), [[3, 3, 5]]);
+  assert.deepEqual(details.byTurnOrder.map(({ key, games }) => [key, games]), [[1, 5]]);
+
+  const titles = milestonesEarned(playerSummary(played, 'a'), details).map((milestone) => milestone.title);
+  assert.deepEqual(titles, ['First win', 'Hat-trick', 'Landslide']);
+
+  const winless = playerDetails(played, 'c');
+  assert.equal(winless.nemesis.theirWins, 3);
+  assert.equal(winless.favouriteOpponent, null);
+  assert.deepEqual(milestonesEarned(playerSummary(played, 'c'), winless), []);
+  assert.deepEqual(playerDetails(played, 'nobody').recentForm, []);
 });
 
 test('the demo data is valid', async () => {

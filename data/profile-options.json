@@ -1,0 +1,20 @@
+{
+  "_readme": "The choices offered on a player's profile. Add to these lists freely. Removing one just hides it on any profile that chose it.",
+  "resources": [
+    { "id": "brick", "name": "Brick" },
+    { "id": "lumber", "name": "Lumber" },
+    { "id": "wool", "name": "Wool" },
+    { "id": "grain", "name": "Grain" },
+    { "id": "ore", "name": "Ore" }
+  ],
+  "playStyles": [
+    { "id": "road-builder", "name": "Road builder" },
+    { "id": "city-planner", "name": "City planner" },
+    { "id": "card-gambler", "name": "Development card gambler" },
+    { "id": "army-general", "name": "Army general" },
+    { "id": "port-trader", "name": "Port trader" },
+    { "id": "smooth-talker", "name": "Smooth-talking dealmaker" },
+    { "id": "robber-baron", "name": "Robber baron" },
+    { "id": "chaos-agent", "name": "Chaos agent" }
+  ]
+}

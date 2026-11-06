@@ -68,6 +68,7 @@ function askHowToSend() {
     groupAccessIsSet()
       ? h('p', null, h('b', null, 'Do you have a GitHub account?'))
       : h('p', null, 'This needs a free GitHub account, and your username is shown next to the entry.'),
+    groupAccessIsSet() && h('p', { class: 'field-hint' }, 'The group password is the quickest: it takes effect at once, with nothing more to press.'),
     h('div', { class: 'send-choice' },
       h('button', { class: 'btn primary', type: 'button', onClick: openGitHub }, groupAccessIsSet() ? 'Yes, open GitHub' : 'Open GitHub'),
       groupAccessIsSet() && h('button', { class: 'btn', type: 'button', onClick: showPassword }, 'No, use the group password'),
@@ -98,7 +99,7 @@ export function sendChanges() {
 
 /** Call after any change. In the real league it goes on to GitHub, and in the demo it just stays here. */
 export function finishChange(message) {
-  if (store.mode() === 'demo') toast(message, 'good');
+  if (store.mode() === 'demo' || !sendStatus()) toast(message, 'good');
   else sendChanges();
 }
 
@@ -133,11 +134,12 @@ export function renderSendBar() {
     unsent: [`${changes} not sent to the league yet.`, [button('Send', sendChanges, 'btn primary sm'), discard]],
     locked: [`${changes} waiting for the admin code.`, [h('a', { class: 'btn sm', href: '#/data' }, 'Go to Review'), discard]],
     opened: overdue
-      ? [`${changes} still not live. Did you press Submit on GitHub?`, [button('Open GitHub again', sendWithGitHubAccount, 'btn primary sm'), discard]]
-      : ['Waiting for you to press Submit on GitHub.', [button('Open GitHub again', sendWithGitHubAccount), discard]],
+      ? [`${changes} still not live. Did you press the green button on GitHub?`, [button('Open GitHub again', sendWithGitHubAccount, 'btn primary sm'), discard]]
+      : ['Waiting for you to press the green button on GitHub.', [button('Open GitHub again', sendWithGitHubAccount), discard]],
     sent: overdue
       ? [`${changes} sent but still not live.`, [progress, button('Send again', sendChanges), discard]]
-      : ['Sent. The site will update in a few minutes.', [progress]],
+      : ['Sending to the league…', [progress]],
+    refused: [`Not accepted: ${status.message}`, [progress, button('Send again', sendChanges), discard]],
   };
   const [message, actions] = views[state];
   bar.replaceChildren(h('span', null, message), h('span', { class: 'send-bar-acts' }, actions));

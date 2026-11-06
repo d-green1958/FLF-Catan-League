@@ -20,6 +20,7 @@ h3 { font-size: 15px; letter-spacing: -.01em; margin: 0; font-weight: 600; }
 .muted { color: var(--muted); }
 .nowrap { white-space: nowrap; }
 .spacer { flex: 1; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .spaced { margin-top: 18px; }
 .spaced-bottom { margin-bottom: 14px; }
 .dim { opacity: .62; }

@@ -119,6 +119,63 @@ function longestWinStreak(games, playerId) {
   return best;
 }
 
+/** Everything on a player's profile beyond the headline numbers. Games must be in date order. */
+export function playerDetails(games, playerId) {
+  const played = gamesFor(games, playerId);
+  const seats = played.map((game) => ({ game, seat: game.seats.find((seat) => seat.playerId === playerId) }));
+
+  const tally = (keyOf) => {
+    const rows = new Map();
+    for (const { game, seat } of seats) {
+      const key = keyOf(game, seat);
+      const row = rows.get(key) || { key, games: 0, wins: 0 };
+      row.games += 1;
+      if (seat.isWinner) row.wins += 1;
+      rows.set(key, row);
+    }
+    return [...rows.values()].sort((a, b) => a.key - b.key).map((row) => ({ ...row, winRate: share(row.wins, row.games) }));
+  };
+
+  const margins = seats.filter(({ seat }) => seat.isWinner).map(({ game, seat }) =>
+    seat.vp - Math.max(...game.seats.filter((other) => other.playerId !== playerId).map((other) => other.vp)));
+
+  let streak = 0;
+  const latestWon = seats.at(-1)?.seat.isWinner ?? false;
+  for (const { seat } of [...seats].reverse()) {
+    if (seat.isWinner !== latestWon) break;
+    streak += 1;
+  }
+
+  const opponents = headToHead(games, playerId, 1);
+  const mostBy = (key) => opponents.reduce((top, row) => (row[key] > (top?.[key] ?? 0) ? row : top), null);
+
+  return {
+    finishes: tally((game, seat) => seat.place),
+    byTableSize: tally((game) => game.size),
+    byTurnOrder: tally((game, seat) => seat.turnOrder),
+    recentForm: seats.slice(-5).map(({ game, seat }) => ({ gameId: game.id, date: game.date, won: seat.isWinner, place: seat.place, size: game.size, vp: seat.vp })),
+    streak: { won: latestWon, length: streak },
+    longestWinStreak: longestWinStreak(games, playerId),
+    bestScore: Math.max(0, ...seats.map(({ seat }) => seat.vp)),
+    biggestWin: Math.max(0, ...margins),
+    nemesis: mostBy('theirWins'),
+    favouriteOpponent: mostBy('wins'),
+  };
+}
+
+const MILESTONES = [
+  { title: 'First win', detail: 'Won a league game', earned: (s) => s.wins >= 1 },
+  { title: 'Hat-trick', detail: 'Won three games in a row', earned: (s, d) => d.longestWinStreak >= 3 },
+  { title: 'Regular', detail: 'Played 10 games', earned: (s) => s.games >= 10 },
+  { title: 'Veteran', detail: 'Played 25 games', earned: (s) => s.games >= 25 },
+  { title: 'Ten wins', detail: 'Won 10 games', earned: (s) => s.wins >= 10 },
+  { title: 'Landslide', detail: 'Won by 5 VP or more', earned: (s, d) => d.biggestWin >= 5 },
+  { title: 'Road warrior', detail: 'Held Longest Route in 5 games', earned: (s) => s.longestRoutes >= 5 },
+  { title: 'Warlord', detail: 'Held Largest Army in 5 games', earned: (s) => s.largestArmies >= 5 },
+];
+
+export const milestonesEarned = (summary, details) => MILESTONES.filter((milestone) => milestone.earned(summary, details));
+
 /** The trophy cabinet. Each record is null until there is a game to base it on. */
 export function records(games, profiles) {
   if (!games.length || !profiles.length) return [];

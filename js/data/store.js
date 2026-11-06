@@ -5,23 +5,36 @@
 //   2. Browser draft:  someone's additions, edits and deletions, kept in localStorage until they go live.
 // The app shows (1) with (2) applied on top. See js/forms/send-dialog.js for how a draft gets sent, and
 // js/domain/submission.js for how the repo accepts it. Once a change is live it drops out of the draft.
+// Submissions too recent to be published yet count as published: see js/domain/live-issues.js.
 import * as storage from './browser-storage.js';
+import { applyRecentIssues, compactIssue, isRecentIssue } from '../domain/live-issues.js';
+import { isPersonalEdit } from '../domain/validate.js';
 
 const LIVE_DRAFT = 'flfoxtan.draft';
 const DEMO_DRAFT = 'flfoxtan.demo-draft';
 const MODE_KEY = 'flfoxtan.mode';
+const ISSUES_KEY = 'flfoxtan.recent-issues';
 const COLLECTIONS = ['profiles', 'games'];
+// GitHub allows 60 checks an hour per network without a login, so these are rationed, and refused checks wait.
+const ISSUE_CHECK_GAP_MS = 60 * 1000;
+const ISSUE_CHECK_RETRY_MS = 5 * 60 * 1000;
 
 const emptyDraft = () => ({ profiles: { saved: {}, deleted: [] }, games: { saved: {}, deleted: [] } });
 
 const listeners = new Set();
 let reference = null;
 let mode = 'live';
-let published = { profiles: [], games: [], activity: [] };
+let files = { profiles: [], games: [], activity: [] };
+let published = files;
+let recentIssues = [];
+let outcomes = [];
+let nextIssueCheck = 0;
+let issueCheckAllowedAfter = 0;
 let draft = emptyDraft();
 
-async function fetchJson(path) {
-  const response = await fetch(path, { cache: 'no-cache' });
+/** "fresh" skips the web cache, as GitHub Pages can otherwise serve a file up to ten minutes old. */
+async function fetchJson(path, { fresh = false } = {}) {
+  const response = await fetch(fresh ? `${path}?t=${Date.now()}` : path, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`Could not load ${path} (${response.status})`);
   return response.json();
 }
@@ -29,11 +42,32 @@ async function fetchJson(path) {
 async function loadPublished() {
   const folder = mode === 'demo' ? 'data/demo' : 'data';
   const [profiles, games, activity] = await Promise.all(
-    ['profiles', 'games', 'activity'].map((name) => fetchJson(`${folder}/${name}.json`)),
+    ['profiles', 'games', 'activity'].map((name) => fetchJson(`${folder}/${name}.json`, { fresh: true })),
   );
-  published = { profiles: profiles.profiles, games: games.games, activity: activity.activity };
+  files = { profiles: profiles.profiles, games: games.games, activity: activity.activity };
   draft = storage.read(draftKey(), emptyDraft());
+  await rebuildPublished();
+}
+
+/** Works out what counts as published: the files, plus any submissions too recent to be in them yet. */
+async function rebuildPublished() {
+  if (mode === 'demo') {
+    published = files;
+    outcomes = [];
+  } else {
+    recentIssues = recentIssues.filter((issue) => isRecentIssue(issue));
+    const { outcomes: results, ...data } = await applyRecentIssues(files, recentIssues, reference);
+    published = data;
+    outcomes = results;
+  }
   clearPublishedFromDraft();
+}
+
+function rememberIssues(issues) {
+  const byNumber = new Map(recentIssues.map((issue) => [issue.number, issue]));
+  for (const issue of issues) byNumber.set(issue.number, issue);
+  recentIssues = [...byNumber.values()].filter((issue) => isRecentIssue(issue));
+  storage.write(ISSUES_KEY, recentIssues);
 }
 
 /**
@@ -113,27 +147,62 @@ function exportDocument(collection) {
 
 export const store = {
   async init() {
-    const [league, colours, expansions, rules, approaches] = await Promise.all(
-      ['league', 'colours', 'expansions', 'rules', 'rating-approaches'].map((name) => fetchJson(`data/${name}.json`)),
+    const [league, colours, expansions, rules, approaches, profileOptions] = await Promise.all(
+      ['league', 'colours', 'expansions', 'rules', 'rating-approaches', 'profile-options'].map((name) => fetchJson(`data/${name}.json`)),
     );
     reference = {
       league,
       colours: colours.colours,
       expansions,
       rules,
+      profileOptions,
       approaches: approaches.approaches,
       families: approaches.families,
     };
     mode = storage.read(MODE_KEY) === 'demo' ? 'demo' : 'live';
+    recentIssues = storage.read(ISSUES_KEY, []);
     await loadPublished();
   },
 
   /** Checks for newly published data, and only redraws the page if there is some. */
   async reloadPublished() {
-    const before = JSON.stringify(published);
+    const before = JSON.stringify([published, outcomes]);
     await loadPublished();
-    if (JSON.stringify(published) !== before) announce();
+    if (JSON.stringify([published, outcomes]) !== before) announce();
   },
+
+  /** Adds an issue this browser has just opened, so its result shows at once. */
+  async addIssue(issue) {
+    rememberIssues([compactIssue(issue)]);
+    await rebuildPublished();
+    announce();
+  },
+
+  /** Asks GitHub for new submissions. Rationed unless "now" is set. A failure just means waiting for the next deploy. */
+  async checkIssues({ now = false } = {}) {
+    const time = Date.now();
+    if (mode === 'demo' || time < issueCheckAllowedAfter || (!now && time < nextIssueCheck)) return;
+    nextIssueCheck = time + ISSUE_CHECK_GAP_MS;
+    const { owner, name } = reference.league.repository;
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${name}/issues?state=all&per_page=20&sort=created&direction=desc`, { cache: 'no-cache' });
+      if (!response.ok) {
+        issueCheckAllowedAfter = time + ISSUE_CHECK_RETRY_MS;
+        return;
+      }
+      const before = JSON.stringify(recentIssues);
+      rememberIssues((await response.json()).map(compactIssue));
+      if (JSON.stringify(recentIssues) === before) return;
+      const shown = JSON.stringify([published, outcomes]);
+      await rebuildPublished();
+      if (JSON.stringify([published, outcomes]) !== shown) announce();
+    } catch {
+      issueCheckAllowedAfter = time + ISSUE_CHECK_GAP_MS;
+    }
+  },
+
+  /** What happened to the submission containing this text, if GitHub has it yet. */
+  issueOutcome: (text) => outcomes.findLast((outcome) => outcome.body.includes(text)),
 
   subscribe(listener) {
     listeners.add(listener);
@@ -150,7 +219,7 @@ export const store = {
   player: (id) => merged('profiles').find((player) => player.id === id),
   game: (id) => merged('games').find((game) => game.id === id),
 
-  /** Everything added, corrected and removed, newest first. */
+  /** Everything added, edited and removed, newest first. */
   activity: () => [...published.activity].reverse(),
   /** Who most recently added this item. */
   additionFor: (type, id) => published.activity.findLast((entry) => entry.action === 'added' && entry.type === type && entry.id === id),
@@ -178,6 +247,7 @@ export const store = {
     let total = 0;
     let needsCode = false;
     for (const collection of COLLECTIONS) {
+      const originals = new Map(published[collection].map((item) => [item.id, item]));
       const byId = new Map(published[collection].map((item) => [item.id, JSON.stringify(item)]));
       const changed = Object.values(draft[collection].saved).filter((item) => byId.get(item.id) !== JSON.stringify(item));
       const deleted = draft[collection].deleted.filter((id) => byId.has(id));
@@ -187,7 +257,10 @@ export const store = {
         deleted: deleted.length,
       };
       total += changed.length + deleted.length;
-      if (summary[collection].edited || summary[collection].deleted) needsCode = true;
+      // Anyone can edit the personal details on a profile. Other changes to what is live need the admin code.
+      const edits = changed.filter((item) => byId.has(item.id));
+      const allowed = (item) => collection === 'profiles' && isPersonalEdit(originals.get(item.id), item);
+      if (deleted.length || !edits.every(allowed)) needsCode = true;
     }
     return { ...summary, total, needsCode };
   },

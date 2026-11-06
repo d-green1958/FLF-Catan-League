@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { createAdminKey, signChanges, unlockWithCode } from '../js/domain/admin-key.js';
 import { createGroupAccess, openGroupAccess } from '../js/domain/group-access.js';
-import { buildIssue, buildIssueLink, describeChanges, processSubmission, TITLE_PREFIX } from '../js/domain/submission.js';
+import { applyRecentIssues, compactIssue } from '../js/domain/live-issues.js';
+import { buildIssue, buildIssueLink, describeChanges, fitChanges, fitsInIssue, processSubmission, TITLE_PREFIX } from '../js/domain/submission.js';
+import { isPersonalEdit, isPhoto, MAX_PHOTO_CHARS } from '../js/domain/validate.js';
 
 const load = async (name) => JSON.parse(await readFile(new URL(`../data/${name}`, import.meta.url)));
 const CODE = 'a test code that is long enough';
@@ -116,7 +118,7 @@ test('with the code, corrections replace the original and removals take it away'
   assert.equal(corrected.games.length, 1);
   assert.equal(corrected.games[0].notes, 'Corrected');
   assert.deepEqual(corrected.activity[0], activity[0], 'a correction keeps the record of who first added it');
-  assert.deepEqual(corrected.activity.slice(1).map(({ action, type, by }) => ({ action, type, by })), [{ action: 'corrected', type: 'game', by: 'an-admin' }]);
+  assert.deepEqual(corrected.activity.slice(1).map(({ action, type, by }) => ({ action, type, by })), [{ action: 'edited', type: 'game', by: 'an-admin' }]);
 
   const removal = payload({ deletedGames: [games[0].id] });
   const deleted = await submit({ body: await signedBody(removal), games, activity, author: 'an-admin' });
@@ -212,6 +214,136 @@ test('sending an unchanged player again with a new game still works', async () =
   const outcome = await submit({ changes: payload({ savedPlayers: [players[0]], savedGames: [newGame()] }) });
   assert.equal(outcome.status, 'applied');
   assert.equal(outcome.profiles.length, 3);
+});
+
+const fakePhoto = (length = 200) => `data:image/jpeg;base64,/9j/${'A'.repeat(length)}`;
+
+test('photos must be small, real JPEG or WebP pictures', () => {
+  assert.ok(isPhoto(fakePhoto()));
+  assert.ok(isPhoto('data:image/webp;base64,UklGRAAAAA=='));
+  assert.ok(!isPhoto(fakePhoto(MAX_PHOTO_CHARS)), 'too large');
+  assert.ok(!isPhoto('data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9ImFsZXJ0KDEpIj4='), 'an SVG can carry scripts');
+  assert.ok(!isPhoto('data:image/jpeg;base64,PHNjcmlwdD4='), 'says JPEG but is not one');
+  assert.ok(!isPhoto('https://example.com/tracking.jpg'), 'an outside link would reveal who views the page');
+  assert.ok(!isPhoto(`${fakePhoto()}"><script>`));
+});
+
+test('anyone can edit the personal details on a profile, and the log says what changed', async () => {
+  const before = { id: 'a', name: 'A', joined: '2026-11-06', active: true, tagline: 'Old' };
+  const after = { ...before, tagline: 'New', bio: 'Hello', photo: fakePhoto(), favouriteResource: 'ore', playStyle: 'road-builder', nickname: 'Ace', favouriteColour: 'red' };
+  const outcome = await submit({ changes: payload({ savedPlayers: [after] }), profiles: [before], author: 'a-player' });
+  assert.equal(outcome.status, 'applied');
+  assert.equal(outcome.profiles[0].tagline, 'New');
+  assert.equal(outcome.activity[0].action, 'edited');
+  assert.equal(outcome.activity[0].by, 'a-player');
+  assert.deepEqual([...outcome.activity[0].changed].sort(), ['bio', 'favouriteColour', 'favouriteResource', 'nickname', 'photo', 'playStyle', 'tagline']);
+});
+
+test('without the code, a name, joining date or retirement cannot change, and nothing can be removed', async () => {
+  const before = { id: 'a', name: 'A', joined: '2026-11-06', active: true };
+  for (const change of [{ name: 'Someone else' }, { joined: '2020-01-01' }, { active: false }, { name: 'B', tagline: 'Sneaked in with a real edit' }]) {
+    const outcome = await submit({ changes: payload({ savedPlayers: [{ ...before, ...change }] }), profiles: [before] });
+    assert.equal(outcome.status, 'needs-code', JSON.stringify(change));
+  }
+  assert.equal((await submit({ changes: payload({ deletedPlayers: ['a'] }), profiles: [before] })).status, 'needs-code');
+  assert.ok(isPersonalEdit(before, { ...before, bio: 'x' }));
+  assert.ok(!isPersonalEdit(before, { ...before, id: 'b' }));
+});
+
+test('profile fields are checked: a bad photo or an over-long about section is refused', async () => {
+  const before = { id: 'a', name: 'A', active: true };
+  for (const change of [{ photo: 'data:image/svg+xml;base64,PHN2Zz4=' }, { photo: fakePhoto(MAX_PHOTO_CHARS) }, { bio: 'x'.repeat(281) }, { favouriteResource: 'x'.repeat(21) }, { surprise: 'field' }]) {
+    const outcome = await submit({ body: buildIssue(payload({ savedPlayers: [{ ...before, ...change }] })).body, profiles: [before] });
+    assert.equal(outcome.status, 'rejected', JSON.stringify(Object.keys(change)));
+  }
+});
+
+test('a player with the largest allowed photo and every field filled in still fits in a GitHub link', () => {
+  const player = {
+    id: 'a-player-with-a-long-id', name: 'N'.repeat(60), nickname: 'K'.repeat(40), tagline: 'T'.repeat(120), bio: 'B'.repeat(280),
+    // Like a real picture: all 64 base64 characters equally often, and just two of them need escaping in a link.
+    photo: `data:image/jpeg;base64,/9j/${'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.repeat(61).slice(0, MAX_PHOTO_CHARS - 26)}`, favouriteResource: 'grain', playStyle: 'smooth-talker', joined: '2026-11-06', favouriteColour: 'orange', active: true,
+  };
+  assert.ok(isPhoto(player.photo));
+  assert.ok(buildIssueLink(league.repository, payload({ savedPlayers: [player] })), 'fits, with room to spare for a signature');
+});
+
+test('when too much is waiting, as much as fits is sent and the rest stays', () => {
+  const many = Array.from({ length: 30 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, active: true }));
+  const direct = fitChanges(payload({ savedPlayers: many }), (changes) => fitsInIssue(changes));
+  assert.equal(direct.changes.profiles.saved.length, 25, 'the limit on one submission without the code');
+  assert.equal(direct.left, 5);
+  assert.equal(fitChanges(payload({ savedPlayers: many }), (changes) => fitsInIssue(changes, { signed: true })).left, 0);
+
+  const withPhotos = many.map((player) => ({ ...player, photo: fakePhoto(3900) }));
+  const viaLink = fitChanges(payload({ savedPlayers: withPhotos }), (changes) => fitsInIssue(changes, { viaLink: league.repository }));
+  assert.equal(viaLink.changes.profiles.saved.length, 1);
+  assert.ok(buildIssueLink(league.repository, viaLink.changes));
+  const bigIssue = fitChanges(payload({ savedPlayers: withPhotos }), (changes) => fitsInIssue(changes));
+  assert.ok(bigIssue.changes.profiles.saved.length > 5 && buildIssue(bigIssue.changes, { submittedBy: 'x' }).body.length <= 65536);
+});
+
+test('games wait for their players: nothing is sent after the first thing that does not fit', () => {
+  const fitted = fitChanges(payload({ savedPlayers: [players[0], players[1]], savedGames: [newGame()] }), (changes) => changes.profiles.saved.length < 2);
+  assert.equal(fitted.changes.games.saved.length, 0);
+  assert.equal(fitted.left, 2);
+});
+
+test('recent issues show at once, under the same rules as the Action', async () => {
+  const now = Date.UTC(2026, 10, 6, 13);
+  const issue = (number, changes, extra = {}) => compactIssue({
+    number, title: `${TITLE_PREFIX} x`, body: buildIssue(changes).body, state: 'open', state_reason: null,
+    html_url: `https://github.com/x/y/issues/${number}`, created_at: new Date(now - 1000).toISOString(), user: { login: 'someone' }, ...extra,
+  });
+  const published = { profiles: players, games: [], activity: [] };
+  const apply = (issues) => applyRecentIssues(published, issues, { league, colours, expansions }, now);
+  const zed = { id: 'zed', name: 'Zed', active: true };
+
+  const added = await apply([issue(9, payload({ savedPlayers: [zed] }))]);
+  assert.ok(added.profiles.some((player) => player.id === 'zed'), 'shown while the issue is still open');
+  assert.deepEqual(added.outcomes.map(({ number, accepted }) => ({ number, accepted })), [{ number: 9, accepted: true }]);
+  assert.equal(added.activity[0].by, 'someone');
+  assert.equal(added.activity[0].issue, 9);
+
+  const vandal = await apply([issue(10, payload({ deletedPlayers: ['a'] }))]);
+  assert.equal(vandal.profiles.length, 3, 'an unsigned removal does nothing');
+  assert.equal(vandal.outcomes[0].accepted, false);
+  assert.match(vandal.outcomes[0].message, /admin code/);
+
+  const refused = await apply([issue(11, payload({ savedPlayers: [zed] }), { state: 'closed', state_reason: 'not_planned' })]);
+  assert.ok(!refused.profiles.some((player) => player.id === 'zed'), 'the Action has the last word');
+  assert.equal(refused.outcomes[0].accepted, false);
+
+  const stale = await apply([issue(12, payload({ savedPlayers: [zed] }), { created_at: new Date(now - 60 * 60 * 1000).toISOString() })]);
+  assert.ok(!stale.profiles.some((player) => player.id === 'zed'), 'old issues are not applied for ever');
+
+  const other = await apply([issue(13, payload({ savedPlayers: [zed] }), { title: 'Please fix the typo' })]);
+  assert.ok(!other.profiles.some((player) => player.id === 'zed'), 'ordinary issues are ignored');
+
+  const order = await apply([
+    issue(15, payload({ savedPlayers: [{ ...zed, tagline: 'Second' }] })),
+    issue(14, payload({ savedPlayers: [zed] })),
+  ]);
+  assert.equal(order.profiles.find((player) => player.id === 'zed').tagline, 'Second', 'applied oldest first');
+});
+
+test('replaying an issue that has already been published changes nothing, and is not logged twice', async () => {
+  const now = Date.UTC(2026, 10, 6, 13);
+  const zed = { id: 'zed', name: 'Zed', active: true };
+  const issue = compactIssue({ number: 9, title: `${TITLE_PREFIX} x`, body: buildIssue(payload({ savedPlayers: [zed] })).body, state: 'closed', state_reason: 'completed', html_url: 'u', created_at: new Date(now - 1000).toISOString(), user: { login: 'someone' } });
+  const first = await applyRecentIssues({ profiles: players, games: [], activity: [] }, [issue], { league, colours, expansions }, now);
+  const again = await applyRecentIssues({ profiles: first.profiles, games: first.games, activity: first.activity }, [issue], { league, colours, expansions }, now);
+  assert.deepEqual(again.profiles, first.profiles);
+  assert.deepEqual(again.activity, first.activity);
+  assert.equal(again.outcomes[0].accepted, true);
+});
+
+test('a signed issue is checked against when it was opened, not when someone happens to view it', async () => {
+  const opened = Date.UTC(2026, 10, 6, 13);
+  const changes = payload({ deletedPlayers: ['c'] });
+  const issue = compactIssue({ number: 3, title: `${TITLE_PREFIX} x`, body: await signedBody(changes, opened), state: 'open', state_reason: null, html_url: 'u', created_at: new Date(opened).toISOString(), user: { login: 'someone' } });
+  const later = await applyRecentIssues({ profiles: players, games: [], activity: [] }, [issue], { league, colours, expansions }, opened + 10 * 60 * 1000);
+  assert.equal(later.profiles.length, 2);
 });
 
 test('invalid games are refused with the reason', async () => {

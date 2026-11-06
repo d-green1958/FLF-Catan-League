@@ -2,6 +2,7 @@
 import { store } from '../data/store.js';
 import { h, route } from './dom.js';
 import { icon } from './icons.js';
+import { isPhoto } from '../domain/validate.js';
 import { formatChange } from './format.js';
 
 const colourById = (id) => store.reference().colours.find((colour) => colour.id === id);
@@ -51,14 +52,14 @@ export function initials(name) {
   return (parts.length > 1 ? parts[0][0] + parts.at(-1)[0] : name.slice(0, 2)).toUpperCase();
 }
 
-/** An avatar with initials, ringed with the player's favourite colour. */
+/** A player's photo, or their initials if they have none, ringed with their favourite colour. */
 export function avatar(player, size = '') {
   const colour = colourById(player?.favouriteColour);
   return h('span', {
     class: `avatar ${size}`.trim(),
     style: colour ? { '--ring': colour.hex } : null,
     'aria-hidden': 'true',
-  }, initials(player?.name ?? '?'));
+  }, isPhoto(player?.photo) ? h('img', { src: player.photo, alt: '', loading: 'lazy' }) : initials(player?.name ?? '?'));
 }
 
 export function playerLink(player) {

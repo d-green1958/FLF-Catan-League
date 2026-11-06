@@ -1,6 +1,6 @@
 // The list of everyone registered in the league.
 import { getLeague, leaderboard, selectedApproach } from '../domain/league.js';
-import { openPlayerForm } from '../forms/player-form.js';
+import { openPlayerForm, openRegisterSeveral } from '../forms/player-form.js';
 import { h, route } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { avatar, emptyState, page, pageHeader } from '../ui/components.js';
@@ -26,7 +26,10 @@ function playerCard(player, league, approach, standing) {
 
 export function renderPlayers() {
   const league = getLeague();
-  const register = () => h('button', { class: 'btn primary', onClick: () => openPlayerForm() }, icon('plus'), 'Register player');
+  const register = () => [
+    h('button', { class: 'btn', onClick: openRegisterSeveral }, icon('users'), 'Register several'),
+    h('button', { class: 'btn primary', onClick: () => openPlayerForm() }, icon('plus'), 'Register player'),
+  ];
   const header = pageHeader({
     eyebrow: 'The settlers',
     title: 'Players',

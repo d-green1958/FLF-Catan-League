@@ -1,4 +1,4 @@
-// Review: everything added, corrected and removed, which admins can correct or remove after entering the code.
+// Review: everything added, edited and removed, which admins can edit or remove after entering the code.
 import { adminCodeIsSet, adminMustChooseRoute, canManage, groupAccessIsSet, groupMemberName, isGroupUnlocked, isUnlocked, lockAdmin, lockGroup, unlockAdmin } from '../data/access.js';
 import { store } from '../data/store.js';
 import { MIN_CODE_LENGTH } from '../domain/admin-key.js';
@@ -15,8 +15,13 @@ import { openGameDetail } from './games.js';
 
 const ACTIONS = {
   added: { label: 'Added', badge: 'accent' },
-  corrected: { label: 'Corrected', badge: 'warn' },
+  edited: { label: 'Edited', badge: 'warn' },
   removed: { label: 'Removed', badge: 'muted' },
+};
+
+const FIELD_NAMES = {
+  name: 'name', nickname: 'nickname', tagline: 'signature move', bio: 'about', photo: 'photo', joined: 'joining date',
+  favouriteColour: 'favourite colour', favouriteResource: 'favourite resource', playStyle: 'play style', active: 'active or retired',
 };
 
 async function removeItem({ type, item, label }) {
@@ -57,7 +62,7 @@ function activityRow(entry, showActions) {
     if (!item) return h('span', null, label);
     return isGame
       ? h('button', { class: 'link-btn', type: 'button', onClick: () => openGameDetail(item.id) }, label)
-      : h('span', null, 'Player: ', playerLink(item));
+      : h('span', null, 'Player: ', playerLink(item), entry.changed ? ` (${entry.changed.map((key) => FIELD_NAMES[key] ?? key).join(', ')})` : null);
   };
   return [
     h('span', { class: 'nowrap' }, formatDate(entry.at.slice(0, 10))),

@@ -26,7 +26,8 @@ node --test
 data/               The databases. Plain JSON that you can read and edit by hand.
   profiles.json       Players
   games.json          Games, with seats listed in turn order
-  activity.json       Everything added, corrected and removed, and by whom (written by the Action)
+  activity.json       Everything added, edited and removed, and by whom (written by the Action)
+  profile-options.json  The resources and play styles offered on a profile
   rating-approaches.json  Every scoring system: description, settings, on or off
   rules.json          Text for the Rules page
   expansions.json     Expansions, scenarios and links to official rulebooks
@@ -55,9 +56,25 @@ assets/               The crest and browser icon
 
 Anyone can view the site without an account. **Anyone with a free GitHub account or the group password** can register players and log games, and these go live without waiting for approval. They cannot change or remove anything already in the league.
 
-**Admins** are whoever knows the admin code. They check the **Review** page, which lists everything added, corrected and removed, and by whom, and can edit or remove anything spurious.
+**Admins** are whoever knows the admin code. They check the **Review** page, which lists everything added, edited and removed, and by whom, and can edit or remove anything spurious.
 
 After someone saves a player or game, the site asks **Do you have a GitHub account?** Yes opens GitHub with the issue filled in. No asks for their name and the group password, then sends it straight away, and they are not asked again until they reload the page. Admins who have entered the code are not asked at all, once `set-admin-access.js` has been run.
+
+Anyone can also edit the personal details on a profile: photo, nickname, signature move, about, favourite colour and resource, and play style. The log says who changed what, and an admin can change it back. A name, joining date, retirement or deletion needs the admin code.
+
+### How changes show up so quickly
+
+Saving to the repo and republishing the site takes about 40 seconds, because GitHub queues the Action and then the deploy. A submission exists as a GitHub issue within a second, so the site also reads recent issues and applies them on top of the published data, using the same `processSubmission()` check as the Action (`js/domain/live-issues.js`). The Action's commit is still the permanent record, and an issue it refuses stops being shown.
+
+- **Group password or admin code:** the site opens the issue itself, so the result shows as soon as GitHub replies, usually within a second or two.
+- **GitHub account:** the site checks when the person comes back to its tab, then every 5 seconds for a minute.
+- **Everyone else:** the site checks when a page is opened or looked at again, at most once a minute, and an open tab picks up published data every 30 seconds.
+
+GitHub allows 60 of these checks an hour per network without a login, so they are rationed. If that runs out, the site just waits for the published data, and nothing breaks.
+
+### Photos
+
+The browser crops a chosen picture to a small square and re-encodes it, which also removes hidden details such as location. It is stored as text in `data/profiles.json`, at most 4,000 characters, so one fits in a GitHub link. Only JPEG and WebP are accepted, and the Action checks this too. Photos are public, and stay in the repo's history even after being removed.
 
 ### Set or change the admin code
 
