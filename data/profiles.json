@@ -13,11 +13,12 @@
     {
       "name": "Bogosi",
       "nickname": "",
-      "tagline": "Vibe coding websites",
+      "tagline": "Vibe coding, making bad trades",
       "joined": "2026-11-06",
       "favouriteColour": "blue",
       "active": true,
-      "id": "bogosi"
+      "id": "bogosi",
+      "favouriteResource": "grain"
     }
   ]
 }

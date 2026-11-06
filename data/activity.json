@@ -18,6 +18,20 @@
       "by": "bogosimsutwana",
       "at": "2026-11-06T14:30:50.337Z",
       "issue": 5
+    },
+    {
+      "action": "edited",
+      "type": "player",
+      "id": "bogosi",
+      "label": "Bogosi",
+      "changed": [
+        "tagline",
+        "favouriteResource"
+      ],
+      "by": "Bogosi",
+      "viaPassword": true,
+      "at": "2026-11-06T19:40:57.050Z",
+      "issue": 9
     }
   ]
 }
