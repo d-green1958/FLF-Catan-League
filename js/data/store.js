@@ -3,7 +3,7 @@
 // A static site cannot write to its own repo, so data lives in two layers:
 //   1. Published data: the JSON files in data/, which everyone sees.
 //   2. Browser draft:  someone's additions, edits and deletions, kept in localStorage until they go live.
-// The app shows (1) with (2) applied on top. See js/data/access.js for how a draft gets published, and
+// The app shows (1) with (2) applied on top. See js/forms/send-dialog.js for how a draft gets sent, and
 // js/domain/submission.js for how the repo accepts it. Once a change is live it drops out of the draft.
 import * as storage from './browser-storage.js';
 
@@ -17,7 +17,7 @@ const emptyDraft = () => ({ profiles: { saved: {}, deleted: [] }, games: { saved
 const listeners = new Set();
 let reference = null;
 let mode = 'live';
-let published = { profiles: [], games: [], additions: [] };
+let published = { profiles: [], games: [], activity: [] };
 let draft = emptyDraft();
 
 async function fetchJson(path) {
@@ -28,10 +28,10 @@ async function fetchJson(path) {
 
 async function loadPublished() {
   const folder = mode === 'demo' ? 'data/demo' : 'data';
-  const [profiles, games, additions] = await Promise.all(
-    ['profiles', 'games', 'additions'].map((name) => fetchJson(`${folder}/${name}.json`)),
+  const [profiles, games, activity] = await Promise.all(
+    ['profiles', 'games', 'activity'].map((name) => fetchJson(`${folder}/${name}.json`)),
   );
-  published = { profiles: profiles.profiles, games: games.games, additions: additions.additions };
+  published = { profiles: profiles.profiles, games: games.games, activity: activity.activity };
   draft = storage.read(draftKey(), emptyDraft());
   clearPublishedFromDraft();
 }
@@ -128,6 +128,13 @@ export const store = {
     await loadPublished();
   },
 
+  /** Checks for newly published data, and only redraws the page if there is some. */
+  async reloadPublished() {
+    const before = JSON.stringify(published);
+    await loadPublished();
+    if (JSON.stringify(published) !== before) announce();
+  },
+
   subscribe(listener) {
     listeners.add(listener);
     return () => listeners.delete(listener);
@@ -143,9 +150,10 @@ export const store = {
   player: (id) => merged('profiles').find((player) => player.id === id),
   game: (id) => merged('games').find((game) => game.id === id),
 
-  /** Who added each published item, oldest first. Removed items have no entry. */
-  additions: () => published.additions.filter(({ type, id }) => (type === 'game' ? store.game(id) : store.player(id))),
-  additionFor: (type, id) => published.additions.find((entry) => entry.type === type && entry.id === id),
+  /** Everything added, corrected and removed, newest first. */
+  activity: () => [...published.activity].reverse(),
+  /** Who most recently added this item. */
+  additionFor: (type, id) => published.activity.findLast((entry) => entry.action === 'added' && entry.type === type && entry.id === id),
 
   savePlayer(player) {
     const saved = { ...player, id: player.id || newPlayerId(player.name) };

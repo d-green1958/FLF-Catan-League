@@ -1,0 +1,10 @@
+{
+  "_readme": "Made-up activity for demo mode.",
+  "activity": [
+    {"action":"added","type":"game","id":"demo-038","label":"Game on 2027-07-23: Ben, Esme, Dev, Ada","by":"hugo-plays","at":"2027-07-23T14:00:00.000Z","issue":null},
+    {"action":"added","type":"game","id":"demo-039","label":"Game on 2027-07-30: Gwen, Ada, Ben, Dev","by":"cleo-catan","at":"2027-07-30T14:00:00.000Z","issue":null},
+    {"action":"added","type":"game","id":"demo-040","label":"Game on 2027-08-06: Cleo, Ada, Ben","by":"hugo-plays","at":"2027-08-06T14:00:00.000Z","issue":null},
+    {"action":"added","type":"game","id":"demo-041","label":"Game on 2027-08-13: Cleo, Ben, Esme, Gwen","by":"dev-settler","at":"2027-08-13T14:00:00.000Z","issue":null},
+    {"action":"added","type":"game","id":"demo-042","label":"Game on 2027-08-20: Dev, Hugo, Cleo","by":"cleo-catan","at":"2027-08-20T14:00:00.000Z","issue":null}
+  ]
+}

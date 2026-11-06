@@ -7,7 +7,8 @@
 // proved by a signature (see admin-key.js).
 //
 // People with the group password skip steps 1 and 2: the site opens the issue for them using the repo
-// owner's token (see group-access.js), and they give their name. The same rules apply.
+// owner's token (see group-access.js), and they give their name. The same rules apply. Admins who have
+// entered the code skip them too, as the code also opens a copy of that token.
 //
 // Both ends use this file, so they always agree on the format and the rules. The site's own checks are
 // a convenience: processSubmission() below is the real gatekeeper, and it trusts nothing in the issue.
@@ -81,13 +82,18 @@ export function describeChanges(changes) {
   return parts.join(', ') || 'No changes';
 }
 
+function issueIntro({ authorisation, submittedBy }) {
+  if (!submittedBy) return 'Press **Submit** to send this to the league. The rest is automatic.';
+  return `Sent from the site by ${submittedBy}, using ${authorisation ? 'the admin code' : 'the group password'}.`;
+}
+
 /** The issue's title and text, whichever way it gets sent. */
 export function buildIssue(changes, { authorisation = null, submittedBy = null } = {}) {
   const submission = { ...changes, ...(authorisation && { authorisation }), ...(submittedBy && { submittedBy }) };
   return {
     title: `${TITLE_PREFIX} ${describeChanges(changes)}`,
     body: [
-      submittedBy ? `Sent from the site by ${submittedBy}, using the group password.` : 'Press **Submit** to send this to the league. The rest is automatic.',
+      issueIntro({ authorisation, submittedBy }),
       '',
       MARKER,
       '```json',
@@ -164,16 +170,31 @@ function touchesExisting(changes, { profiles, games }) {
   return alters(profiles, changes.profiles) || alters(games, changes.games);
 }
 
-/** Keeps the record of who added what: new items are logged, and removed ones drop off. */
-function updateAdditions(additions, before, next, { sender, issue, now }) {
-  const entries = (type, previous, current) => current
-    .filter((item) => !previous.some((other) => other.id === item.id))
-    .map((item) => ({ type, id: item.id, ...sender, addedAt: new Date(now).toISOString(), issue }));
-  const stillThere = ({ type, id }) => (type === 'game' ? next.games : next.profiles).some((item) => item.id === id);
+/** The name stored for each thing in the log, so it can still be read after that thing is removed. */
+function activityLabel(type, item, nameOf) {
+  if (type === 'player') return item.name;
+  return `Game on ${item.date}: ${item.seats.map((seat) => nameOf(seat.playerId)).join(', ')}`;
+}
+
+/** Adds what this submission did to the log of everything added, corrected and removed. */
+function logActivity(activity, before, next, { sender, issue, now }) {
+  const names = new Map([...before.profiles, ...next.profiles].map((player) => [player.id, player.name]));
+  const nameOf = (id) => names.get(id) ?? id;
+  const at = new Date(now).toISOString();
+  const entry = (action, type, item) => ({ action, type, id: item.id, label: activityLabel(type, item, nameOf), ...sender, at, issue });
+  const changesIn = (type, previous, current) => {
+    const old = new Map(previous.map((item) => [item.id, JSON.stringify(item)]));
+    const stillThere = new Set(current.map((item) => item.id));
+    return [
+      ...current.filter((item) => !old.has(item.id)).map((item) => entry('added', type, item)),
+      ...current.filter((item) => old.has(item.id) && old.get(item.id) !== JSON.stringify(item)).map((item) => entry('corrected', type, item)),
+      ...previous.filter((item) => !stillThere.has(item.id)).map((item) => entry('removed', type, item)),
+    ];
+  };
   return [
-    ...additions.filter(stillThere),
-    ...entries('player', before.profiles, next.profiles),
-    ...entries('game', before.games, next.games),
+    ...activity,
+    ...changesIn('player', before.profiles, next.profiles),
+    ...changesIn('game', before.games, next.games),
   ];
 }
 
@@ -186,16 +207,17 @@ const SIGNATURE_PROBLEMS = {
  * Decides what happens to a submitted issue. Nothing is written here: the caller gets the outcome back.
  *   status: 'needs-code' | 'rejected' | 'unchanged' | 'applied'
  */
-export async function processSubmission({ body, author, profiles, games, additions = [], league, colours, expansions, issue = null, now = Date.now() }) {
+export async function processSubmission({ body, author, profiles, games, activity = [], league, colours, expansions, issue = null, now = Date.now() }) {
   const { adminKey, repository, settings } = league;
 
   try {
     const { changes, authorisation, submittedBy } = parseSubmission(body);
 
-    // Group password issues come from the owner's token, so a typed name is only believed on those.
+    // Issues sent from the site come from the owner's token, so a typed name is only believed on those.
     // Anyone else's name comes from GitHub, and whatever they typed is ignored, so nobody can pose as someone.
-    const viaPassword = Boolean(submittedBy) && String(author).toLowerCase() === repository.owner.toLowerCase();
-    const sender = viaPassword ? { addedBy: submittedBy, viaPassword: true } : { addedBy: author };
+    // A valid signature proves the sender has the admin code, so only unsigned names are marked as unverified.
+    const named = Boolean(submittedBy) && String(author).toLowerCase() === repository.owner.toLowerCase();
+    const sender = named ? { by: submittedBy, ...(!authorisation && { viaPassword: true }) } : { by: author };
 
     if (authorisation) {
       const result = await checkAuthorisation(adminKey, changes, authorisation, now);
@@ -232,9 +254,9 @@ export async function processSubmission({ body, author, profiles, games, additio
         status: 'applied',
         message: `Saved to the league: ${describeChanges(changes)}. The site will update shortly.`,
         summary: describeChanges(changes),
-        submittedBy: sender.addedBy,
+        submittedBy: sender.by,
         ...next,
-        additions: updateAdditions(additions, { profiles, games }, next, { sender, issue, now }),
+        activity: logActivity(activity, { profiles, games }, next, { sender, issue, now }),
       };
   } catch (error) {
     if (error instanceof SubmissionError) return { status: 'rejected', message: error.message };

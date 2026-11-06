@@ -1,7 +1,9 @@
 // Starts the app: loads the data, draws the sidebar and shows the page named in the URL.
+import { watchUntilLive } from './data/access.js';
 import { store } from './data/store.js';
 import { settings } from './data/settings.js';
 import { useApproachModules } from './domain/league.js';
+import { renderSendBar } from './forms/send-dialog.js';
 import { loadApproachModules } from './ratings/engine.js';
 import { h, route } from './ui/dom.js';
 import { icon } from './ui/icons.js';
@@ -28,7 +30,7 @@ const NAV = [
     { path: '/about', label: 'About', icon: 'info' },
   ] },
   { group: 'Data', items: [
-    { path: '/data', label: 'Review', icon: 'edit', showPending: true },
+    { path: '/data', label: 'Review', icon: 'edit' },
   ] },
 ];
 
@@ -51,7 +53,6 @@ function currentLocation() {
 }
 
 function renderNav(activePath) {
-  const pending = store.pendingChanges().total;
   document.getElementById('nav').replaceChildren(...NAV.map(({ group, items }) => [
     h('div', { class: 'lbl' }, group),
     items.map((item) => h('a', {
@@ -60,9 +61,7 @@ function renderNav(activePath) {
       'aria-current': item.path === activePath ? 'page' : null,
     },
       icon(item.icon),
-      h('span', null, item.label),
-      item.showPending && pending > 0 && store.mode() !== 'demo'
-        && h('span', { class: 'count hot', title: `${pending} unpublished changes` }, pending))),
+      h('span', null, item.label))),
   ]).flat(Infinity));
 }
 
@@ -120,6 +119,7 @@ function showPage() {
 
   renderNav(matched?.candidate.nav);
   renderDemoBanner();
+  renderSendBar();
   renderThemeToggle();
   document.title = `${document.querySelector('#view h1')?.textContent ?? 'Page not found'} · ${store.reference().league.shortName}`;
 
@@ -150,6 +150,7 @@ async function start() {
   window.addEventListener('hashchange', showPage);
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderThemeToggle);
   showPage();
+  watchUntilLive();
 }
 
 start();

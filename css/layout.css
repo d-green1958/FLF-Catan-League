@@ -14,11 +14,13 @@
 .nav a.active { background: var(--surface); color: var(--ink); box-shadow: var(--sh-sm), 0 0 0 1px var(--border); }
 .nav a.active .ic { color: var(--accent); }
 .nav .count { margin-left: auto; font-size: 12px; font-variant-numeric: tabular-nums; }
-.nav .count.hot { background: var(--btn); color: #fff; border-radius: 999px; padding: 0 7px; font-weight: 600; line-height: 18px; }
 .side-foot { margin-top: auto; }
 
 .main { overflow-y: auto; min-width: 0; position: relative; }
 .page { max-width: 1160px; margin: 0 auto; padding: 30px 36px 96px; }
+.send-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; background: var(--warn-soft); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 8px 36px; font-size: 13px; color: var(--ink); }
+.send-bar[hidden] { display: none; }
+.send-bar-acts { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .demo-banner { position: sticky; top: 0; z-index: 5; background: var(--warn-soft); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 8px 36px; font-size: 13px; color: var(--ink); text-align: center; }
 
 .ph { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
@@ -45,6 +47,6 @@
   .nav .count { margin-left: 2px; }
   .side-foot { margin: 0; flex: none; }
   .page { padding: 20px 16px 72px; }
-  .demo-banner { padding: 8px 16px; }
+  .demo-banner, .send-bar { padding: 8px 16px; }
   .two-col { grid-template-columns: minmax(0, 1fr); }
 }

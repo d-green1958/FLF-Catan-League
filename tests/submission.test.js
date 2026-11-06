@@ -41,8 +41,8 @@ const payload = ({ savedGames = [], deletedGames = [], savedPlayers = [], delete
 const bodyFor = (changes, authorisation = null) => new URL(buildIssueLink(league.repository, changes, authorisation).url).searchParams.get('body');
 const signedBody = async (changes, signedAt) => bodyFor(changes, await signChanges(signingKey, changes, signedAt));
 
-const submit = ({ changes, body, author = 'someone', profiles = players, games = [], additions = [], issue = 5, now }) => processSubmission({
-  body: body ?? bodyFor(changes), author, issue, now, profiles, games, additions, league, colours, expansions,
+const submit = ({ changes, body, author = 'someone', profiles = players, games = [], activity = [], issue = 5, now }) => processSubmission({
+  body: body ?? bodyFor(changes), author, issue, now, profiles, games, activity, league, colours, expansions,
 });
 
 test('the link points at the repo and its title triggers the workflow', () => {
@@ -72,9 +72,9 @@ test('anyone can add a game, and a player and game can arrive together', async (
   assert.equal(outcome.status, 'applied');
   assert.equal(outcome.games.length, 1);
   assert.ok(outcome.profiles.some((player) => player.id === 'zed'));
-  assert.deepEqual(outcome.additions, [
-    { type: 'player', id: 'zed', addedBy: 'first-timer', addedAt: '2026-11-06T13:00:00.000Z', issue: 5 },
-    { type: 'game', id: '2026-11-06-ab12', addedBy: 'first-timer', addedAt: '2026-11-06T13:00:00.000Z', issue: 5 },
+  assert.deepEqual(outcome.activity, [
+    { action: 'added', type: 'player', id: 'zed', label: 'Zed', by: 'first-timer', at: '2026-11-06T13:00:00.000Z', issue: 5 },
+    { action: 'added', type: 'game', id: '2026-11-06-ab12', label: 'Game on 2026-11-06: A, B, Zed', by: 'first-timer', at: '2026-11-06T13:00:00.000Z', issue: 5 },
   ]);
 });
 
@@ -108,20 +108,24 @@ test('one submission without the code can only add so much', async () => {
 
 test('with the code, corrections replace the original and removals take it away', async () => {
   const games = [newGame()];
-  const additions = [{ type: 'game', id: games[0].id, addedBy: 'vandal', addedAt: '2026-11-06T13:00:00.000Z', issue: 2 }];
+  const activity = [{ action: 'added', type: 'game', id: games[0].id, label: 'Game on 2026-11-06: A, B, C', by: 'vandal', at: '2026-11-06T13:00:00.000Z', issue: 2 }];
 
   const correction = payload({ savedGames: [newGame({ notes: 'Corrected' })] });
-  const corrected = await submit({ body: await signedBody(correction), games, additions });
+  const corrected = await submit({ body: await signedBody(correction), games, activity, author: 'an-admin' });
   assert.equal(corrected.status, 'applied');
   assert.equal(corrected.games.length, 1);
   assert.equal(corrected.games[0].notes, 'Corrected');
-  assert.deepEqual(corrected.additions, additions, 'a correction keeps the record of who first added it');
+  assert.deepEqual(corrected.activity[0], activity[0], 'a correction keeps the record of who first added it');
+  assert.deepEqual(corrected.activity.slice(1).map(({ action, type, by }) => ({ action, type, by })), [{ action: 'corrected', type: 'game', by: 'an-admin' }]);
 
   const removal = payload({ deletedGames: [games[0].id] });
-  const deleted = await submit({ body: await signedBody(removal), games, additions });
+  const deleted = await submit({ body: await signedBody(removal), games, activity, author: 'an-admin' });
   assert.equal(deleted.status, 'applied');
   assert.equal(deleted.games.length, 0);
-  assert.deepEqual(deleted.additions, []);
+  assert.deepEqual(deleted.activity[0], activity[0], 'a removal keeps the record of who first added it');
+  assert.equal(deleted.activity.length, 2);
+  assert.equal(deleted.activity[1].action, 'removed');
+  assert.equal(deleted.activity[1].label, 'Game on 2026-11-06: A, B, C', 'what was removed can still be read');
 });
 
 test('an admin can remove several things in one go, even if one has already gone', async () => {
@@ -275,21 +279,54 @@ test('a name is believed only on issues sent with the group password', async () 
   const viaToken = await submit({ body, author: OWNER });
   assert.equal(viaToken.status, 'applied');
   assert.equal(viaToken.submittedBy, 'Priya');
-  assert.equal(viaToken.additions[0].addedBy, 'Priya');
-  assert.equal(viaToken.additions[0].viaPassword, true);
+  assert.equal(viaToken.activity[0].by, 'Priya');
+  assert.equal(viaToken.activity[0].viaPassword, true);
 
   // Someone else typing a name into their own issue cannot pose as anyone: GitHub's username wins.
   const impostor = await submit({ body, author: 'impostor' });
   assert.equal(impostor.status, 'applied');
   assert.equal(impostor.submittedBy, 'impostor');
-  assert.equal(impostor.additions[0].addedBy, 'impostor');
-  assert.equal(impostor.additions[0].viaPassword, undefined);
+  assert.equal(impostor.activity[0].by, 'impostor');
+  assert.equal(impostor.activity[0].viaPassword, undefined);
+});
+
+test('a signed issue from the token shows the admin as verified, and an unsigned one cannot claim that', async () => {
+  const changes = payload({ savedPlayers: [groupPlayer] });
+  const authorisation = await signChanges(signingKey, changes);
+  const signed = buildIssue(changes, { authorisation, submittedBy: 'Admin' });
+  assert.match(signed.body, /by Admin, using the admin code/);
+
+  const admin = await submit({ body: signed.body, author: OWNER });
+  assert.equal(admin.status, 'applied');
+  assert.equal(admin.activity[0].by, 'Admin');
+  assert.equal(admin.activity[0].viaPassword, undefined);
+
+  // Someone with only the group password can type "Admin", but it stays marked as unverified.
+  const unsigned = await submit({ body: buildIssue(changes, { submittedBy: 'Admin' }).body, author: OWNER });
+  assert.equal(unsigned.activity[0].by, 'Admin');
+  assert.equal(unsigned.activity[0].viaPassword, true);
+
+  // A signature does not let someone else's account use a typed name.
+  const other = await submit({ body: signed.body, author: 'someone-else' });
+  assert.equal(other.activity[0].by, 'someone-else');
+});
+
+test('sending the same thing twice is harmless and logs it once', async () => {
+  const changes = payload({ savedPlayers: [groupPlayer] });
+  const first = await submit({ changes, author: 'first-timer' });
+  const again = await submit({ changes, author: 'first-timer', profiles: first.profiles, activity: first.activity });
+  assert.equal(again.status, 'unchanged');
+
+  const both = payload({ savedPlayers: [groupPlayer, { id: 'kim', name: 'Kim', active: true }] });
+  const next = await submit({ changes: both, author: 'first-timer', profiles: first.profiles, activity: first.activity });
+  assert.equal(next.status, 'applied');
+  assert.deepEqual(next.activity.map(({ id }) => id), ['sam', 'kim']);
 });
 
 test('the owner adding normally is shown under their own username', async () => {
   const outcome = await submit({ changes: payload({ savedPlayers: [groupPlayer] }), author: OWNER });
-  assert.equal(outcome.additions[0].addedBy, OWNER);
-  assert.equal(outcome.additions[0].viaPassword, undefined);
+  assert.equal(outcome.activity[0].by, OWNER);
+  assert.equal(outcome.activity[0].viaPassword, undefined);
 });
 
 test('the group password can add but cannot change or remove anything', async () => {
@@ -325,12 +362,15 @@ test('weak passwords and over-powered tokens are refused', async () => {
   await assert.rejects(createGroupAccess('a long enough password', ''), /fine-grained/);
 });
 
+/** The real league.json with no admin copy of the token, so these tests do not depend on what has been set up. */
+const leagueWithoutAdminAccess = () => readFileSync(fileURLToPath(new URL('../data/league.json', import.meta.url)), 'utf8')
+  .replace(/"adminAccess": (null|\{[^}]*\})/, '"adminAccess": null');
+
 test('the set-group-password script stores working access and leaves the rest alone', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'flf-group-'));
   try {
     const file = join(dir, 'league.json');
-    const original = readFileSync(fileURLToPath(new URL('../data/league.json', import.meta.url)), 'utf8');
-    const start = original.replace(/"adminKey": (null|\{[^}]*\})/, `"adminKey": ${JSON.stringify(adminKey)}`);
+    const start = leagueWithoutAdminAccess().replace(/"adminKey": (null|\{[^}]*\})/, `"adminKey": ${JSON.stringify(adminKey)}`);
     writeFileSync(file, start);
     const script = fileURLToPath(new URL('../scripts/set-group-password.js', import.meta.url));
     const run = (input) => execFileSync(process.execPath, [script], { env: { ...process.env, DATA_DIR: dir }, input, encoding: 'utf8', stdio: 'pipe' });
@@ -351,11 +391,52 @@ test('the set-group-password script stores working access and leaves the rest al
   }
 });
 
+test('the set-admin-access script gives admins their own copy of the token, without needing the token', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'flf-admin-access-'));
+  try {
+    const file = join(dir, 'league.json');
+    const groupAccess = await createGroupAccess('a long enough password', FAKE_TOKEN);
+    const start = leagueWithoutAdminAccess()
+      .replace(/"adminKey": (null|\{[^}]*\})/, `"adminKey": ${JSON.stringify(adminKey)}`)
+      .replace(/"groupAccess": (null|\{[^}]*\})/, `"groupAccess": ${JSON.stringify(groupAccess)}`);
+    writeFileSync(file, start);
+    const scriptPath = (name) => fileURLToPath(new URL(`../scripts/${name}.js`, import.meta.url));
+    const run = (name, input) => execFileSync(process.execPath, [scriptPath(name)], { env: { ...process.env, DATA_DIR: dir }, input, encoding: 'utf8', stdio: 'pipe' });
+
+    assert.throws(() => run('set-admin-access', `the wrong password here\n${CODE}\n`), /group password is not right/);
+    assert.throws(() => run('set-admin-access', 'a long enough password\nthe wrong code here\n'), /admin code is not right/);
+    assert.equal(readFileSync(file, 'utf8'), start, 'a refused attempt changes nothing');
+
+    run('set-admin-access', `a long enough password\n${CODE}\n`);
+    const text = readFileSync(file, 'utf8');
+    const stored = JSON.parse(text);
+    assert.equal(await openGroupAccess(CODE, stored.adminAccess), FAKE_TOKEN, 'the code opens the token');
+    assert.equal(await openGroupAccess('a long enough password', stored.adminAccess), null, 'the group password does not open the admin copy');
+    assert.equal(await openGroupAccess('a long enough password', stored.groupAccess), FAKE_TOKEN, 'the group copy still works');
+    assert.ok(!text.includes(FAKE_TOKEN) && !text.includes(CODE));
+    const withoutAccess = (json) => json.replace(/"adminAccess": (null|\{[^}]*\})/, '"adminAccess": null');
+    assert.equal(withoutAccess(text), start, 'only the admin access line changes');
+
+    // Either secret changing makes the admin copy out of date, so it is cleared and the script says so.
+    assert.throws(() => run('set-admin-code', 'a long enough password\n'), /different from the group password/);
+    const afterCode = run('set-admin-code', 'a brand new admin code here\n');
+    assert.match(afterCode, /set-admin-access/);
+    assert.equal(JSON.parse(readFileSync(file, 'utf8')).adminAccess, null);
+
+    run('set-admin-access', 'a long enough password\na brand new admin code here\n');
+    const afterPassword = run('set-group-password', `another long password\n${FAKE_TOKEN}\n`);
+    assert.match(afterPassword, /set-admin-access/);
+    assert.equal(JSON.parse(readFileSync(file, 'utf8')).adminAccess, null);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('the set-admin-code script stores a working key in league.json and leaves the rest alone', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'flf-code-'));
   try {
-    cpSync(fileURLToPath(new URL('../data/league.json', import.meta.url)), join(dir, 'league.json'));
-    const before = readFileSync(join(dir, 'league.json'), 'utf8');
+    const before = leagueWithoutAdminAccess();
+    writeFileSync(join(dir, 'league.json'), before);
     const script = fileURLToPath(new URL('../scripts/set-admin-code.js', import.meta.url));
     const run = (input) => execFileSync(process.execPath, [script], { env: { ...process.env, DATA_DIR: dir }, input, encoding: 'utf8', stdio: 'pipe' });
 
@@ -383,6 +464,11 @@ test('the script updates only the data files it should, keeps their notes, and r
   const dir = mkdtempSync(join(tmpdir(), 'flf-submission-'));
   try {
     cpSync(fileURLToPath(new URL('../data', import.meta.url)), dir, { recursive: true });
+    // Start from an empty league, so this does not depend on who has really been added.
+    for (const [file, list] of [['profiles.json', 'profiles'], ['games.json', 'games'], ['activity.json', 'activity']]) {
+      const data = JSON.parse(readFileSync(join(dir, file), 'utf8'));
+      writeFileSync(join(dir, file), JSON.stringify({ ...data, [list]: [] }));
+    }
     const script = fileURLToPath(new URL('../scripts/apply-submission.js', import.meta.url));
     const outputFile = join(dir, 'output.txt');
     const replyFile = join(dir, 'reply.md');
@@ -407,9 +493,9 @@ test('the script updates only the data files it should, keeps their notes, and r
     assert.equal(saved._readme, readme);
     assert.equal(JSON.parse(readFileSync(join(dir, 'profiles.json'), 'utf8')).profiles.length, 3);
     assert.equal(readFileSync(join(dir, 'league.json'), 'utf8'), leagueBefore);
-    const log = JSON.parse(readFileSync(join(dir, 'additions.json'), 'utf8')).additions;
+    const log = JSON.parse(readFileSync(join(dir, 'activity.json'), 'utf8')).activity;
     assert.equal(log.length, 4);
-    assert.ok(log.every((entry) => entry.addedBy === 'first-timer' && entry.issue === 12));
+    assert.ok(log.every((entry) => entry.by === 'first-timer' && entry.issue === 12));
 
     const refused = run(payload({ deletedGames: [newGame().id] }), 'vandal');
     assert.match(refused, /changed=false/);

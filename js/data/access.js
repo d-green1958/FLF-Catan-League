@@ -1,21 +1,31 @@
 // What this browser may do, and how changes get sent to the repo.
 //
 // Anyone can add players and games. Correcting or removing them needs the admin code. Entering it here
-// only shows the tools and lets this tab sign changes: the real check happens on GitHub, in
-// js/domain/submission.js. The key is held in memory, so reloading or closing the tab locks it again.
+// shows the tools and lets this tab sign changes: the real check happens on GitHub, in
+// js/domain/submission.js. It also opens the admins' copy of the GitHub token, if one has been set up,
+// so an unlocked admin's changes go straight through. Reloading or closing the tab locks it again.
 //
 // The group password is separate. It lets someone add without a GitHub account, and it is also forgotten
 // when the tab closes. It gives no extra rights: the same checks apply on GitHub.
+import * as storage from './browser-storage.js';
 import { store } from './store.js';
 import { signChanges, unlockWithCode } from '../domain/admin-key.js';
 import { openGroupAccess } from '../domain/group-access.js';
 import { buildIssue, buildIssueLink } from '../domain/submission.js';
 import { toast } from '../ui/feedback.js';
 
+const SENT_KEY = 'flfoxtan.sent';
+const ADMIN_NAME = 'Admin';
+// How often to check whether sent changes are live, and how long before saying they seem overdue.
+const CHECK_EVERY_MS = 20 * 1000;
+const OVERDUE_AFTER_MS = 10 * 60 * 1000;
+
 let signingKey = null;
+let adminToken = null;
 let groupToken = null;
 let groupName = '';
-let lastSentIssue = null;
+let sending = false;
+let watcher = null;
 
 export const adminCodeIsSet = () => Boolean(store.reference().league.adminKey);
 export const isUnlocked = () => Boolean(signingKey);
@@ -23,8 +33,11 @@ export const isUnlocked = () => Boolean(signingKey);
 export const groupAccessIsSet = () => Boolean(store.reference().league.groupAccess);
 export const isGroupUnlocked = () => Boolean(groupToken);
 export const groupMemberName = () => groupName;
-/** The link to what was last sent with the group password, as the sender has no other way to see the reply. */
-export const sentIssue = () => lastSentIssue;
+
+/** True if changes from this tab can go straight to the league, with nothing more to ask. */
+export const canSendDirectly = () => Boolean(adminToken || groupToken);
+/** True if an admin is unlocked but will still be asked how to send, because no copy of the token was set up. */
+export const adminMustChooseRoute = () => isUnlocked() && !canSendDirectly();
 
 /** Returns true if the password is right. */
 export async function unlockGroup(password, name) {
@@ -45,91 +58,140 @@ export const canManage = () => store.mode() === 'demo' || isUnlocked();
 
 /** Returns true if the code is right. */
 export async function unlockAdmin(code) {
-  signingKey = await unlockWithCode(code, store.reference().league.adminKey);
-  if (signingKey) store.refresh();
+  const { adminKey, adminAccess } = store.reference().league;
+  signingKey = await unlockWithCode(code, adminKey);
+  if (signingKey) {
+    adminToken = adminAccess ? await openGroupAccess(code, adminAccess) : null;
+    store.refresh();
+  }
   return isUnlocked();
 }
 
 export function lockAdmin() {
   signingKey = null;
+  adminToken = null;
   store.refresh();
+}
+
+/** One string per change, so that what has been sent can be compared with what is still waiting. */
+const changeList = (changes) => ['profiles', 'games'].flatMap((collection) => [
+  ...changes[collection].saved.map((item) => `${collection}:saved:${JSON.stringify(item)}`),
+  ...changes[collection].deleted.map((id) => `${collection}:deleted:${id}`),
+]);
+
+function rememberSent(route, changes, issue = null) {
+  storage.write(SENT_KEY, { route, changes: changeList(changes), issue, at: Date.now() });
+  watchUntilLive();
+  store.refresh();
+}
+
+/**
+ * Where this browser's unpublished changes stand:
+ *   null      nothing is waiting
+ *   'unsent'  they still need sending
+ *   'locked'  they need the admin code before they can be sent
+ *   'opened'  GitHub was opened, and they may not have pressed Submit yet
+ *   'sent'    the issue has been opened, and the Action has it
+ */
+export function sendStatus() {
+  const pending = store.pendingChanges();
+  if (!pending.total || store.mode() === 'demo') return null;
+  const sent = storage.read(SENT_KEY);
+  const allSent = sent && changeList(store.pendingPayload()).every((change) => sent.changes.includes(change));
+  if (allSent) {
+    return { state: sent.route, total: pending.total, issue: sent.issue, overdue: Date.now() - sent.at > OVERDUE_AFTER_MS };
+  }
+  return { state: pending.needsCode && !isUnlocked() ? 'locked' : 'unsent', total: pending.total };
+}
+
+/** Clears the notice by itself once the site has republished, so nobody is tempted to send twice. */
+export function watchUntilLive() {
+  if (watcher || store.mode() === 'demo' || !store.pendingChanges().total) return;
+  const started = Date.now();
+  const stop = () => { clearInterval(watcher); watcher = null; };
+  watcher = setInterval(async () => {
+    try {
+      await store.reloadPublished();
+    } catch {
+      return;
+    }
+    if (!store.pendingChanges().total) {
+      stop();
+      storage.remove(SENT_KEY);
+      toast('That is now live on the site.', 'good');
+    } else if (Date.now() - started > OVERDUE_AFTER_MS) {
+      stop();
+      store.refresh();
+    }
+  }, CHECK_EVERY_MS);
+}
+
+/** Changes to what is already in the league cannot be sent while locked. Returns true if that is the case. */
+export function needsCodeFirst() {
+  if (!store.pendingChanges().needsCode || isUnlocked()) return false;
+  toast('Some of these changes need the admin code. Enter it on the Review page, or discard them.', 'warn');
+  window.location.hash = '#/data';
+  return true;
 }
 
 /** Opens the issue directly, with no GitHub account needed. The changes stay in the draft if this fails. */
-async function sendWithGroupToken(changes, authorisation) {
-  const { owner, name } = store.reference().league.repository;
-  let response;
+export async function sendDirectly() {
+  if (sending) return;
+  sending = true;
   try {
-    response = await fetch(`https://api.github.com/repos/${owner}/${name}/issues`, {
+    const { owner, name } = store.reference().league.repository;
+    const changes = store.pendingPayload();
+    const authorisation = isUnlocked() ? await signChanges(signingKey, changes) : null;
+    const response = await fetch(`https://api.github.com/repos/${owner}/${name}/issues`, {
       method: 'POST',
-      headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${groupToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildIssue(changes, { authorisation, submittedBy: groupName })),
+      headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${adminToken ?? groupToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildIssue(changes, { authorisation, submittedBy: adminToken ? ADMIN_NAME : groupName })),
     });
+    if (!response.ok) {
+      // Forgetting the token means pressing Send again offers the GitHub account route instead.
+      adminToken = null;
+      groupToken = null;
+      groupName = '';
+      store.refresh();
+      toast('GitHub refused that, so please tell an admin. Your changes are safe here, and you can send them with a GitHub account.', 'warn');
+      return;
+    }
+    rememberSent('sent', changes, (await response.json()).html_url);
+    toast('Sent. The site will update in a few minutes.', 'good');
   } catch {
-    toast('Could not reach GitHub. Your changes are safe here, so try Publish again on the Review page.', 'warn');
-    return;
+    toast('Could not reach GitHub. Your changes are safe here, so press Send to try again.', 'warn');
+  } finally {
+    sending = false;
   }
-  if (!response.ok) {
-    // Forgetting the token means pressing Publish again uses the GitHub account route instead.
-    groupToken = null;
-    groupName = '';
-    store.refresh();
-    toast('The group password route is not working, so please tell an admin. Your changes are safe here, and you can publish them with a GitHub account on the Review page.', 'warn');
-    return;
-  }
-  lastSentIssue = (await response.json()).html_url;
-  store.refresh();
-  toast('Sent. The site will update in a few minutes.', 'good');
 }
 
-/** Sends the waiting changes to GitHub. Must run directly from a click, or browsers block the tab. */
-export async function publishChanges() {
-  const pending = store.pendingChanges();
-  if (!pending.total) {
-    toast('There is nothing to publish.');
-    return;
-  }
-  if (pending.needsCode && !isUnlocked()) {
-    toast('Some of these changes need the admin code. Enter it on the Review page, or discard them there.', 'warn');
-    window.location.hash = '#/data';
-    return;
-  }
-
-  if (isGroupUnlocked()) {
-    const changes = store.pendingPayload();
-    await sendWithGroupToken(changes, pending.needsCode ? await signChanges(signingKey, changes) : null);
-    return;
-  }
-
+/** Opens GitHub with the issue filled in. Must run directly from a click, or browsers block the tab. */
+export async function sendWithGitHubAccount() {
+  if (needsCodeFirst()) return;
   // The tab has to open before anything asynchronous happens, or browsers treat it as an unwanted pop-up.
   const tab = window.open('about:blank', '_blank');
   if (!tab) {
-    toast('Your browser blocked the GitHub tab. Press Publish on the Review page instead.', 'warn');
+    toast('Your browser blocked the GitHub tab. Allow pop-ups for this site, then press Send.', 'warn');
     return;
   }
   tab.opener = null;
 
   const changes = store.pendingPayload();
-  const authorisation = pending.needsCode ? await signChanges(signingKey, changes) : null;
+  const authorisation = isUnlocked() ? await signChanges(signingKey, changes) : null;
   const link = buildIssueLink(store.reference().league.repository, changes, authorisation);
   if (!link) {
     tab.close();
-    toast('Too many changes for one submission. Discard some on the Review page and send them in smaller batches.', 'warn');
+    toast('Too many changes for one submission. Discard them and send them in smaller batches.', 'warn');
     return;
   }
   tab.location.href = link.url;
+  rememberSent('opened', changes);
   toast('Nearly done: press Submit on the GitHub tab.', 'good');
 }
 
 /** The line on each form that says what happens when it is saved. */
-export function sendingHint(what) {
-  if (isGroupUnlocked()) return `This goes straight to the league, shown as added by ${groupName}.`;
-  const noAccount = groupAccessIsSet() ? ' No GitHub account? Enter the group password on the Review page first.' : '';
-  return `Next, GitHub opens with ${what} filled in, and you press Submit to confirm it. You need a free GitHub account, and your username is shown next to the entry.${noAccount}`;
-}
-
-/** Call after any change. In the real league it goes on to GitHub, and in the demo it just stays here. */
-export function finishChange(message) {
-  if (store.mode() === 'demo') toast(message, 'good');
-  else publishChanges();
+export function sendingHint() {
+  if (adminToken) return 'This goes straight to the league.';
+  if (groupToken) return `This goes straight to the league, shown as added by ${groupName}.`;
+  return 'Next, you choose how to send this to the league.';
 }

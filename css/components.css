@@ -153,6 +153,14 @@ dialog::backdrop { background: rgba(10, 14, 22, .45); }
 .confirm h2 { font-size: 16px; }
 .confirm p { color: var(--ink-2); margin: 8px 0 18px; }
 .confirm-acts { display: flex; justify-content: flex-end; gap: 8px; }
+.send-dialog { width: min(430px, calc(100vw - 32px)); }
+.send-dialog p { margin: 8px 0 14px; }
+.send-dialog p:has(+ .send-choice) { margin-bottom: 12px; }
+.send-choice { display: grid; gap: 8px; }
+.send-form { display: grid; gap: 12px; }
+.send-form h2 + p { margin: 0; }
+.send-form .field-hint { margin: 0; }
+.send-form .field-hint:empty { display: none; }
 .toasts { position: fixed; right: 18px; bottom: 18px; display: grid; gap: 8px; z-index: 2147483647; max-width: calc(100vw - 36px); }
 .toast { background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: var(--r); font-size: 13.5px; box-shadow: var(--sh-lg); max-width: 420px; }
 

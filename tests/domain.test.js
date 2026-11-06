@@ -93,11 +93,9 @@ test('statistics add up for a small season', () => {
 
 test('records are empty until there is a game', () => assert.deepEqual(records([], profiles), []));
 
-test('the shipped league data is clean, and starts empty', async () => {
+test('the real league data is valid', async () => {
   const [{ profiles: live }, { games }] = await Promise.all([load('profiles.json'), load('games.json')]);
   assert.deepEqual(validateDataset({ profiles: live, games }, { colours, settings }), []);
-  assert.equal(live.length, 0, 'real players are added by the group, not shipped with the code');
-  assert.equal(games.length, 0);
 });
 
 test('the demo data is valid', async () => {

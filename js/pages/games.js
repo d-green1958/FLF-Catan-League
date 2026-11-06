@@ -1,14 +1,15 @@
 // The game log, with filters and a detail panel for each game.
-import { canManage, finishChange } from '../data/access.js';
+import { canManage } from '../data/access.js';
 import { store } from '../data/store.js';
 import { getLeague, nameOf, selectedApproach } from '../domain/league.js';
 import { winnerSeat } from '../domain/games.js';
 import { openGameForm } from '../forms/game-form.js';
+import { finishChange } from '../forms/send-dialog.js';
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { changeBadge, colourDot, colourName, emptyState, page, pageHeader, playerLink, table } from '../ui/components.js';
 import { confirmAction, openDrawer } from '../ui/feedback.js';
-import { addedByLabel, formatDate, formatLongDate, formatScore, ordinal, plural } from '../ui/format.js';
+import { byLabel, formatDate, formatLongDate, formatScore, ordinal, plural } from '../ui/format.js';
 
 // Filters survive a re-render, such as after logging a game.
 const filters = { playerId: '', expansionId: '', search: '' };
@@ -46,8 +47,8 @@ export function openGameDetail(gameId) {
       });
       if (!confirmed) return;
       store.deleteGame(game.id);
-      finishChange('Game deleted. Ratings recalculated.');
       close();
+      finishChange('Game deleted. Ratings recalculated.');
     };
 
     const finishing = [...game.seats].sort((a, b) => a.place - b.place);
@@ -71,7 +72,7 @@ export function openGameDetail(gameId) {
         game.longestRoute && h('li', null, 'Longest Route: ', nameOf(league, game.longestRoute)),
         game.largestArmy && h('li', null, 'Largest Army: ', nameOf(league, game.largestArmy))),
       game.notes && h('p', { class: 'notes' }, game.notes),
-      addition && h('p', { class: 'field-hint' }, `Added by ${addedByLabel(addition)} on ${formatDate(addition.addedAt.slice(0, 10))}.`),
+      addition && h('p', { class: 'field-hint' }, `Added by ${byLabel(addition)} on ${formatDate(addition.at.slice(0, 10))}.`),
       canManage() && h('div', { class: 'form-acts' },
         h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, icon('trash'), 'Delete'),
         h('span', { class: 'spacer' }),

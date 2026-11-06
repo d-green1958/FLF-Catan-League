@@ -1,56 +1,24 @@
-// Review: anyone can see what has been added and send their own changes, and admins can remove things.
-import { adminCodeIsSet, canManage, groupAccessIsSet, groupMemberName, isGroupUnlocked, isUnlocked, lockAdmin, lockGroup, publishChanges, sentIssue, unlockAdmin, unlockGroup } from '../data/access.js';
-import { settings } from '../data/settings.js';
+// Review: everything added, corrected and removed, which admins can correct or remove after entering the code.
+import { adminCodeIsSet, adminMustChooseRoute, canManage, groupAccessIsSet, groupMemberName, isGroupUnlocked, isUnlocked, lockAdmin, lockGroup, unlockAdmin } from '../data/access.js';
 import { store } from '../data/store.js';
 import { MIN_CODE_LENGTH } from '../domain/admin-key.js';
 import { validateDataset } from '../domain/validate.js';
+import { openGameForm } from '../forms/game-form.js';
+import { openPlayerForm } from '../forms/player-form.js';
+import { finishChange } from '../forms/send-dialog.js';
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
-import { errorList, field, page, playerLink, pageHeader, sectionHeader, table } from '../ui/components.js';
+import { errorList, page, playerLink, pageHeader, sectionHeader, table } from '../ui/components.js';
 import { confirmAction, downloadText, toast } from '../ui/feedback.js';
-import { addedByLabel, formatDate, plural } from '../ui/format.js';
+import { byLabel, formatDate } from '../ui/format.js';
 import { openGameDetail } from './games.js';
 
-const RECENT_ADDITIONS = 30;
+const ACTIONS = {
+  added: { label: 'Added', badge: 'accent' },
+  corrected: { label: 'Corrected', badge: 'warn' },
+  removed: { label: 'Removed', badge: 'muted' },
+};
 
-function changeLine(label, counts) {
-  const parts = [
-    counts.added && `${counts.added} new`,
-    counts.edited && `${counts.edited} edited`,
-    counts.deleted && `${counts.deleted} deleted`,
-  ].filter(Boolean);
-  return h('li', null, h('b', null, `${label}: `), parts.length ? parts.join(', ') : 'no changes');
-}
-
-async function discardChanges(pending) {
-  const confirmed = await confirmAction({
-    title: 'Discard changes in this browser?',
-    message: `This permanently removes ${plural(pending.total, 'unpublished change')}. Anything already submitted on GitHub is not affected.`,
-    confirmLabel: 'Discard changes',
-    danger: true,
-  });
-  if (!confirmed) return;
-  store.discardDraft();
-  toast('Changes discarded');
-}
-
-function pendingNote() {
-  const pending = store.pendingChanges();
-  if (!pending.total || store.mode() === 'demo') return null;
-  const locked = pending.needsCode && !isUnlocked();
-  return h('div', { class: 'note warn' },
-    h('b', null, 'These changes are not live yet'),
-    h('ul', { class: 'plain-list' }, changeLine('Players', pending.profiles), changeLine('Games', pending.games)),
-    h('p', null, locked
-      ? 'Some of these change what is already in the league, so they need the admin code below. If you are not an admin, discard them.'
-      : 'If you have just submitted them, they will clear by themselves once the site has updated, usually within a few minutes.'),
-    sentIssue() && h('p', null, h('a', { class: 'link', href: sentIssue(), target: '_blank', rel: 'noopener' }, 'See how your last submission went'), '. If there was a problem, the reply there explains it.'),
-    h('div', { class: 'toolbar' },
-      !locked && h('button', { class: 'btn primary', type: 'button', onClick: publishChanges }, icon('external'), 'Publish on GitHub'),
-      h('button', { class: 'btn ghost danger', type: 'button', onClick: () => discardChanges(pending) }, icon('trash'), 'Discard changes')));
-}
-
-/** Removals wait in the draft, so an admin can clear several things with one submission. */
 async function removeItem({ type, item, label }) {
   if (type === 'player' && !store.canDeletePlayer(item.id)) {
     toast(`${label} has played games, so remove those games first.`, 'warn');
@@ -67,95 +35,67 @@ async function removeItem({ type, item, label }) {
   if (!confirmed) return;
   if (type === 'game') store.deleteGame(item.id);
   else store.deletePlayer(item.id);
-  toast(store.mode() === 'demo' ? `${label} removed` : `${label} marked for removal. Press Publish on GitHub when you are ready.`, 'good');
+  finishChange(`${label} removed`);
 }
 
-function additionRow(entry) {
+function activityActions(entry, item) {
+  const isGame = entry.type === 'game';
+  const label = isGame ? `the game from ${formatDate(item.date)}` : item.name;
+  return h('span', { class: 'row-actions' },
+    h('button', { class: 'btn ghost sm', type: 'button', onClick: () => (isGame ? openGameForm(item) : openPlayerForm(item)) }, 'Edit'),
+    h('button', { class: 'btn ghost danger sm', type: 'button', onClick: () => removeItem({ type: entry.type, item, label }) }, 'Remove'));
+}
+
+function activityRow(entry, showActions) {
   const isGame = entry.type === 'game';
   const item = isGame ? store.game(entry.id) : store.player(entry.id);
-  const label = isGame ? `the game from ${formatDate(item.date)}` : item.name;
-  const nameOf = (id) => store.player(id)?.name ?? id;
-  const issueLink = entry.issue && `https://github.com/${store.reference().league.repository.owner}/${store.reference().league.repository.name}/issues/${entry.issue}`;
+  const { owner, name } = store.reference().league.repository;
+  const issueLink = entry.issue && `https://github.com/${owner}/${name}/issues/${entry.issue}`;
+  // Labels are stored with the date as written in the data, so show it the way the rest of the site does.
+  const label = entry.label.replace(/\d{4}-\d{2}-\d{2}/, formatDate);
+  const what = () => {
+    if (!item) return h('span', null, label);
+    return isGame
+      ? h('button', { class: 'link-btn', type: 'button', onClick: () => openGameDetail(item.id) }, label)
+      : h('span', null, 'Player: ', playerLink(item));
+  };
   return [
-    h('span', { class: 'nowrap' }, formatDate(entry.addedAt.slice(0, 10))),
-    isGame
-      ? h('button', { class: 'link-btn', type: 'button', onClick: () => openGameDetail(item.id) },
-        `Game on ${formatDate(item.date)}: ${item.seats.map((seat) => nameOf(seat.playerId)).join(', ')}`)
-      : h('span', null, 'Player: ', playerLink(item)),
-    issueLink ? h('a', { class: 'link', href: issueLink, target: '_blank', rel: 'noopener' }, addedByLabel(entry)) : addedByLabel(entry),
-    canManage() && h('button', { class: 'btn ghost danger sm', type: 'button', onClick: () => removeItem({ type: entry.type, item, label }) }, 'Remove'),
+    h('span', { class: 'nowrap' }, formatDate(entry.at.slice(0, 10))),
+    h('span', { class: `badge ${ACTIONS[entry.action].badge}` }, ACTIONS[entry.action].label),
+    what(),
+    issueLink ? h('a', { class: 'link', href: issueLink, target: '_blank', rel: 'noopener' }, byLabel(entry)) : byLabel(entry),
+    canManage() && showActions && item ? activityActions(entry, item) : null,
   ];
 }
 
-function recentAdditions() {
-  const entries = store.additions().slice(-RECENT_ADDITIONS).reverse();
-  const hint = canManage()
-    ? 'Removing something recalculates the ratings without it.'
-    : 'Everything goes live straight away. Admins check this list and remove anything spurious.';
+function activityList() {
+  const entries = store.activity();
+  // Each item gets its buttons once, on its newest row, as they all act on the item as it is now.
+  const seen = new Set();
+  const rows = entries.map((entry) => {
+    const key = `${entry.type}:${entry.id}`;
+    const newest = !seen.has(key);
+    seen.add(key);
+    return activityRow(entry, newest);
+  });
   return [
-    sectionHeader('Recently added', hint),
+    sectionHeader('Activity', canManage()
+      ? 'Editing or removing something recalculates the ratings straight away.'
+      : 'Everything goes live straight away. Admins check this list and correct or remove anything spurious.'),
     entries.length
       ? h('div', { class: 'card' }, table(
-        [{ label: 'Added' }, { label: 'What' }, { label: 'By' }, { label: '' }],
-        entries.map(additionRow)))
-      : h('p', { class: 'prose' }, 'Nothing has been added yet.'),
+        [{ label: 'When' }, { label: 'Action' }, { label: 'What' }, { label: 'By' }, { label: '' }],
+        rows))
+      : h('p', { class: 'prose' }, 'Nothing has happened yet.'),
   ];
-}
-
-function howItWorks() {
-  return [
-    sectionHeader('How adding works'),
-    h('ol', { class: 'steps' },
-      h('li', null, h('b', null, 'Log it here'), h('span', null, 'Use Log game or Register player. GitHub opens with the details filled in. You need a free GitHub account, and your username is shown next to what you add.')),
-      h('li', null, h('b', null, 'Press Submit on GitHub'), h('span', null, 'A GitHub Action checks the details and saves them to the repo.')),
-      h('li', null, h('b', null, 'That is it'), h('span', null, 'The issue closes with a confirmation and the site updates. If there is a problem, the issue explains it and nothing changes.'))),
-  ];
-}
-
-function groupForm() {
-  const name = h('input', { class: 'input', maxlength: 60, autocomplete: 'off', value: settings.get('groupMemberName') ?? '', 'aria-label': 'Your name' });
-  const password = h('input', { class: 'input', type: 'password', autocomplete: 'off', 'aria-label': 'Group password' });
-  const problem = h('p', { class: 'field-hint', role: 'alert' });
-  const button = h('button', { class: 'btn primary', type: 'submit' }, 'Unlock');
-  const submit = async (event) => {
-    event.preventDefault();
-    problem.textContent = '';
-    if (!name.value.trim() || !password.value.trim()) {
-      problem.textContent = 'Please enter your name and the group password.';
-      return;
-    }
-    button.disabled = true;
-    try {
-      if (await unlockGroup(password.value, name.value)) settings.set('groupMemberName', name.value.trim());
-      else {
-        problem.textContent = 'That password is not right.';
-        password.select();
-      }
-    } catch {
-      problem.textContent = 'This browser could not check the password. Please try an up-to-date browser.';
-    }
-    button.disabled = false;
-  };
-  return h('form', { class: 'code-form', onSubmit: submit },
-    field('Your name', name),
-    field('Group password', password),
-    button,
-    problem);
 }
 
 function groupCard() {
-  if (store.mode() === 'demo' || !groupAccessIsSet()) return null;
-  return [
-    sectionHeader('No GitHub account?'),
-    isGroupUnlocked()
-      ? h('div', { class: 'card card-b admin-card' },
-        h('b', null, `Adding as ${groupMemberName()}`),
-        h('p', { class: 'field-hint' }, 'Anything you log or register in this tab now goes straight to the league, with no GitHub step. Reloading or closing this tab locks it again.'),
-        h('div', null, h('button', { class: 'btn', type: 'button', onClick: lockGroup }, 'Lock')))
-      : h('div', { class: 'card card-b admin-card' },
-        h('p', { class: 'field-hint' }, 'Enter the group password here first, then log games or register players as usual. Your name is shown publicly next to what you add, so a first name or nickname is best.'),
-        groupForm()),
-  ];
+  if (store.mode() === 'demo' || !groupAccessIsSet() || !isGroupUnlocked()) return null;
+  return h('div', { class: 'card card-b admin-card' },
+    h('b', null, `Sending as ${groupMemberName()}`),
+    h('p', { class: 'field-hint' }, 'What you add in this tab goes straight to the league under this name. Reloading or closing the tab locks it again.'),
+    h('div', null, h('button', { class: 'btn', type: 'button', onClick: lockGroup }, 'Lock')));
 }
 
 function unlockForm() {
@@ -183,23 +123,19 @@ function unlockForm() {
 function adminCard() {
   if (store.mode() === 'demo') return null;
   if (!adminCodeIsSet()) {
-    return [
-      sectionHeader('For admins'),
-      h('div', { class: 'card card-b admin-card' },
-        h('p', { class: 'field-hint' }, `No admin code has been set yet, so nothing can be corrected or removed. To set one of at least ${MIN_CODE_LENGTH} characters, run scripts/set-admin-code.js and commit the result.`)),
-    ];
+    return h('div', { class: 'card card-b admin-card' },
+      h('p', { class: 'field-hint' }, `No admin code has been set yet, so nothing can be corrected or removed. To set one of at least ${MIN_CODE_LENGTH} characters, run scripts/set-admin-code.js and commit the result.`));
   }
-  return [
-    sectionHeader('For admins'),
-    isUnlocked()
-      ? h('div', { class: 'card card-b admin-card' },
-        h('b', null, 'Unlocked in this tab'),
-        h('p', { class: 'field-hint' }, 'You can now remove items in the list above, and correct or delete them from their own pages. Reloading or closing this tab locks it again.'),
-        h('div', null, h('button', { class: 'btn', type: 'button', onClick: lockAdmin }, 'Lock')))
-      : h('div', { class: 'card card-b admin-card' },
-        h('p', { class: 'field-hint' }, 'Enter the admin code to correct or remove what is in the league. Your code is never sent anywhere: this browser uses it to sign your changes, and GitHub checks the signature.'),
-        unlockForm()),
-  ];
+  return isUnlocked()
+    ? h('div', { class: 'card card-b admin-card' },
+      h('b', null, 'Unlocked as an admin in this tab'),
+      h('p', { class: 'field-hint' }, adminMustChooseRoute()
+        ? 'You can edit and remove things below. You will be asked how to send each change until scripts/set-admin-access.js has been run. Reloading or closing this tab locks it again.'
+        : 'You can edit and remove things below, and your changes go straight to the league. Reloading or closing this tab locks it again.'),
+      h('div', null, h('button', { class: 'btn', type: 'button', onClick: lockAdmin }, 'Lock')))
+    : h('div', { class: 'card card-b admin-card' },
+      h('p', { class: 'field-hint' }, 'Admins: enter the code to correct or remove anything here. Your code is never sent anywhere: this browser uses it to sign your changes, and GitHub checks the signature.'),
+      unlockForm());
 }
 
 function dataProblems() {
@@ -250,12 +186,12 @@ function importButton() {
 
         const confirmed = await confirmAction({
           title: 'Import this file?',
-          message: `It holds ${incoming.profiles.length} players and ${incoming.games.length} games. Any with the same id as existing ones will be replaced. They stay in this browser until you publish them.`,
+          message: `It holds ${incoming.profiles.length} players and ${incoming.games.length} games. Any with the same id as existing ones will be replaced. They stay in this browser until you send them.`,
           confirmLabel: 'Import',
         });
         if (!confirmed) return;
         store.importData(incoming);
-        toast('Imported', 'good');
+        finishChange('Imported');
       } catch (error) {
         toast(error instanceof SyntaxError ? 'That file is not valid JSON.' : error.message, 'warn');
       }
@@ -285,14 +221,12 @@ export function renderData() {
     pageHeader({
       eyebrow: 'Keeping the record',
       title: 'Review',
-      intro: 'Anyone can add players and games. Admins check what comes in and remove anything spurious.',
+      intro: 'Everything added to the league, and by whom. Admins can correct or remove any of it.',
     }),
-    pendingNote(),
-    liveAdmin && dataProblems(),
-    recentAdditions(),
-    howItWorks(),
-    groupCard(),
     adminCard(),
+    groupCard(),
+    liveAdmin && dataProblems(),
+    activityList(),
     liveAdmin && backupCard(),
     demoCard());
 }

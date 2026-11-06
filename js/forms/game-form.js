@@ -1,5 +1,5 @@
 // Log a new game, or correct an existing one. Seats are entered in turn order.
-import { finishChange, sendingHint } from '../data/access.js';
+import { sendingHint } from '../data/access.js';
 import { store } from '../data/store.js';
 import { validateGame, validatePlayer } from '../domain/validate.js';
 import { h } from '../ui/dom.js';
@@ -7,6 +7,7 @@ import { icon } from '../ui/icons.js';
 import { errorList, field } from '../ui/components.js';
 import { openDrawer, toast } from '../ui/feedback.js';
 import { today } from '../ui/format.js';
+import { finishChange } from './send-dialog.js';
 
 const blankSeat = () => ({ playerId: '', colour: '', vp: '' });
 
@@ -241,8 +242,8 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         return;
       }
       const saved = store.saveGame(game);
-      finishChange(existing ? 'Game corrected. Ratings recalculated.' : 'Game logged. Ratings updated.');
       close();
+      finishChange(existing ? 'Game corrected. Ratings recalculated.' : 'Game logged. Ratings updated.');
       onSaved?.(saved);
     };
 
@@ -281,7 +282,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         h('div', { class: 'form-row' }, field('Longest Route', longestRoute), largestArmyField),
         field('Notes', notes)),
 
-      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, sendingHint('this game')),
+      store.mode() !== 'demo' && h('p', { class: 'field-hint' }, sendingHint()),
       h('div', { class: 'form-acts' },
         h('span', { class: 'spacer' }),
         h('button', { class: 'btn', type: 'button', onClick: close }, 'Cancel'),

@@ -9,6 +9,7 @@
   "repository": { "owner": "d-green1958", "name": "FLF-Catan-League" },
   "adminKey": {"salt":"2WndY3ZUThTmo6RkO8A9Dg==","iterations":600000,"publicKey":"HN2bt48q0taCQXdNwabkBWHcIWrYUU_muU5OB3bwWuU"},
   "groupAccess": {"salt":"DMdD4470y47cW9VnxS8PRQ==","iterations":600000,"iv":"gUepBrCyJ1V5yen9","ciphertext":"uD+N2ypTywMPqAxAvPRokHPhtfP5Y8yxRrn5URWq8RKZcoHtHKDQjqR1zYRRBU9nF9VotL/T8ZdG+Wuq+GsxW4sKR+eMqNwvhCvFSgTVomChIgNQ6WQTkzppnLCiaS3KbX03aJ2uMIbRq1902w=="},
+  "adminAccess": {"salt":"/Bus8bFZDGwkI4WimQS4gQ==","iterations":600000,"iv":"66juJ4ME/aoJr8tj","ciphertext":"O8GtfEkQbQ0Sh0EhEfKjXCZOA8Ugag9Jls/tyV3wiHvCFnuffzqcVgkDCgWDQAoiMvc81u87AMTGtHt6CZ5NRGEv1gz2SbS5kLK6FxNP5i4TJjPbsXJOAiBoXm2i2PohRhymWvlozjlrOD1rsw=="},
   "settings": {
     "minPlayers": 3,
     "maxPlayers": 6,

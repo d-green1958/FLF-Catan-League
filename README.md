@@ -26,7 +26,7 @@ node --test
 data/               The databases. Plain JSON that you can read and edit by hand.
   profiles.json       Players
   games.json          Games, with seats listed in turn order
-  additions.json      Who added each player and game (written by the Action)
+  activity.json       Everything added, corrected and removed, and by whom (written by the Action)
   rating-approaches.json  Every scoring system: description, settings, on or off
   rules.json          Text for the Rules page
   expansions.json     Expansions, scenarios and links to official rulebooks
@@ -36,16 +36,16 @@ data/               The databases. Plain JSON that you can read and edit by hand
 
 js/
   main.js             Starts the app and handles page navigation
-  data/               Loading and saving (store.js), and admin tools (access.js)
+  data/               Loading and saving (store.js), and sending changes to GitHub (access.js)
   domain/             League logic, such as finishing places, validation and submissions
   ratings/            The scoring engine
     approaches/         One short file per scoring system
   pages/              One file per page
-  forms/              The player and game forms
+  forms/              The player and game forms, and the prompt that sends them (send-dialog.js)
   ui/                 Shared building blocks, such as tables and charts
 
 css/                  tokens.css holds all colours and sizes, so start there to re-theme
-scripts/              The script the Action runs, and those that set the admin code and group password
+scripts/              The script the Action runs, and those that set the admin code and passwords
 .github/workflows/    The Actions that save submissions and publish the site
 tests/                Tests for the scoring maths, validation, submissions and data files
 assets/               The crest and browser icon
@@ -55,7 +55,9 @@ assets/               The crest and browser icon
 
 Anyone can view the site without an account. **Anyone with a free GitHub account or the group password** can register players and log games, and these go live without waiting for approval. They cannot change or remove anything already in the league.
 
-**Admins** are whoever knows the admin code. They check the **Review** page, which lists what was added and by whom, and can correct or remove anything spurious.
+**Admins** are whoever knows the admin code. They check the **Review** page, which lists everything added, corrected and removed, and by whom, and can edit or remove anything spurious.
+
+After someone saves a player or game, the site asks **Do you have a GitHub account?** Yes opens GitHub with the issue filled in. No asks for their name and the group password, then sends it straight away, and they are not asked again until they reload the page. Admins who have entered the code are not asked at all, once `set-admin-access.js` has been run.
 
 ### Set or change the admin code
 
@@ -69,7 +71,7 @@ Your code is never published: the repo holds only a public key made from it. The
 
 ### Add without a GitHub account
 
-People who know the group password can enter it on the Review page, with their name, and then add without a GitHub account. The site opens the GitHub issue for them using a token belonging to the repo owner, so those issues appear under the owner's account. The typed name is shown on the site, marked "(group password)". GitHub has not verified it, so anyone with the password could type any name.
+People who know the group password can add without a GitHub account, by choosing **No** when the site asks and entering their name and the password. The site opens the GitHub issue for them using a token belonging to the repo owner, so those issues appear under the owner's account. The typed name is shown on the site, marked "(group password)". GitHub has not verified it, so anyone with the password could type any name.
 
 To turn this on, the repo owner creates the token, because a fine-grained token can only reach repos its owner controls:
 
@@ -90,19 +92,31 @@ The encrypted token is in the public repo, so someone could try guessing the pas
 
 If the password leaks, or when someone leaves the group, **delete the token on GitHub first**, because anyone who already has it can keep using it even after the password changes. Then create a new token and run the script again.
 
-To turn the route off completely, delete the token and set `"groupAccess": null` in `data/league.json`.
+To turn the route off completely, delete the token and set both `"groupAccess": null` and `"adminAccess": null` in `data/league.json`.
+
+### Let admins send without being asked
+
+The admin code proves to the Action that a change is allowed, which it checks against the public key. But the change travels in a GitHub issue, and opening an issue takes a GitHub login. So that admins need nothing but the code, run this after setting both the code and the group password, then commit and push `data/league.json`:
+
+```bash
+node scripts/set-admin-access.js
+```
+
+It asks for the group password and the admin code at hidden prompts. It uses the password to open the token, so you do not need the token itself, and stores a second copy encrypted with the admin code.
+
+Changing the admin code or the group password clears this copy, and the script tells you to run this again. If the admin code leaks, treat it like a leaked password: delete the token on GitHub first, because the old code still opens the copy in the Git history.
 
 ## How results get saved
 
 Everything stays on GitHub, with no other services. A static site cannot write to its repo or tell who is using it, so GitHub does both of those jobs:
 
-1. Logging a game opens GitHub with an issue already filled in, and the person presses **Submit**. They need to be signed in to GitHub.
+1. Saving a player or game asks how to send it. With a GitHub account, GitHub opens with an issue already filled in and the person presses **Submit**. With the group password or the admin code, the site opens the issue for them.
 2. The [League submission](.github/workflows/league-submission.yml) Action checks the details, using [`js/domain/submission.js`](js/domain/submission.js). If all is well, it commits to the `data` folder, then republishes the site.
 3. The issue closes with a confirmation. If there is a problem, the issue explains it and nothing changes.
 
-The change shows in the person's own browser straight away, and for everyone else once the site has republished. Corrections and removals work the same way, with the admin's signature in the issue. Ordinary issues are ignored.
+The change shows in the person's own browser straight away, and for everyone else once the site has republished. Until then, a notice at the top of the page shows where it has got to, and it clears by itself once the change is live. Corrections and removals work the same way, with the admin's signature in the issue. Ordinary issues are ignored.
 
-The repo and site are public, so use first names or nicknames in profiles. Names and GitHub usernames stay in the Git history and on the issues after an entry is removed.
+The repo and site are public, so use first names or nicknames in profiles. Names and GitHub usernames stay in the Git history, on the issues and in the activity log after an entry is removed.
 
 ## How scoring works
 

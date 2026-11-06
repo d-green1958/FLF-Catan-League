@@ -15,6 +15,7 @@ import { withHiddenPrompt } from './hidden-prompt.js';
 
 const file = join(process.env.DATA_DIR || 'data', 'league.json');
 const ACCESS_LINE = /"groupAccess":\s*(null|\{[^}]*\})/;
+const ADMIN_ACCESS_LINE = /"adminAccess":\s*(null|\{[^}]*\})/;
 
 async function readSecrets(ask) {
   if (process.stdin.isTTY) console.log('Choose something long and hard to guess: at least 12 characters, ideally four or more random words.');
@@ -32,8 +33,11 @@ try {
   // The two must differ, or everyone with the group password could also remove things.
   if (adminKey && password.trim() && await unlockWithCode(password, adminKey)) throw new Error('The group password must be different from the admin code.');
   const groupAccess = await createGroupAccess(password, token);
-  writeFileSync(file, before.replace(ACCESS_LINE, `"groupAccess": ${JSON.stringify(groupAccess)}`));
+  // The admins' copy may hold an old token, so it has to be made again from the new one.
+  const hadAdminAccess = Boolean(JSON.parse(before).adminAccess);
+  writeFileSync(file, before.replace(ACCESS_LINE, `"groupAccess": ${JSON.stringify(groupAccess)}`).replace(ADMIN_ACCESS_LINE, '"adminAccess": null'));
   console.log(`Saved to ${file}. Commit and push that file for the new password to take effect.`);
+  if (hadAdminAccess) console.log('Run scripts/set-admin-access.js as well, so admins can send without being asked.');
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;
