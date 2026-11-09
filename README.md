@@ -4,6 +4,8 @@ The league site for the **Fun Lunch Friday Oxford Catan group**, founded on 4 No
 
 It keeps track of players and games, then ranks everyone 16 different ways so the group can work out which system feels fairest. It is plain HTML, CSS and JavaScript with no build step, and runs on GitHub Pages.
 
+For a plain-language overview of how everything fits together, start with [BRIEFING.md](BRIEFING.md).
+
 ## Run it locally
 
 Browsers will not load the data files from a page opened directly, so start a small local server from this folder:
@@ -54,7 +56,7 @@ assets/               The crest and browser icon
 
 ## Who can change what
 
-Anyone can view the site without an account. **Anyone with a free GitHub account or the group password** can register players and log games, and these go live without waiting for approval. They cannot change or remove anything already in the league.
+Anyone can view the site without an account. **Anyone with a free GitHub account or the group password** can register players and log games, and these go live without waiting for approval. Apart from the personal details on a profile (below), they cannot change or remove anything already in the league.
 
 **Admins** are whoever knows the admin code. They check the **Review** page, which lists everything added, edited and removed, and by whom, and can edit or remove anything spurious.
 
@@ -127,11 +129,11 @@ Changing the admin code or the group password clears this copy, and the script t
 
 Everything stays on GitHub, with no other services. A static site cannot write to its repo or tell who is using it, so GitHub does both of those jobs:
 
-1. Saving a player or game asks how to send it. With a GitHub account, GitHub opens with an issue already filled in and the person presses **Submit**. With the group password or the admin code, the site opens the issue for them.
+1. Saving a player or game asks how to send it. With a GitHub account, GitHub opens with an issue already filled in and the person presses the green button to create it. With the group password or the admin code, the site opens the issue for them.
 2. The [League submission](.github/workflows/league-submission.yml) Action checks the details, using [`js/domain/submission.js`](js/domain/submission.js). If all is well, it commits to the `data` folder, then republishes the site.
 3. The issue closes with a confirmation. If there is a problem, the issue explains it and nothing changes.
 
-The change shows in the person's own browser straight away, and for everyone else once the site has republished. Until then, a notice at the top of the page shows where it has got to, and it clears by itself once the change is live. Corrections and removals work the same way, with the admin's signature in the issue. Ordinary issues are ignored.
+The change shows in the person's own browser straight away, and for everyone else as described in [How changes show up so quickly](#how-changes-show-up-so-quickly). A notice at the top of the page shows anything not yet sent, or refused and why, and clears by itself once the change is live. Corrections and removals work the same way, with the admin's signature in the issue. Ordinary issues are ignored.
 
 The repo and site are public, so use first names or nicknames in profiles. Names and GitHub usernames stay in the Git history, on the issues and in the activity log after an entry is removed.
 
