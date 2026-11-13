@@ -18,8 +18,10 @@
 //   lost       Visit a page that does not exist       here be dragons
 //   compass    Spin the compass on the Map three times
 // Inside the Engineering Science complex (js/pages/engsci.js):
-//   cryo       Tap Cryogenics                         the screen frosts over
-//   library    Tap the Wroth Library                  shhh
+//   cryo       Step into Cryogenics                   the cold lab
+//   arctic     Open the door at the back of the lab   the Arctic, with polar bears and some lost penguins
+//   library    Step into the Wroth Library            the reading room and its shelves
+//   dune       Open Dune on the Library shelves       something stirs under the sand
 //   wallace    Eat every biscuit in the Wallace Room
 //   room11     Visit Room 11 eleven times             a fresh whiteboard each time
 //   deadzone   Tap the Dead Zone                      the signal drops
@@ -52,8 +54,10 @@ export const SECRETS = [
   { id: 'answer', title: 'The Answer', place: 'pittrivers', riddle: 'Ask the ledger of games for the answer to life, the universe and everything.' },
   { id: 'lost', title: 'Beyond the Ring Road', place: 'ringroad', riddle: 'Wander off the edge of the map: go to a page that does not exist.' },
   { id: 'compass', title: 'The Hidden Hex', place: 'compass', riddle: 'The compass rose knows a secret. Spin it three times.' },
-  { id: 'cryo', title: 'Absolute Zero', place: 'jenkin', inside: 'engsci', where: 'Cryogenics', riddle: 'At the northern edge of the complex, the cold runs deep. Touch it.' },
-  { id: 'library', title: 'The Whispering Stacks', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'Below the cold lies a room of books that does not like noise.' },
+  { id: 'cryo', title: 'Absolute Zero', place: 'jenkin', inside: 'engsci', where: 'Cryogenics', riddle: 'At the northern edge of the complex, the cold runs deep. Step inside.' },
+  { id: 'arctic', title: 'The Wrong Pole', place: 'jenkin', inside: 'engsci', where: 'Cryogenics', riddle: 'The cold lab has a door marked keep closed. Do not keep it closed.' },
+  { id: 'library', title: 'The Reading Room', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'Below the cold lies a quiet room of books. Its only door is on its south side.' },
+  { id: 'dune', title: 'Shai-Hulud', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'On the Library shelves, one book is full of sand. Open it.' },
   { id: 'wallace', title: 'The Last Biscuit', place: 'jenkin', inside: 'engsci', where: 'Wallace Room', riddle: 'Every seminar has biscuits. Every plate runs out. Find out who took the last one.' },
   { id: 'room11', title: 'It Goes Up to Eleven', place: 'jenkin', inside: 'engsci', where: 'Room 11', riddle: 'Its whiteboard never runs dry. Visit it as many times as its number.' },
   { id: 'deadzone', title: 'No Signal', place: 'jenkin', inside: 'engsci', where: 'The Dead Zone', riddle: 'Between the old and the Danish lies a place where phones go quiet.' },

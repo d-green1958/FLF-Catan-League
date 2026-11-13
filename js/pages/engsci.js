@@ -81,13 +81,24 @@ export function rideLift(direction, arrive) {
   const script = scripts[drops ? 'lower' : direction];
   const step = direction === 'express' ? 230 : 560;
   const floor = h('b', { class: 'lift-floor' }, script[0][0]);
+  const arrow = h('span', { class: `lift-arrow ${direction === 'down' || drops ? 'down' : 'up'}` });
   const message = h('p', { class: 'lift-message' }, script[0][1]);
-  const cabin = overlay(`lift-ride ${direction === 'express' ? 'express' : ''} ${drops ? 'dropping' : ''}`.replace(/\s+/g, ' ').trim(), h('div', { class: 'lift-cabin' },
-    h('div', { class: 'lift-display' }, h('span', null, direction === 'down' || drops ? '▼' : '▲'), floor),
-    message,
-    h('div', { class: 'lift-doors' }, h('span'), h('span'))), script.length * step + 1400);
+  const target = drops ? 'G' : script.at(-1)[0];
+  const buttons = ['8', '7', '6', '5', '4', '3', '2', '1', 'G', 'LG'].map((label) => h('span', { class: `lift-button ${label === target ? 'lit' : ''}`.trim(), 'data-floor': label }, label));
+  const cabin = overlay(`lift-ride ${direction === 'express' ? 'express' : ''} ${drops ? 'dropping' : ''}`.replace(/\s+/g, ' ').trim(),
+    h('div', { class: 'lift-cabin' },
+      h('div', { class: 'lift-head' }, h('div', { class: 'lift-indicator' }, arrow, floor)),
+      h('div', { class: 'lift-opening' },
+        h('div', { class: 'lift-light' }),
+        h('div', { class: 'lift-doors' }, h('span', { class: 'lift-door' }), h('span', { class: 'lift-door' }))),
+      h('div', { class: 'lift-panel' }, buttons),
+      message), script.length * step + 1400);
   script.forEach(([value, words], index) => setTimeout(() => {
     floor.textContent = value;
+    if (value === 'LG' && drops) {
+      arrow.classList.replace('up', 'down');
+      buttons.forEach((button) => button.classList.toggle('lit', button.dataset.floor === 'LG'));
+    }
     if (words) message.textContent = words;
     if (index === script.length - 1) cabin.classList.add('arrived');
   }, index * step));
@@ -100,20 +111,34 @@ const rideTo = (direction) => rideLift(direction, (where) => { window.location.h
 
 // ---------- the floor plan ----------
 // Plain rectangles, drawn like an architect's plan: [x, y, width, height]. North is up.
+// A corridor runs north to south between Room 11 and the Library and Wallace Room: Cryogenics at its north
+// end, the Dead Zone (and on to Hølder) at its south end. The Wallace Room opens straight onto it, and a
+// short hallway off it leads to the Library's only door, on the Library's south side.
 const ROOMS = [
   { id: 'cryo', name: 'Cryogenics', box: [50, 92, 500, 118] },
-  { id: 'room11', name: 'Room 11', box: [50, 210, 210, 250] },
-  { id: 'library', name: 'Wroth Library', box: [260, 210, 290, 125] },
-  { id: 'wallace', name: 'Wallace Room', box: [260, 335, 290, 125] },
+  { id: 'room11', name: 'Room 11', box: [50, 210, 170, 250] },
+  { id: 'corridor', name: 'Corridor', box: [220, 210, 60, 250] },
+  { id: 'library', name: 'Wroth Library', box: [280, 210, 270, 104] },
+  { id: 'hallway', name: 'Hallway', box: [280, 314, 270, 28] },
+  { id: 'wallace', name: 'Wallace Room', box: [280, 342, 270, 118] },
   { id: 'deadzone', name: 'The Dead Zone', box: [50, 460, 500, 86] },
   { id: 'holder', name: 'Hølder-bygningen', box: [50, 546, 500, 134] },
   { id: 'lift', name: 'The Lift', box: [255, 680, 90, 80] },
 ];
 
-// Doors: a gap in a wall and the arc it swings through. [x, y, width, side] where side is the direction it opens.
+// Doors: [x, y, length, swing]. On a horizontal wall the door runs along x and swings 'up' or 'down';
+// on a vertical wall it runs along y and swings 'left' or 'right'. 'open-v' and 'open-h' are doorways with
+// no door at all, in a vertical or horizontal wall.
 const DOORS = [
-  [300, 210, 30, 'up'], [58, 460, 30, 'up'], [515, 460, 30, 'up'], [515, 335, 30, 'up'],
-  [285, 546, 30, 'up'], [285, 680, 30, 'up'],
+  [232, 210, 36, 'up'],      // corridor into Cryogenics
+  [72, 210, 30, 'down'],     // Room 11, from the left of Cryogenics' south wall
+  [220, 420, 30, 'left'],    // Room 11, at the south end of its east wall, facing the Wallace Room
+  [280, 380, 46, 'open-v'],  // the Wallace Room, open to the corridor
+  [280, 316, 24, 'open-v'],  // the hallway, open to the corridor
+  [470, 314, 26, 'up'],      // the Library's only door, on its south side
+  [226, 460, 48, 'open-h'],  // the corridor, open to the Dead Zone
+  [285, 546, 30, 'up'],      // Hølder, from the Dead Zone
+  [285, 680, 30, 'up'],      // the Lift, from Hølder
 ];
 
 const desk = (x, y, rotate = 0) => svg('g', { transform: `translate(${x} ${y}) rotate(${rotate})`, class: 'plan-furniture' },
@@ -131,17 +156,18 @@ function furniture(room) {
       svg('text', { x: x + 408, y: y + 66, class: 'plan-tag' }, '4 K'));
     case 'room11': return svg('g', null,
       svg('rect', { x: x + 8, y: y + 18, width: 6, height: 110, class: 'plan-board' }),
-      [0, 1, 2, 3].flatMap((row) => [desk(x + 70, y + 66 + row * 44), desk(x + 150, y + 66 + row * 44)]));
+      [0, 1, 2, 3].flatMap((row) => [desk(x + 50, y + 66 + row * 44), desk(x + 110, y + 66 + row * 44)]));
     case 'library': return svg('g', { class: 'plan-furniture' },
-      [0, 1, 2, 3].map((i) => svg('rect', { x: x + 16, y: y + 50 + i * 16, width: 120, height: 7 })),
-      svg('rect', { x: x + 170, y: y + 54, width: 96, height: 46 }),
-      [0, 1, 2].map((i) => svg('circle', { cx: x + 186 + i * 32, cy: y + 46, r: 6 })),
-      [0, 1, 2].map((i) => svg('circle', { cx: x + 186 + i * 32, cy: y + 108, r: 6 })));
+      [0, 1, 2, 3].map((i) => svg('rect', { x: x + 14, y: y + 40 + i * 15, width: 110, height: 7 })),
+      svg('rect', { x: x + 154, y: y + 46, width: 96, height: 34 }),
+      [0, 1, 2].map((i) => svg('circle', { cx: x + 170 + i * 32, cy: y + 38, r: 6 })),
+      [0, 1, 2].map((i) => svg('circle', { cx: x + 170 + i * 32, cy: y + 88, r: 6 })));
     case 'wallace': return svg('g', { class: 'plan-furniture' },
-      svg('rect', { x: x + 50, y: y + 48, width: 190, height: 40, rx: 0 }),
-      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 70 + i * 38, cy: y + 38, r: 6 })),
-      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 70 + i * 38, cy: y + 98, r: 6 })),
-      svg('circle', { cx: x + 145, cy: y + 68, r: 9, class: 'inner' }));
+      svg('rect', { x: x + 50, y: y + 46, width: 180, height: 36 }),
+      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 68 + i * 36, cy: y + 36, r: 6 })),
+      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 68 + i * 36, cy: y + 92, r: 6 })),
+      svg('circle', { cx: x + 140, cy: y + 64, r: 9, class: 'inner' }));
+    case 'corridor': case 'hallway': return null;
     case 'deadzone': return svg('rect', { x, y, width, height, class: 'plan-hatch', fill: 'url(#hatch)' });
     case 'holder': return svg('g', null,
       [0, 1, 2, 3, 4, 5].map((i) => desk(x + 60 + i * 76, y + 82)));
@@ -153,27 +179,33 @@ function furniture(room) {
 function roomShape(room, onTap) {
   const [x, y, width, height] = room.box;
   const found = foundSecrets().has(room.id);
-  const labelY = { room11: y + 28, cryo: y + 28, library: y + 30, wallace: y + 28, deadzone: y + height / 2 + 6, holder: y + 38, lift: y + height + 22 }[room.id];
+  const labelY = { room11: y + 28, cryo: y + 28, library: y + 26, wallace: y + 24, deadzone: y + height / 2 + 6, holder: y + 38, lift: y + height + 22, corridor: y + height / 2, hallway: y + 18 }[room.id];
   const group = svg('g', { class: `plan-room room-${room.id} ${found ? 'found' : ''}`.trim(), role: 'button', tabindex: '0', 'aria-label': room.name },
     svg('rect', { x, y, width, height, class: 'plan-floor' }),
     furniture(room),
-    svg('text', { x: room.id === 'room11' ? x + 120 : x + width / 2, y: labelY, class: `plan-name ${room.id === 'holder' ? 'danish' : ''}`.trim() }, room.name),
+    room.id === 'corridor'
+      ? svg('text', { x: x + width / 2, y: labelY, class: 'plan-name small', transform: `rotate(-90 ${x + width / 2} ${labelY})` }, room.name)
+      : svg('text', { x: x + width / 2, y: labelY, class: `plan-name ${room.id === 'holder' ? 'danish' : ''} ${room.id === 'hallway' ? 'small' : ''}`.replace(/\s+/g, ' ').trim() }, room.name),
     found && svg('circle', { cx: x + width - 14, cy: y + 14, r: 6, class: 'plan-found' }));
   group.addEventListener('click', () => onTap(room));
   group.addEventListener('keydown', (event) => { if (event.key === 'Enter') onTap(room); });
   return group;
 }
 
-function door([x, y, width, side]) {
-  if (side === 'right-wall') {
-    // A door in a vertical wall, opening into the room to its right.
-    return svg('g', { class: 'plan-door' },
-      svg('rect', { x: x - 10, y, width: 14, height: width, class: 'plan-door-gap' }),
-      svg('path', { d: `M${x - 3} ${y}h${width}M${x - 3} ${y}a${width} ${width} 0 0 1 ${width} ${width}` }));
-  }
-  return svg('g', { class: 'plan-door' },
-    svg('rect', { x, y: y - 7, width, height: 14, class: 'plan-door-gap' }),
-    svg('path', { d: `M${x} ${y}v${-width}M${x} ${y - width}a${width} ${width} 0 0 1 ${width} ${width}` }));
+function door([x, y, length, swing]) {
+  const vertical = swing === 'left' || swing === 'right' || swing === 'open-v';
+  const gap = vertical
+    ? svg('rect', { x: x - 7, y, width: 14, height: length, class: 'plan-door-gap' })
+    : svg('rect', { x, y: y - 7, width: length, height: 14, class: 'plan-door-gap' });
+  if (swing.startsWith('open')) return svg('g', { class: 'plan-door' }, gap);
+  // The door leaf, and the quarter-circle it sweeps.
+  const leaf = {
+    up: `M${x} ${y}v${-length}M${x} ${y - length}a${length} ${length} 0 0 1 ${length} ${length}`,
+    down: `M${x} ${y}v${length}M${x} ${y + length}a${length} ${length} 0 0 0 ${length} ${-length}`,
+    left: `M${x} ${y}h${-length}M${x - length} ${y}a${length} ${length} 0 0 0 ${length} ${length}`,
+    right: `M${x} ${y}h${length}M${x + length} ${y}a${length} ${length} 0 0 1 ${-length} ${length}`,
+  }[swing];
+  return svg('g', { class: 'plan-door' }, gap, svg('path', { d: leaf }));
 }
 
 export function renderEngSci() {
@@ -184,14 +216,16 @@ export function renderEngSci() {
   const tap = (room) => {
     switch (room.id) {
       case 'cryo':
-        say(story, 'The northern edge', 'Cryogenics', 'Four kelvin and falling. Bring a jumper, and do not lick anything.', 'Tea left on the bench freezes in under a minute, which at least stops it going cold.');
-        discover('cryo');
-        if (!calm()) overlay('frost', null, 3200);
+        window.location.hash = route('/map/cryogenics');
         break;
       case 'library':
-        say(story, 'South of the cold, beside Room 11', 'Wroth Library', 'Shhh.', 'A room of books, desks and very quiet keyboards. Trading is permitted, but only by whispering.');
-        discover('library');
-        if (!calm()) overlay('shhh', h('span', null, 'Shhh.'), 1800);
+        say(story, 'South of the cold', 'Wroth Library', 'A quiet room of books. Its reading room opens shortly.');
+        break;
+      case 'corridor':
+        say(story, 'Between Room 11 and the Library', 'The corridor', 'It runs the length of the Jenkin Building: Cryogenics at the north end, the Dead Zone and Hølder at the south. The Wallace Room opens straight off it, and a short hallway leads to the Library door.');
+        break;
+      case 'hallway':
+        say(story, 'Off the corridor', 'The hallway', 'A short hallway with one door in it: the Wroth Library\'s, on its south side. Tap the Library to go in.');
         break;
       case 'wallace': {
         biscuits = Math.max(0, biscuits - 1);
@@ -214,9 +248,12 @@ export function renderEngSci() {
         break;
       }
       case 'deadzone':
-        say(story, 'Between the old and the Danish', 'The Dead Zone', 'No signal. No wifi. No messages. No distractions.', 'Possibly the best place in Oxford to play Catan.');
+        // It says nothing. It is the Dead Zone.
+        story.replaceChildren(h('h3', null, 'The Dead Zone'));
         discover('deadzone');
-        if (!calm()) overlay('no-signal', h('div', null, h('b', null, 'Signal lost'), h('span', null, 'Just kidding. The Dead Zone only eats phone signal.')), 2600);
+        break;
+      case 'bridge':
+        say(story, 'East of the Dead Zone', 'The bridge', 'A small footbridge across to the Thom Building.');
         break;
       case 'holder':
         say(story, 'South of the Dead Zone', 'Hølder-bygningen', 'Velkommen til Hølder-bygningen! Her bygger vi bosættelser, veje og byer.', '(Welcome to the Holder building! Here we build settlements, roads and cities.)');
@@ -230,14 +267,27 @@ export function renderEngSci() {
     }
   };
 
-  const plan = svg('svg', { class: 'plan-svg', viewBox: '0 0 600 830', role: 'img', 'aria-label': 'Floor plan of the Engineering Science complex. North is at the top.' },
+  const thomBlock = svg('g', { class: 'plan-room plan-thom', role: 'link', tabindex: '0', 'aria-label': 'Go into the Thom Building' },
+    svg('rect', { x: 614, y: 430, width: 116, height: 200, class: 'plan-floor' }),
+    [0, 1, 2, 3].map((row) => svg('path', { d: `M630 ${470 + row * 40}h84`, class: 'plan-thom-line' })),
+    svg('text', { x: 672, y: 452, class: 'plan-name small' }, 'THOM'),
+    svg('text', { x: 672, y: 616, class: 'plan-name small' }, 'BUILDING'));
+  thomBlock.addEventListener('click', () => { window.location.hash = route('/map/thom'); });
+  thomBlock.addEventListener('keydown', (event) => { if (event.key === 'Enter') window.location.hash = route('/map/thom'); });
+  const bridge = svg('g', { class: 'plan-room plan-bridge', role: 'button', tabindex: '0', 'aria-label': 'The bridge to the Thom Building' },
+    svg('rect', { x: 550, y: 490, width: 64, height: 26, class: 'plan-bridge-deck' }),
+    svg('path', { d: 'M550 490h64M550 516h64', class: 'plan-bridge-rail' }),
+    [560, 574, 588, 602].map((x) => svg('path', { d: `M${x} 490v26`, class: 'plan-bridge-plank' })));
+  bridge.addEventListener('click', () => tap({ id: 'bridge' }));
+
+  const plan = svg('svg', { class: 'plan-svg', viewBox: '0 0 760 830', role: 'img', 'aria-label': 'Floor plan of the Engineering Science complex. North is at the top.' },
     svg('defs', null,
       svg('pattern', { id: 'hatch', width: 12, height: 12, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
         svg('path', { d: 'M0 0v12', stroke: 'rgba(30, 30, 30, .18)', 'stroke-width': 3 })),
       svg('pattern', { id: 'grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
         svg('path', { d: 'M20 0H0V20', fill: 'none', stroke: 'rgba(60, 90, 140, .08)', 'stroke-width': 1 }))),
-    svg('rect', { x: 0, y: 0, width: 600, height: 830, class: 'plan-paper' }),
-    svg('rect', { x: 0, y: 0, width: 600, height: 830, fill: 'url(#grid)' }),
+    svg('rect', { x: 0, y: 0, width: 760, height: 830, class: 'plan-paper' }),
+    svg('rect', { x: 0, y: 0, width: 760, height: 830, fill: 'url(#grid)' }),
     svg('text', { x: 50, y: 50, class: 'plan-title' }, 'ENGINEERING SCIENCE · GROUND FLOOR'),
     svg('text', { x: 50, y: 72, class: 'plan-subtitle' }, 'Jenkin Building and what lies south of it. Not to scale.'),
     ROOMS.map((room) => roomShape(room, tap)),
@@ -245,9 +295,12 @@ export function renderEngSci() {
     svg('rect', { x: 50, y: 92, width: 500, height: 368, class: 'plan-outer' }),
     svg('text', { x: 566, y: 276, class: 'plan-building-name', transform: 'rotate(90 566 276)' }, 'JENKIN BUILDING'),
     DOORS.map(door),
+    bridge,
+    thomBlock,
+    svg('rect', { x: 543, y: 491, width: 14, height: 24, class: 'plan-door-gap' }),
     svg('path', { d: 'M300 790v8', class: 'plan-arrow' }),
     svg('text', { x: 300, y: 812, class: 'plan-subtitle centre' }, 'to the Thom Building, if the lift allows'),
-    svg('g', { transform: 'translate(540 52)' },
+    svg('g', { transform: 'translate(700 52)' },
       svg('path', { d: 'M0 -20l7 18h-14Z', fill: '#b23a26' }), svg('text', { x: 0, y: 14, class: 'plan-north' }, 'N')));
 
   return page(

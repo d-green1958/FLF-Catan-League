@@ -12,6 +12,7 @@ import { installDelights, lostPage, noteThemeSwitch, proverb } from './ui/deligh
 import { renderMap } from './pages/map.js';
 import { renderHome } from './pages/home.js';
 import { renderEngSci, renderLowerGround, renderPenthouse, renderThom } from './pages/engsci.js';
+import { renderArctic, renderCryogenics } from './pages/expeditions.js';
 import { renderAbout } from './pages/about.js';
 import { renderData } from './pages/data.js';
 import { renderGames } from './pages/games.js';
@@ -56,6 +57,8 @@ const ROUTES = [
   { match: /^\/map\/thom$/, render: renderThom, nav: '/map' },
   { match: /^\/map\/thom\/penthouse$/, render: renderPenthouse, nav: '/map' },
   { match: /^\/map\/lower-ground$/, render: renderLowerGround, nav: '/map' },
+  { match: /^\/map\/cryogenics$/, render: renderCryogenics, nav: '/map' },
+  { match: /^\/map\/arctic$/, render: renderArctic, nav: '/map' },
   { match: /^\/data$/, render: renderData, nav: '/data' },
 ];
 

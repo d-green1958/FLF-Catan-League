@@ -6,7 +6,7 @@
 .crumbs [aria-current] { color: var(--ink); font-weight: 600; }
 .crumb-sep { color: var(--faint); }
 
-.plan-sheet { max-width: 640px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(20, 20, 30, .45), 0 0 0 1px rgba(30, 30, 40, .15); }
+.plan-sheet { max-width: 780px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(20, 20, 30, .45), 0 0 0 1px rgba(30, 30, 40, .15); }
 .thom-sheet { max-width: 420px; }
 .plan-svg { display: block; width: 100%; height: auto; font-family: var(--font); }
 .plan-paper { fill: #fbfaf6; }
@@ -30,6 +30,8 @@
 .plan-tag { font-size: 18px; font-weight: 700; text-anchor: middle; fill: #4a86a8; }
 .plan-lift-x { stroke: #8a91a0; stroke-width: 1.6; }
 .plan-name { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-anchor: middle; fill: #1e2430; text-transform: uppercase; pointer-events: none; }
+.plan-name.small { font-size: 11px; letter-spacing: .14em; fill: #6b7280; }
+.room-corridor .plan-floor, .room-hallway .plan-floor { fill: #f3f1ea; }
 .plan-name.danish { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-weight: 400; font-size: 25px; letter-spacing: 0; text-transform: none; fill: #b23a26; }
 .plan-found { fill: #d3ae58; stroke: #7a5a12; stroke-width: 1.5; pointer-events: none; }
 .plan-door-gap { fill: #ffffff; }
@@ -89,17 +91,29 @@
 .no-signal div { display: grid; gap: 6px; text-align: center; color: #eee; padding: 0 24px; }
 .no-signal b { font-size: 28px; font-family: var(--font-display); }
 @keyframes twinkle { to { opacity: .2; } }
-.lift-ride { inset: 0; display: grid; place-items: center; background: rgba(8, 10, 16, .78); }
-.lift-cabin { position: relative; width: min(320px, 86vw); height: 420px; border-radius: 10px; background: linear-gradient(180deg, #8c8f94, #5d6066); box-shadow: inset 0 0 0 6px #3d4045, 0 30px 60px rgba(0, 0, 0, .6); display: grid; grid-template-rows: auto 1fr; overflow: hidden; animation: shake .35s ease-in-out infinite; }
-.lift-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px auto 0; padding: 6px 14px; background: #120d06; border-radius: 6px; color: #ff9b2f; font-family: ui-monospace, monospace; font-size: 20px; z-index: 1; }
-.lift-floor { font-size: 28px; min-width: 24px; text-align: center; }
-.lift-message { position: absolute; left: 16px; right: 16px; bottom: 26px; margin: 0; text-align: center; color: #fff; font-family: var(--font-display); font-size: 18px; z-index: 1; text-shadow: 0 1px 2px #000; }
+.lift-ride { inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(30, 30, 34, .82), rgba(5, 5, 8, .94)); }
+.lift-cabin { position: relative; width: min(340px, 90vw); display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; gap: 14px 16px; padding: 18px 18px 22px; border-radius: 6px;
+  background: linear-gradient(180deg, #3a3c40, #2a2b2f); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 30px 70px rgba(0, 0, 0, .7); animation: shake .5s ease-in-out infinite; }
+.lift-head { grid-column: 1 / -1; display: flex; justify-content: center; }
+.lift-indicator { display: flex; align-items: center; gap: 12px; padding: 8px 18px; border-radius: 4px; background: linear-gradient(180deg, #0b0806, #19120b); box-shadow: inset 0 2px 8px rgba(0, 0, 0, .9), 0 0 0 2px #55575c; }
+.lift-floor { min-width: 44px; text-align: center; font: 700 30px/1 ui-monospace, "SFMono-Regular", Menlo, monospace; color: #ffb547; letter-spacing: .06em; text-shadow: 0 0 8px rgba(255, 160, 50, .85), 0 0 2px #ffcf8a; }
+.lift-arrow { width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; filter: drop-shadow(0 0 4px rgba(255, 160, 50, .9)); }
+.lift-arrow.up { border-bottom: 13px solid #ffb547; }
+.lift-arrow.down { border-top: 13px solid #ffb547; }
+.lift-opening { position: relative; height: 320px; border-radius: 2px; overflow: hidden; background: #111; box-shadow: 0 0 0 6px #6d7076, 0 0 0 7px #2a2b2f, inset 0 0 30px rgba(0, 0, 0, .8); }
+.lift-light { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 20%, #fff6dc, #d9c39a 40%, #8a7550); }
 .lift-doors { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; }
-.lift-doors span { background: linear-gradient(90deg, #a9adb3, #7d8187); border: 1px solid #55585d; transition: transform .5s ease-in; }
-.lift-ride.arrived .lift-doors span:first-child { transform: translateX(-100%); }
-.lift-ride.arrived .lift-doors span:last-child { transform: translateX(100%); }
+.lift-door { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .05) 0 1px, transparent 1px 3px), linear-gradient(90deg, #8f9399, #c9ccd1 35%, #a3a7ad 60%, #7e8288); transition: transform .9s cubic-bezier(.4, 0, .2, 1); }
+.lift-door:first-child { box-shadow: inset -2px 0 0 #2a2b2f; }
+.lift-door:last-child { box-shadow: inset 2px 0 0 #2a2b2f; }
+.lift-panel { display: grid; grid-template-columns: repeat(2, 30px); gap: 7px; align-content: center; padding: 10px 8px; border-radius: 4px; background: linear-gradient(180deg, #b9bcc1, #8d9096); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .3); }
+.lift-button { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font: 600 11px var(--font); color: #2a2b2f; background: radial-gradient(circle at 40% 35%, #f2f3f5, #a9acb2); box-shadow: 0 1px 2px rgba(0, 0, 0, .5), inset 0 0 0 2px #7e8288; }
+.lift-button.lit { color: #5a2c00; background: radial-gradient(circle at 40% 35%, #ffe2a8, #ffae3d); box-shadow: 0 0 10px rgba(255, 170, 60, .9), inset 0 0 0 2px #c27a1c; }
+.lift-message { grid-column: 1 / -1; margin: 0; text-align: center; color: #e8e2d4; font-family: var(--font-display); font-size: 16px; min-height: 2.6em; }
+.lift-ride.arrived .lift-door:first-child { transform: translateX(-100%); }
+.lift-ride.arrived .lift-door:last-child { transform: translateX(100%); }
 .lift-ride.arrived .lift-cabin { animation: none; }
-@keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-2px, 1px) rotate(-.3deg); } 75% { transform: translate(2px, -1px) rotate(.3deg); } }
+@keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1px, .5px); } 75% { transform: translate(1px, -.5px); } }
 
 /* Lower Ground: the vault. */
 .vault { position: relative; padding: 26px 22px 30px; border-radius: 14px; overflow: hidden; color: #f3e6c4;
@@ -122,3 +136,34 @@
 .lift-ride.express .lift-cabin { animation: whoosh .12s linear infinite; }
 @keyframes whoosh { 50% { transform: translateY(-3px); filter: blur(1px); } }
 .lift-ride.dropping .lift-cabin { animation: shake .2s ease-in-out infinite; }
+
+/* Scenes you can step into: the cold lab and the Arctic. */
+.scene-sheet { border-radius: 10px; overflow: hidden; box-shadow: 0 20px 44px -20px rgba(10, 20, 30, .6); }
+.scene-svg { display: block; width: 100%; height: auto; font-family: var(--font); }
+.cryo-label { font-size: 15px; font-weight: 700; text-anchor: middle; fill: #34424e; }
+.cryo-sign { font-size: 20px; font-weight: 800; letter-spacing: .14em; text-anchor: middle; fill: #1d1d1d; }
+.cryo-sign.small { font-size: 11px; letter-spacing: .2em; }
+.cryo-door { cursor: pointer; }
+.cryo-door-leaf { transform-box: fill-box; transform-origin: left center; }
+.cryo-door:hover .cryo-door-leaf, .cryo-door:focus .cryo-door-leaf { filter: brightness(1.08); }
+.cryo-door:focus { outline: none; }
+.arctic-sign { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-anchor: middle; fill: #f3e6c4; }
+.creature { cursor: pointer; }
+.creature:focus { outline: none; }
+.creature:hover { filter: brightness(1.04) drop-shadow(0 0 6px rgba(255, 255, 255, .6)); }
+@media (prefers-reduced-motion: no-preference) {
+  .cryo-mist { animation: mist 6s ease-in-out infinite alternate; }
+  @keyframes mist { to { transform: translateX(-30px); opacity: .7; } }
+  .scene-svg.blizzard { animation: frost-in 1.3s ease-in forwards; }
+  @keyframes frost-in { to { filter: brightness(1.6) saturate(.3); } }
+  .snowfall circle { animation-name: snow; animation-timing-function: linear; animation-iteration-count: infinite; }
+  @keyframes snow { from { transform: translate(0, -700px); } to { transform: translate(-40px, 700px); } }
+  .aurora { animation: aurora 9s ease-in-out infinite alternate; }
+  @keyframes aurora { to { transform: translateX(-40px); opacity: .75; } }
+}
+
+.plan-thom .plan-floor { fill: #f4f1e8; }
+.plan-thom-line { stroke: #9aa1ad; stroke-width: 1.2; }
+.plan-bridge-deck { fill: #efe8d8; }
+.plan-bridge-rail { stroke: #1e2430; stroke-width: 3; }
+.plan-bridge-plank { stroke: #a49b88; stroke-width: 1; }
