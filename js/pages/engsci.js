@@ -111,16 +111,17 @@ const rideTo = (direction) => rideLift(direction, (where) => { window.location.h
 
 // ---------- the floor plan ----------
 // Plain rectangles, drawn like an architect's plan: [x, y, width, height]. North is up.
-// A corridor runs north to south between Room 11 and the Library and Wallace Room: Cryogenics at its north
-// end, the Dead Zone (and on to Hølder) at its south end. The Wallace Room opens straight onto it, and a
-// short hallway off it leads to the Library's only door, on the Library's south side.
+// Cryogenics runs along the north. Below it, Room 11 is on the left, the Wroth Library and the Wallace Room
+// are in the middle, and a corridor runs down the right (east) end, from Cryogenics to the Dead Zone.
+// Doors: Room 11 from the left of Cryogenics' south wall and from the south end of the Wallace Room's west
+// wall; the Library only from its south side, into the Wallace Room; the Wallace Room straight onto the
+// corridor with no door; the corridor into Cryogenics.
 const ROOMS = [
   { id: 'cryo', name: 'Cryogenics', box: [50, 92, 500, 118] },
-  { id: 'room11', name: 'Room 11', box: [50, 210, 170, 250] },
-  { id: 'corridor', name: 'Corridor', box: [220, 210, 60, 250] },
-  { id: 'library', name: 'Wroth Library', box: [280, 210, 270, 104] },
-  { id: 'hallway', name: 'Hallway', box: [280, 314, 270, 28] },
-  { id: 'wallace', name: 'Wallace Room', box: [280, 342, 270, 118] },
+  { id: 'room11', name: 'Room 11', box: [50, 210, 180, 250] },
+  { id: 'library', name: 'Wroth Library', box: [230, 210, 260, 120] },
+  { id: 'wallace', name: 'Wallace Room', box: [230, 330, 260, 130] },
+  { id: 'corridor', name: 'Corridor', box: [490, 210, 60, 250] },
   { id: 'deadzone', name: 'The Dead Zone', box: [50, 460, 500, 86] },
   { id: 'holder', name: 'Hølder-bygningen', box: [50, 546, 500, 134] },
   { id: 'lift', name: 'The Lift', box: [255, 680, 90, 80] },
@@ -130,13 +131,12 @@ const ROOMS = [
 // on a vertical wall it runs along y and swings 'left' or 'right'. 'open-v' and 'open-h' are doorways with
 // no door at all, in a vertical or horizontal wall.
 const DOORS = [
-  [232, 210, 36, 'up'],      // corridor into Cryogenics
   [72, 210, 30, 'down'],     // Room 11, from the left of Cryogenics' south wall
-  [220, 420, 30, 'left'],    // Room 11, at the south end of its east wall, facing the Wallace Room
-  [280, 380, 46, 'open-v'],  // the Wallace Room, open to the corridor
-  [280, 316, 24, 'open-v'],  // the hallway, open to the corridor
-  [470, 314, 26, 'up'],      // the Library's only door, on its south side
-  [226, 460, 48, 'open-h'],  // the corridor, open to the Dead Zone
+  [230, 420, 30, 'left'],    // Room 11, from the south end of the Wallace Room's west wall
+  [368, 330, 26, 'up'],      // the Library's only door, on its south side, into the Wallace Room
+  [490, 352, 84, 'open-v'],  // the Wallace Room, straight onto the corridor
+  [506, 210, 30, 'up'],      // the corridor, into Cryogenics
+  [496, 460, 48, 'open-h'],  // the corridor, out onto the Dead Zone
   [285, 546, 30, 'up'],      // Hølder, from the Dead Zone
   [285, 680, 30, 'up'],      // the Lift, from Hølder
 ];
@@ -151,23 +151,23 @@ function furniture(room) {
     case 'cryo': return svg('g', { class: 'plan-furniture' },
       [0, 1, 2, 3].map((i) => svg('circle', { cx: x + 70 + i * 52, cy: y + 62, r: 18 })),
       [0, 1, 2, 3].map((i) => svg('circle', { cx: x + 70 + i * 52, cy: y + 62, r: 9, class: 'inner' })),
-      svg('rect', { x: x + 330, y: y + 14, width: 156, height: 26 }),
-      svg('rect', { x: x + 330, y: y + 78, width: 156, height: 26 }),
-      svg('text', { x: x + 408, y: y + 66, class: 'plan-tag' }, '4 K'));
+      svg('rect', { x: x + 290, y: y + 14, width: 150, height: 26 }),
+      svg('rect', { x: x + 290, y: y + 78, width: 150, height: 26 }),
+      svg('text', { x: x + 365, y: y + 66, class: 'plan-tag' }, '4 K'));
     case 'room11': return svg('g', null,
       svg('rect', { x: x + 8, y: y + 18, width: 6, height: 110, class: 'plan-board' }),
-      [0, 1, 2, 3].flatMap((row) => [desk(x + 50, y + 66 + row * 44), desk(x + 110, y + 66 + row * 44)]));
+      [0, 1, 2, 3].flatMap((row) => [desk(x + 56, y + 66 + row * 44), desk(x + 122, y + 66 + row * 44)]));
     case 'library': return svg('g', { class: 'plan-furniture' },
-      [0, 1, 2, 3].map((i) => svg('rect', { x: x + 14, y: y + 40 + i * 15, width: 110, height: 7 })),
-      svg('rect', { x: x + 154, y: y + 46, width: 96, height: 34 }),
-      [0, 1, 2].map((i) => svg('circle', { cx: x + 170 + i * 32, cy: y + 38, r: 6 })),
-      [0, 1, 2].map((i) => svg('circle', { cx: x + 170 + i * 32, cy: y + 88, r: 6 })));
+      [0, 1, 2, 3].map((i) => svg('rect', { x: x + 14, y: y + 40 + i * 15, width: 100, height: 7 })),
+      svg('rect', { x: x + 150, y: y + 46, width: 92, height: 34 }),
+      [0, 1, 2].map((i) => svg('circle', { cx: x + 166 + i * 30, cy: y + 38, r: 6 })),
+      [0, 1, 2].map((i) => svg('circle', { cx: x + 166 + i * 30, cy: y + 88, r: 6 })));
     case 'wallace': return svg('g', { class: 'plan-furniture' },
-      svg('rect', { x: x + 50, y: y + 46, width: 180, height: 36 }),
-      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 68 + i * 36, cy: y + 36, r: 6 })),
-      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 68 + i * 36, cy: y + 92, r: 6 })),
-      svg('circle', { cx: x + 140, cy: y + 64, r: 9, class: 'inner' }));
-    case 'corridor': case 'hallway': return null;
+      svg('rect', { x: x + 34, y: y + 54, width: 180, height: 36 }),
+      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 52 + i * 36, cy: y + 44, r: 6 })),
+      [0, 1, 2, 3, 4].map((i) => svg('circle', { cx: x + 52 + i * 36, cy: y + 100, r: 6 })),
+      svg('circle', { cx: x + 124, cy: y + 72, r: 9, class: 'inner' }));
+    case 'corridor': return null;
     case 'deadzone': return svg('rect', { x, y, width, height, class: 'plan-hatch', fill: 'url(#hatch)' });
     case 'holder': return svg('g', null,
       [0, 1, 2, 3, 4, 5].map((i) => desk(x + 60 + i * 76, y + 82)));
@@ -179,13 +179,13 @@ function furniture(room) {
 function roomShape(room, onTap) {
   const [x, y, width, height] = room.box;
   const found = foundSecrets().has(room.id);
-  const labelY = { room11: y + 28, cryo: y + 28, library: y + 26, wallace: y + 24, deadzone: y + height / 2 + 6, holder: y + 38, lift: y + height + 22, corridor: y + height / 2, hallway: y + 18 }[room.id];
+  const labelY = { room11: y + 28, cryo: y + 28, library: y + 26, wallace: y + 28, deadzone: y + height / 2 + 6, holder: y + 38, lift: y + height + 22, corridor: y + height / 2 }[room.id];
   const group = svg('g', { class: `plan-room room-${room.id} ${found ? 'found' : ''}`.trim(), role: 'button', tabindex: '0', 'aria-label': room.name },
     svg('rect', { x, y, width, height, class: 'plan-floor' }),
     furniture(room),
     room.id === 'corridor'
       ? svg('text', { x: x + width / 2, y: labelY, class: 'plan-name small', transform: `rotate(-90 ${x + width / 2} ${labelY})` }, room.name)
-      : svg('text', { x: x + width / 2, y: labelY, class: `plan-name ${room.id === 'holder' ? 'danish' : ''} ${room.id === 'hallway' ? 'small' : ''}`.replace(/\s+/g, ' ').trim() }, room.name),
+      : svg('text', { x: room.id === 'cryo' ? x + 170 : x + width / 2, y: labelY, class: `plan-name ${room.id === 'holder' ? 'danish' : ''}`.trim() }, room.name),
     found && svg('circle', { cx: x + width - 14, cy: y + 14, r: 6, class: 'plan-found' }));
   group.addEventListener('click', () => onTap(room));
   group.addEventListener('keydown', (event) => { if (event.key === 'Enter') onTap(room); });
@@ -222,10 +222,7 @@ export function renderEngSci() {
         window.location.hash = route('/map/library');
         break;
       case 'corridor':
-        say(story, 'Between Room 11 and the Library', 'The corridor', 'It runs the length of the Jenkin Building: Cryogenics at the north end, the Dead Zone and Hølder at the south. The Wallace Room opens straight off it, and a short hallway leads to the Library door.');
-        break;
-      case 'hallway':
-        say(story, 'Off the corridor', 'The hallway', 'A short hallway with one door in it: the Wroth Library\'s, on its south side. Tap the Library to go in.');
+        say(story, 'The east end of the Jenkin Building', 'The corridor', 'It runs from Cryogenics at the north end down to the Dead Zone at the south. The Wallace Room opens straight off it, with no door.');
         break;
       case 'wallace': {
         biscuits = Math.max(0, biscuits - 1);
@@ -256,7 +253,7 @@ export function renderEngSci() {
         say(story, 'East of the Dead Zone', 'The bridge', 'A small footbridge across to the Thom Building.');
         break;
       case 'holder':
-        say(story, 'South of the Dead Zone', 'Hølder-bygningen', 'Velkommen til Hølder-bygningen! Her bygger vi bosættelser, veje og byer.', '(Welcome to the Holder building! Here we build settlements, roads and cities.)');
+        say(story, 'South of the Dead Zone', 'Hølder-bygningen', 'Velkommen til Hølder-bygningen! Her bygger vi bosættelser, veje og byer.');
         discover('holder');
         break;
       case 'lift':

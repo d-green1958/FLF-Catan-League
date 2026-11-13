@@ -136,7 +136,7 @@ export function renderLibrary() {
   return page(
     trail(['The Map', '/map'], ['EngSci complex', '/map/engsci'], ['Wroth Library', null]),
     pageHeader({
-      eyebrow: 'Through the door on its south side',
+      eyebrow: 'Through its only door, from the Wallace Room',
       title: 'The Wroth Library',
       intro: `A quiet reading room: ${BOOKS.length} books, a long oak table and three green lamps. Tap any spine to open it.`,
       actions: h('a', { class: 'btn', href: route('/map/engsci') }, 'Back to the corridor'),

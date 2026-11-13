@@ -196,7 +196,7 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 ## The Map and the easter eggs
 
 **Inside the Engineering Science complex** (`js/pages/engsci.js`): tap the Jenkin or Thom Building on the Map.
-- **The floor plan,** north to south: Cryogenics; Room 11 on the left, alongside the Wroth Library and the Wallace Room; the Dead Zone; Hølder-bygningen; and the Lift.
+- **The floor plan,** north to south: Cryogenics; then Room 11 on the left, the Wroth Library above the Wallace Room in the middle, and a corridor down the east end; the Dead Zone; Hølder-bygningen; and the Lift.
 - **The lift** goes up to the Thom Building, whose 8th floor is the Penthouse.
 - **The Lift:** two rides up in five (`DROP_CHANCE` in `js/pages/engsci.js`), it drops to **Lower Ground** instead: a vault of every resource. **Harvest resources** sends it straight to the Penthouse.
 - **Cryogenics** opens a cold lab whose back door leads to the Arctic (`js/pages/expeditions.js`).

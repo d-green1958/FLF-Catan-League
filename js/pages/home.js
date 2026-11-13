@@ -11,7 +11,6 @@ import { icon } from '../ui/icons.js';
 import { avatar, colourDot, page } from '../ui/components.js';
 import { formatLongDate, formatScore } from '../ui/format.js';
 import { mapFrontLink } from './map.js';
-import { SECRETS } from '../ui/delights.js';
 import { boardView } from '../ui/board-view.js';
 
 // Games happen whenever the group can make it, not on a fixed day. If data/league.json has a "nextGame"
@@ -126,13 +125,9 @@ function lastBattle(league) {
     h('a', { class: 'link battle-link', href: route('/games') }, 'Every game', icon('external', 'sm')));
 }
 
-/** The folded front of the Map. Tapping it opens the Map and unfolds it. */
+/** The folded front of the Map, on its own. Tapping it opens the Map and unfolds it. */
 function mapWindow() {
-  return h('section', { class: 'card map-window' },
-    mapFrontLink(),
-    h('div', { class: 'map-window-text' },
-      h('b', null, 'The Map'),
-      h('span', null, `Every settler, walking Oxford by rank and favourite resource. ${SECRETS.length} secrets hide in its corners.`)));
+  return h('section', { class: 'map-window' }, mapFrontLink());
 }
 
 function recordStrip(league) {
