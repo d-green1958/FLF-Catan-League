@@ -25,7 +25,7 @@
 //   deadzone   Tap the Dead Zone                      the signal drops
 //   holder     Tap Hølder-bygningen                   velkommen
 //   lift       Ride the Terrible Lift                 eventually, it arrives
-//   penthouse  Reach the Penthouse of the Thom Building
+//   penthouse  Reach the Penthouse, on the 8th floor of the Thom Building: a night sky that stays
 import * as storage from '../data/browser-storage.js';
 import { h, svg } from './dom.js';
 import { toast } from './feedback.js';
@@ -58,20 +58,18 @@ export const SECRETS = [
   { id: 'deadzone', title: 'No Signal', place: 'jenkin', inside: 'engsci', where: 'The Dead Zone', riddle: 'Between the old and the Danish lies a place where phones go quiet.' },
   { id: 'holder', title: 'Velkommen', place: 'jenkin', inside: 'engsci', where: 'Hølder-bygningen', riddle: 'One building speaks another tongue. Knock and be greeted.' },
   { id: 'lift', title: 'The Terrible Lift', place: 'jenkin', inside: 'engsci', where: 'The Terrible Lift', riddle: 'Brave the lift at the southern end. It goes up. Eventually.' },
-  { id: 'penthouse', title: 'The View from the Top', place: 'thom', inside: 'thom', where: 'The Penthouse', riddle: 'Climb the tallest tower in the complex, to the very top.' },
+  { id: 'penthouse', title: 'The View from the Top', place: 'thom', inside: 'thom', where: 'The Penthouse', riddle: 'Climb the Thom Building to the eighth floor, and look up.' },
 ];
 export const secretPlace = (secret, places) => secret.where ?? places[secret.place]?.name ?? secret.place;
 const FOUND_KEY = 'flfoxtan.secrets';
 export const foundSecrets = () => new Set(storage.read(FOUND_KEY, []));
 
-/** Records a discovery in this browser, and says so the first time. */
+/** Records a discovery in this browser, quietly. The Map shows what has been found. */
 export function discover(id) {
   const found = foundSecrets();
   if (found.has(id)) return;
   found.add(id);
   storage.write(FOUND_KEY, [...found]);
-  const secret = SECRETS.find((item) => item.id === id);
-  setTimeout(() => toast(`Secret found: ${secret.title} (${found.size} of ${SECRETS.length}). It is marked on the Map.`, 'good'), 1400);
 }
 
 export const PROVERBS = [

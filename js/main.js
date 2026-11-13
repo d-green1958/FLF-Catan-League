@@ -11,7 +11,7 @@ import { icon } from './ui/icons.js';
 import { installDelights, lostPage, noteThemeSwitch, proverb } from './ui/delights.js';
 import { renderMap } from './pages/map.js';
 import { renderHome } from './pages/home.js';
-import { renderEngSci, renderThom } from './pages/engsci.js';
+import { renderEngSci, renderPenthouse, renderThom } from './pages/engsci.js';
 import { renderAbout } from './pages/about.js';
 import { renderData } from './pages/data.js';
 import { renderGames } from './pages/games.js';
@@ -54,6 +54,7 @@ const ROUTES = [
   { match: /^\/map$/, render: renderMap, nav: '/map' },
   { match: /^\/map\/engsci$/, render: renderEngSci, nav: '/map' },
   { match: /^\/map\/thom$/, render: renderThom, nav: '/map' },
+  { match: /^\/map\/thom\/penthouse$/, render: renderPenthouse, nav: '/map' },
   { match: /^\/data$/, render: renderData, nav: '/data' },
 ];
 

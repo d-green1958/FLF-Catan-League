@@ -195,6 +195,13 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 
 ## The Map and the easter eggs
 
+**Inside the Engineering Science complex** (`js/pages/engsci.js`): tap the Jenkin or Thom Building on the Map.
+- **The floor plan,** north to south: Cryogenics; Room 11 on the left, alongside the Wroth Library and the Wallace Room; the Dead Zone; Hølder-bygningen; and the Terrible Lift.
+- **The lift** goes up to the Thom Building, whose 8th floor is the Penthouse.
+- **The Penthouse** opens onto a night sky: deep-sky images, constellations, and a constellation called Ryan that stays.
+- **Image credits:** the images are from NASA's image library (images.nasa.gov), resized in `assets/sky/` and credited on that page.
+- **Map labels:** place names are positioned so none sits on a road, river or seal. If you move a landmark in `js/pages/map.js`, check its `label` offset too.
+
 **The Map** (`#/map`, `js/pages/map.js`) is an old-style chart of Oxford with every player walking about on it:
 - **Quarter:** each player keeps to the quarter of their favourite resource (brick in Jericho, lumber in Christ Church Meadow, wool on Port Meadow, grain in Marston, ore at the Castle). If their profile has none, it uses the resource their recorded openings lean on.
 - **Rank:** the higher a player ranks on the chosen scoring system, the closer they stand to the Radcliffe Camera, which the leader holds.

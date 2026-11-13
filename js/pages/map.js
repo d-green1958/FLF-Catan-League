@@ -23,34 +23,35 @@ const H = 700;
 const INK = '#3b2a17';
 
 const PLACES = {
-  radcliffe: { name: 'Radcliffe Camera', x: 545, y: 342, kind: 'dome' },
-  bodleian: { name: 'Bodleian', x: 472, y: 322, kind: 'hall', label: -18 },
-  sheldonian: { name: 'Sheldonian', x: 470, y: 250, kind: 'temple', label: -22 },
-  sighs: { name: 'Bridge of Sighs', x: 612, y: 296, kind: 'bridge' },
-  carfax: { name: 'Carfax', x: 410, y: 392, kind: 'tower', label: -30 },
-  market: { name: 'Covered Market', x: 488, y: 396, kind: 'market' },
-  christchurch: { name: 'Christ Church', x: 418, y: 456, kind: 'tower' },
-  folly: { name: 'Folly Bridge', x: 440, y: 526, kind: 'bridge', label: 22 },
+  radcliffe: { name: 'Radcliffe Camera', x: 545, y: 342, kind: 'dome', label: [0, -28, 'middle'] },
+  bodleian: { name: 'Bodleian', x: 472, y: 322, kind: 'hall', label: [0, 29, 'middle'] },
+  sheldonian: { name: 'Sheldonian', x: 470, y: 250, kind: 'temple', label: [30, -40, 'middle'] },
+  sighs: { name: 'Bridge of Sighs', x: 612, y: 296, kind: 'bridge', label: [0, 37, 'middle'] },
+  carfax: { name: 'Carfax', x: 410, y: 392, kind: 'tower', label: [-20, -27, 'middle'] },
+  market: { name: 'Covered Market', x: 488, y: 396, kind: 'market', label: [-19, 23, 'end'] },
+  christchurch: { name: 'Christ Church', x: 418, y: 456, kind: 'tower', label: [60, 31, 'middle'] },
+  folly: { name: 'Folly Bridge', x: 440, y: 526, kind: 'bridge', label: [-40, 27, 'middle'] },
   meadow: { name: 'Christ Church Meadow', x: 548, y: 498, kind: 'trees', label: null },
-  schools: { name: 'Examination Schools', x: 622, y: 400, kind: 'hall' },
-  magdalen: { name: 'Magdalen Tower', x: 700, y: 388, kind: 'tower' },
-  botanic: { name: 'Botanic Garden', x: 676, y: 452, kind: 'trees' },
-  ashmolean: { name: 'Ashmolean', x: 362, y: 300, kind: 'temple' },
-  pittrivers: { name: 'Pitt Rivers', x: 575, y: 222, kind: 'hall' },
+  schools: { name: 'Examination Schools', x: 622, y: 400, kind: 'hall', label: [0, 29, 'middle'] },
+  magdalen: { name: 'Magdalen Tower', x: 700, y: 388, kind: 'tower', label: [40, -47, 'middle'] },
+  botanic: { name: 'Botanic Garden', x: 748, y: 448, kind: 'trees', label: [0, 40, 'middle'] },
+  ashmolean: { name: 'Ashmolean', x: 362, y: 300, kind: 'temple', label: [-19, 21, 'end'] },
+  pittrivers: { name: 'Pitt Rivers', x: 575, y: 222, kind: 'hall', label: [0, 29, 'middle'] },
   // The Engineering Science complex on Parks Road. Both buildings open a map of their own.
-  thom: { name: 'Thom Building', x: 540, y: 150, kind: 'tall', label: -46, link: '/map/thom' },
-  jenkin: { name: 'Jenkin Building', x: 590, y: 150, kind: 'hall', link: '/map/engsci' },
-  maths: { name: 'Mathematical Institute', x: 455, y: 168, kind: 'hall' },
-  parks: { name: 'University Parks', x: 668, y: 196, kind: 'trees' },
+  jenkin: { name: 'Jenkin Building', x: 590, y: 108, kind: 'hall', link: '/map/engsci', label: [20, 22, 'start'] },
+  thom: { name: 'Thom Building', x: 590, y: 170, kind: 'tall', link: '/map/thom', label: [-60, 23, 'middle'] },
+  maths: { name: 'Mathematical Institute', x: 360, y: 168, kind: 'hall', label: [-20, -38, 'middle'] },
+  parks: { name: 'University Parks', short: 'The Parks', x: 648, y: 214, kind: 'trees', label: [-10, 40, 'middle'] },
   jericho: { name: 'Jericho', x: 330, y: 222, kind: 'houses', label: null },
   portmeadow: { name: 'Port Meadow', x: 250, y: 150, kind: 'meadow', label: null },
   marston: { name: 'Marston', x: 850, y: 214, kind: 'fields', label: null },
-  castle: { name: 'Oxford Castle', x: 352, y: 396, kind: 'castle' },
-  station: { name: 'Station', x: 262, y: 345, kind: 'station' },
+  castle: { name: 'Oxford Castle', x: 272, y: 410, kind: 'castle', label: [-20, -17, 'middle'] },
+  station: { name: 'Station', x: 262, y: 345, kind: 'station', label: [-20, -18, 'middle'] },
   otmoor: { name: 'Otmoor', x: 900, y: 92, kind: 'dragon' },
   ringroad: { name: 'The Ring Road', x: 70, y: 420, kind: 'none' },
   compass: { name: 'Compass', x: 880, y: 590, kind: 'none' },
 };
+for (const [key, place] of Object.entries(PLACES)) place.key = key;
 
 // Each resource's quarter of the city.
 const QUARTERS = { brick: 'jericho', lumber: 'meadow', wool: 'portmeadow', grain: 'marston', ore: 'castle' };
@@ -140,10 +141,11 @@ function landmark(place) {
     dragon: [svg('path', { d: 'M10 60c20-4 34-14 46-30l8 14 14-26 6 22 20-30 2 34c10 4 20 4 32-2-6 10-18 16-32 16l8 14-22-6-12 16-6-16c-16 6-32 6-48 2l-16 10 6-16Z', fill: '#5d2a1c', opacity: 0.8, transform: `translate(${x - 70} ${y - 40}) scale(.85)` })],
     none: [],
   };
-  // label: how far below (or, if negative, above) the drawing the name goes. null means the district name does the job.
-  const offset = place.label === undefined ? 26 : place.label;
+  // label: where the name goes, as [dx, dy, anchor] from the drawing (chosen so no name sits on a road or
+  // river). Leave it out for just below the drawing; null means the district name does the job.
+  const [dx, dy, anchor] = place.label === undefined ? [0, 26, 'middle'] : place.label ?? [];
   const group = svg('g', { class: `map-landmark ${place.link ? 'map-door' : ''}`.trim() }, shapes[kind],
-    kind !== 'none' && offset !== null && text(x, y + offset, place.name, 'map-label'));
+    kind !== 'none' && place.label !== null && text(x + dx, y + dy, place.short ?? place.name, 'map-label', { 'text-anchor': anchor, 'data-place': place.key, 'data-x': x, 'data-y': y }));
   if (place.link) {
     // A building you can go into.
     group.setAttribute('role', 'link');
@@ -217,11 +219,11 @@ function cityLayer() {
     road('M410 392L438 526L446 640', 'St Aldates', [430, 610, -88]),
     road('M410 392L352 396L262 345L120 330', 'Park End', [300, 356, 25]),
     road('M700 388L800 452L910 470', 'Iffley Road', [800, 442, 30]),
-    text(300, 106, 'PORT MEADOW', 'map-district'),
-    text(320, 262, 'JERICHO', 'map-district'),
+    text(292, 96, 'PORT MEADOW', 'map-district'),
+    text(345, 262, 'JERICHO', 'map-district'),
     text(852, 262, 'MARSTON', 'map-district'),
-    text(560, 560, 'THE MEADOW', 'map-district'),
-    text(205, 452, 'CASTLE QUARTER', 'map-district'),
+    text(560, 466, 'THE MEADOW', 'map-district'),
+    text(190, 476, 'CASTLE QUARTER', 'map-district'),
     // A few sheep on Port Meadow, because of course.
     [[230, 178], [282, 184], [292, 134]].map(([x, y]) => svg('g', { transform: `translate(${x} ${y})` },
       svg('ellipse', { cx: 0, cy: 0, rx: 7, ry: 5, fill: '#fbf6e8', stroke: INK, 'stroke-width': 1 }),

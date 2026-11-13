@@ -6,45 +6,79 @@
 .crumbs [aria-current] { color: var(--ink); font-weight: 600; }
 .crumb-sep { color: var(--faint); }
 
-.plan-sheet { max-width: 620px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(40, 24, 6, .55), 0 0 0 1px rgba(90, 60, 20, .25); }
+.plan-sheet { max-width: 640px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(20, 20, 30, .45), 0 0 0 1px rgba(30, 30, 40, .15); }
 .thom-sheet { max-width: 420px; }
-.plan-svg { display: block; width: 100%; height: auto; font-family: "IM Fell English", Georgia, serif; }
-.plan-paper { fill: #ecdcb1; }
-.plan-building { fill: rgba(59, 42, 23, .05); stroke: #3b2a17; stroke-width: 3; }
-.plan-building-name { font-family: "IM Fell English SC", Georgia, serif; font-size: 14px; letter-spacing: .3em; text-anchor: middle; fill: rgba(59, 42, 23, .55); }
-.plan-title { font-family: "IM Fell English SC", Georgia, serif; font-size: 26px; text-anchor: middle; fill: #3b2a17; }
-.plan-subtitle { font-style: italic; font-size: 13px; text-anchor: middle; fill: #5a4129; }
-.plan-north { font-family: "IM Fell English SC", Georgia, serif; font-size: 15px; text-anchor: middle; fill: #8b2a1d; }
+.plan-svg { display: block; width: 100%; height: auto; font-family: var(--font); }
+.plan-paper { fill: #fbfaf6; }
+.plan-title { font-size: 15px; font-weight: 700; letter-spacing: .12em; fill: #1e2430; }
+.plan-subtitle { font-size: 12px; fill: #5b6270; font-style: italic; }
+.plan-title.centre, .plan-subtitle.centre { text-anchor: middle; }
+.plan-north { font-size: 13px; font-weight: 700; text-anchor: middle; fill: #b23a26; }
+.plan-outer { fill: none; stroke: #1e2430; stroke-width: 9; }
+.plan-building-name { font-size: 11px; font-weight: 700; letter-spacing: .32em; text-anchor: middle; fill: #8a91a0; }
 .plan-room { cursor: pointer; }
-.plan-floor { fill: #f4e8c6; stroke: #3b2a17; stroke-width: 2; transition: fill .15s; }
-.plan-room:hover .plan-floor, .plan-room:focus .plan-floor { fill: #fff3d2; outline: none; }
 .plan-room:focus { outline: none; }
-.room-cryo .plan-floor { fill: #dbe9ef; }
-.room-cryo:hover .plan-floor { fill: #e9f4f8; }
-.room-deadzone .plan-floor { fill: #d9cbb0; }
-.room-holder .plan-floor { fill: #f0d9cf; }
-.room-lift .plan-floor { fill: #cbbd9e; }
-.plan-hatch { pointer-events: none; }
-.plan-flake { font-size: 18px; fill: #7fa8bb; text-anchor: middle; pointer-events: none; }
-.plan-shelf { fill: #b98a5a; stroke: #3b2a17; stroke-width: 1; pointer-events: none; }
-.plan-board { fill: #fdfdf8; stroke: #3b2a17; stroke-width: 1.5; pointer-events: none; }
-.plan-board-text { font-family: var(--font); font-size: 15px; font-style: italic; text-anchor: middle; fill: #2459a8; pointer-events: none; }
-.plan-name { font-family: "IM Fell English SC", Georgia, serif; font-size: 21px; text-anchor: middle; fill: #3b2a17; pointer-events: none; }
-.plan-name.danish { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 24px; fill: #8b2a1d; }
+.plan-floor { fill: #ffffff; stroke: #1e2430; stroke-width: 5; transition: fill .15s; }
+.plan-room:hover .plan-floor, .plan-room:focus .plan-floor { fill: #fff6dc; }
+.room-cryo .plan-floor { fill: #eef6fa; }
+.room-holder .plan-floor { fill: #fbf1ee; }
+.room-lift .plan-floor { fill: #eceae4; }
+.plan-hatch, .plan-furniture, .plan-board, .plan-lift-x, .plan-tag { pointer-events: none; }
+.plan-furniture rect, .plan-furniture circle { fill: none; stroke: #8a91a0; stroke-width: 1.6; }
+.plan-furniture circle.inner { fill: #dfe7ee; }
+.plan-board { fill: #2459a8; }
+.plan-tag { font-size: 18px; font-weight: 700; text-anchor: middle; fill: #4a86a8; }
+.plan-lift-x { stroke: #8a91a0; stroke-width: 1.6; }
+.plan-name { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-anchor: middle; fill: #1e2430; text-transform: uppercase; pointer-events: none; }
+.plan-name.danish { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-weight: 400; font-size: 25px; letter-spacing: 0; text-transform: none; fill: #b23a26; }
 .plan-found { fill: #d3ae58; stroke: #7a5a12; stroke-width: 1.5; pointer-events: none; }
-.plan-window { fill: #9fb7c4; stroke: #3b2a17; stroke-width: 1; pointer-events: none; }
-.plan-floor-name { font-family: "IM Fell English SC", Georgia, serif; font-size: 15px; text-anchor: middle; fill: #3b2a17; pointer-events: none; }
-.plan-shaft { fill: #cbbd9e; stroke: #3b2a17; stroke-width: 1.5; }
-.penthouse .plan-floor { fill: #f3dc94; }
+.plan-door-gap { fill: #ffffff; }
+.plan-door path { fill: none; stroke: #8a91a0; stroke-width: 1.4; }
+.plan-arrow { stroke: #1e2430; stroke-width: 1.6; stroke-dasharray: 4 4; }
+.plan-window { fill: #cfe0ea; stroke: #1e2430; stroke-width: 1; pointer-events: none; }
+.plan-floor-name { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-anchor: middle; fill: #1e2430; pointer-events: none; }
+.plan-shaft { fill: #eceae4; stroke: #1e2430; stroke-width: 3; }
+.penthouse .plan-floor { fill: #f7e6a8; }
 @media (prefers-reduced-motion: no-preference) {
   .penthouse:not(.found) .plan-floor { animation: penthouse-glow 2.6s ease-in-out infinite; }
-  @keyframes penthouse-glow { 50% { fill: #fff0bf; } }
+  @keyframes penthouse-glow { 50% { fill: #fff3c4; } }
 }
 .whiteboard { font-family: var(--font); font-style: italic; color: #2459a8; background: #fdfdf8; border: 1px solid rgba(59, 42, 23, .3); border-radius: 6px; padding: 8px 12px; margin: 8px 0 !important; font-size: 17px; }
 .map-enter { margin-top: 10px; }
 .map-door { cursor: pointer; }
 .map-door:hover .map-label, .map-door:focus .map-label { fill: #8b2a1d; text-decoration: underline; }
 .map-door:focus { outline: none; }
+
+/* The view from the Penthouse. */
+.sky-sheet { border-radius: 10px; overflow: hidden; box-shadow: 0 24px 48px -20px rgba(4, 8, 20, .8); background: #03050d; }
+.sky-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.sky-svg { display: block; width: 100%; min-width: 900px; height: auto; font-family: "IM Fell English", Georgia, serif; }
+.sky-dot { fill: #fff; opacity: .85; }
+.sky-line { stroke: rgba(160, 190, 255, .45); stroke-width: 1.2; }
+.sky-star { fill: #fdf6e3; filter: drop-shadow(0 0 3px rgba(255, 255, 255, .9)); }
+.sky-name { font-style: italic; font-size: 15px; fill: rgba(190, 210, 255, .75); text-anchor: middle; }
+.sky-figure.ryan .sky-line { stroke: rgba(255, 214, 120, .85); stroke-width: 2; }
+.sky-figure.ryan .sky-star { fill: #ffe9a8; filter: drop-shadow(0 0 6px rgba(255, 210, 110, 1)); }
+.sky-figure.ryan .sky-name { font-family: "IM Fell English SC", Georgia, serif; font-style: normal; font-size: 30px; fill: #ffd98a; }
+.sky-ryan-note { font-style: italic; font-size: 14px; fill: rgba(255, 217, 138, .75); text-anchor: middle; }
+.sky-object { cursor: pointer; }
+.sky-object image { transition: transform .3s; transform-box: fill-box; transform-origin: center; }
+.sky-object:hover image, .sky-object:focus image { transform: scale(1.06); }
+.sky-object:focus { outline: none; }
+.sky-object-name { font-size: 14px; fill: rgba(235, 225, 200, .85); text-anchor: middle; }
+.sky-skyline { fill: #04060c; }
+.sky-window { fill: #ffd27a; opacity: .7; }
+@media (prefers-reduced-motion: no-preference) {
+  .sky-dot.twinkle { animation: twinkle 2.2s ease-in-out infinite alternate; }
+}
+.sky-credits { margin-top: 18px; }
+.sky-credits h2 { font-family: var(--font-display); font-size: 20px; margin-bottom: 8px; }
+.sky-credits ul { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
+.sky-lightbox { border: 0; padding: 12px; max-width: min(1100px, 96vw); max-height: 94dvh; background: #05070f; color: #eee; border-radius: 10px; display: grid; gap: 10px; justify-items: center; }
+.sky-lightbox::backdrop { background: rgba(0, 0, 0, .8); }
+.sky-lightbox img { max-width: 100%; max-height: 78dvh; object-fit: contain; border-radius: 6px; }
+.sky-lightbox p { margin: 0; font-size: 14px; text-align: center; }
+.sky-lightbox .link { color: #ffd98a; }
 
 /* The surprises in the complex. */
 .frost { inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(210, 236, 248, .85) 100%); backdrop-filter: blur(1.5px) saturate(.6); animation: frost 3.2s ease-out forwards; }
@@ -54,8 +88,6 @@
 .no-signal { inset: 0; display: grid; place-items: center; background: rgba(40, 40, 44, .82); filter: grayscale(1); animation: frost 2.6s ease-out forwards; }
 .no-signal div { display: grid; gap: 6px; text-align: center; color: #eee; padding: 0 24px; }
 .no-signal b { font-size: 28px; font-family: var(--font-display); }
-.night-view { inset: 0; background: linear-gradient(180deg, #0b1430, #253a6b 70%, #c98c4a); animation: frost 3.4s ease-out forwards; }
-.night-sky span { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; animation: twinkle 1.4s ease-in-out infinite alternate; }
 @keyframes twinkle { to { opacity: .2; } }
 .lift-ride { inset: 0; display: grid; place-items: center; background: rgba(8, 10, 16, .78); }
 .lift-cabin { position: relative; width: min(320px, 86vw); height: 420px; border-radius: 10px; background: linear-gradient(180deg, #8c8f94, #5d6066); box-shadow: inset 0 0 0 6px #3d4045, 0 30px 60px rgba(0, 0, 0, .6); display: grid; grid-template-rows: auto 1fr; overflow: hidden; animation: shake .35s ease-in-out infinite; }
