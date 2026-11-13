@@ -170,7 +170,7 @@ export function renderArrakis() {
   thumper.addEventListener('pointerdown', (event) => {
     if (summoning) return;
     dragging = true;
-    thumper.setPointerCapture(event.pointerId);
+    try { thumper.setPointerCapture(event.pointerId); } catch { /* the drag still works without it */ }
     event.preventDefault();
   });
   thumper.addEventListener('pointermove', (event) => {
