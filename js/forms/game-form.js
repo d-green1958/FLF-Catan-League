@@ -351,7 +351,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
           h('div', { class: 'field' },
             h('label', { class: 'field-label' }, 'Victory point target', vpTarget),
             vpNote),
-          h('label', { class: 'switch' }, endedEarly, 'Ended early (lunch ran out before anyone reached the target)'),
+          h('label', { class: 'switch' }, endedEarly, 'Ended early (time ran out before anyone reached the target)'),
           field('Notes', notes))),
 
       store.mode() !== 'demo' && h('p', { class: 'field-hint' }, sendingHint()),

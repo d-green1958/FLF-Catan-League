@@ -110,7 +110,7 @@ function lastBattle(league) {
   const story = [
     `${name(winner)} ${verb} ${runnerUp ? name(runnerUp) : 'the table'}, ${winner.vp} to ${runnerUp?.vp ?? '–'}.`,
     extras.length ? ` ${extras.join(', and ')}.` : '',
-    game.endedEarly ? ' Lunch ran out before the end.' : '',
+    game.endedEarly ? ' Time ran out before the end.' : '',
     openings.length ? ` ${openings[0].seat.playerId === game.winnerId ? 'The strongest opening paid off' : `${name(openings[0].seat)} had the strongest opening, and it was not enough`}.` : '',
   ].join('');
   return h('section', { class: 'card battle' },
