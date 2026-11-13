@@ -15,7 +15,7 @@ Live site: <https://d-green1958.github.io/FLF-Catan-League/>
 | **Leaderboard** | Rankings under the chosen scoring system, plus **Compare all** to see where the systems disagree |
 | **Games** | Every game logged, and the form to log a new one |
 | **Players** | Everyone registered. Each profile has a photo, signature move, play style and other details, plus stats: record, form, streaks, nemesis, where they finish, win rate by table size and turn order, rating over time and honours |
-| **Insights** | League-wide patterns, such as whether going first helps, colour win rates and league records |
+| **Insights** | League-wide patterns, such as whether going first helps, colour win rates, league records and, once boards are recorded, whether the strongest opening wins |
 | **Scoring systems** | How each of the 16 systems works, its weaknesses, and settings anyone can try in their own browser |
 | **Rules** | A summary of the Catan rules and the league's own rules |
 | **About** | What the group is and when it meets |
@@ -40,6 +40,8 @@ Everything goes live without waiting for approval. Admins check the **Review** p
    - **Use a GitHub account instead:** a GitHub page opens with everything filled in. Press the green button, then come back to the site.
    - **Not now:** the change stays in your browser, with a notice at the top of every page to send or discard it later.
 3. Admins who have entered the admin code are not asked anything. Their changes go straight in.
+
+**The board (optional).** When logging a game, open **The board and openings** to record the layout and everyone's first two settlements. **Read from a photo** fills in the tiles from a picture, on the phone itself. The site then shows who started strongest. Anyone can add the board to an older game from its details.
 
 If the league refuses something, the notice at the top of the site says why. Common reasons are a name that is already taken, or a change that needs the admin code.
 

@@ -190,6 +190,6 @@ export function barList(rows, { max = null } = {}) {
     h('div', { class: 'bar-row' },
       h('div', { class: 'bar-label' }, row.lead, h('span', null, row.label)),
       h('div', { class: 'bar-track' },
-        h('span', { class: 'bar', style: { width: `${top > 0 ? (row.value / top) * 100 : 0}%` } })),
+        h('span', { class: 'bar', style: { width: `${top > 0 ? (row.value / top) * 100 : 0}%`, ...(row.colour && { background: row.colour }) } })),
       h('div', { class: 'bar-val' }, row.display, row.detail && h('small', null, row.detail)))));
 }

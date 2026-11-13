@@ -3,7 +3,8 @@
 //   2. They press Submit on GitHub, which records who sent it.
 //   3. A GitHub Action (scripts/apply-submission.js) checks the issue and commits the changes.
 //
-// Anyone can add new players and games, and edit the personal details on a profile. Changing or removing
+// Anyone can add new players and games, edit the personal details on a profile, and add the board to a game
+// that has none. Changing or removing
 // anything else needs the admin code, proved by a signature (see admin-key.js).
 //
 // People with the group password skip steps 1 and 2: the site opens the issue for them using the repo
@@ -13,7 +14,8 @@
 // Both ends use this file, so they always agree on the format and the rules. The site's own checks are
 // a convenience: processSubmission() below is the real gatekeeper, and it trusts nothing in the issue.
 import { checkAuthorisation } from './admin-key.js';
-import { changedFields, isPersonalEdit, isPhoto, validateDataset } from './validate.js';
+import { isBoardShape } from './board.js';
+import { addsBoardOnly, changedFields, isPersonalEdit, isPhoto, validateDataset } from './validate.js';
 
 export const TITLE_PREFIX = '[League]';
 const MARKER = '<!-- flfoxtan-submission -->';
@@ -63,6 +65,7 @@ const GAME_FIELDS = {
   longestRoute: isId,
   largestArmy: isId,
   notes: isText(500),
+  board: isBoardShape,
 };
 
 function matchesFields(record, fields) {
@@ -199,13 +202,13 @@ function applyToList(list, { saved, deleted }) {
   return [...kept, ...saved.filter((item) => !existing.has(item.id))];
 }
 
-/** Without the code, a submission can only add, or edit personal details on a profile. */
+/** Without the code, a submission can only add, edit personal details on a profile, or add a game's board. */
 function touchesExisting(changes, { profiles, games }) {
   const alters = (list, { saved, deleted }, allowed = () => false) => {
     const current = new Map(list.map((item) => [item.id, item]));
     return deleted.length > 0 || saved.some((item) => current.has(item.id) && !allowed(current.get(item.id), item) && changedFields(current.get(item.id), item).length > 0);
   };
-  return alters(profiles, changes.profiles, isPersonalEdit) || alters(games, changes.games);
+  return alters(profiles, changes.profiles, isPersonalEdit) || alters(games, changes.games, addsBoardOnly);
 }
 
 /** The name stored for each thing in the log, so it can still be read after that thing is removed. */

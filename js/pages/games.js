@@ -3,6 +3,9 @@ import { canManage } from '../data/access.js';
 import { store } from '../data/store.js';
 import { getLeague, nameOf, selectedApproach } from '../domain/league.js';
 import { winnerSeat } from '../domain/games.js';
+import { RESOURCES, RESOURCE_NAMES, openingFor } from '../domain/board.js';
+import { boardEditor } from '../forms/board-editor.js';
+import { boardView } from '../ui/board-view.js';
 import { openGameForm } from '../forms/game-form.js';
 import { finishChange } from '../forms/send-dialog.js';
 import { h } from '../ui/dom.js';
@@ -26,6 +29,66 @@ function tableTags(game, catalogue) {
     game.size >= 5 && h('span', { class: 'badge' }, '5–6 extension'),
     game.endedEarly && h('span', { class: 'badge warn' }, icon('clock', 'sm'), 'Ended early'),
   ];
+}
+
+const colourHex = (league, colourId) => league.reference.colours.find((colour) => colour.id === colourId)?.hex ?? '#888';
+
+/** The board, and a table of what each player's starting settlements produce. */
+function boardSection(game, league) {
+  const colourOf = (playerId) => colourHex(league, game.seats.find((seat) => seat.playerId === playerId)?.colour);
+  const rows = game.seats
+    .map((seat) => ({ seat, opening: openingFor(game.board, seat.playerId) }))
+    .filter((row) => row.opening)
+    .sort((a, b) => b.opening.total - a.opening.total);
+  const best = rows[0]?.opening.total;
+  return h('section', { class: 'board-section' },
+    h('h3', null, 'The board'),
+    boardView(game.board, { colourOf, label: `Board for the game on ${formatDate(game.date)}` }),
+    rows.length > 0 && h('div', null,
+      h('p', { class: 'field-hint' }, 'Opening strength is the total dots under the numbers each player\'s two starting settlements touch: the resource cards they can expect from every 36 rolls.'),
+      table(
+        [{ label: 'Player' }, { label: 'Pips', align: 'right' }, { label: 'Resources' }],
+        rows.map(({ seat, opening }) => [
+          h('span', { class: 'seat-name' }, colourDot(seat.colour), nameOf(league, seat.playerId), seat.isWinner && icon('trophy', 'sm')),
+          h('b', { class: `num ${opening.total === best ? 'best-pips' : ''}`.trim() }, opening.total),
+          h('div', { class: 'res-chips' }, RESOURCES.filter((resource) => opening.byResource[resource] > 0)
+            .sort((a, b) => opening.byResource[b] - opening.byResource[a])
+            .map((resource) => h('span', { class: `res-chip res-${resource}` }, `${RESOURCE_NAMES[resource]} ${opening.byResource[resource]}`))),
+        ]),
+      )));
+}
+
+/** Anyone can add the board to a game that has none: it changes nothing already entered. */
+function openAddBoard(gameId) {
+  const stored = store.game(gameId);
+  const league = getLeague();
+  openDrawer('Add the board', (close) => {
+    const editor = boardEditor({
+      players: () => stored.seats.map((seat) => ({
+        playerId: seat.playerId, name: nameOf(league, seat.playerId), colour: colourHex(league, seat.colour),
+      })),
+    });
+    const problem = h('div');
+    const save = () => {
+      const result = editor.read();
+      const message = result.error ?? (result.board ? null : 'Fill in the board first.');
+      if (message) {
+        problem.replaceChildren(h('ul', { class: 'errors', role: 'alert' }, h('li', null, message)));
+        return;
+      }
+      store.saveGame({ ...stored, board: result.board });
+      close();
+      finishChange('Board added. Openings worked out.');
+    };
+    return h('div', { class: 'form' },
+      h('p', { class: 'field-hint' }, 'Record the layout and, if you remember, where everyone placed their first two settlements.'),
+      problem,
+      editor.element,
+      h('div', { class: 'form-acts' },
+        h('span', { class: 'spacer' }),
+        h('button', { class: 'btn', type: 'button', onClick: close }, 'Cancel'),
+        h('button', { class: 'btn primary', type: 'button', onClick: save }, 'Save the board')));
+  });
 }
 
 export function openGameDetail(gameId) {
@@ -72,6 +135,12 @@ export function openGameDetail(gameId) {
         game.longestRoute && h('li', null, 'Longest Route: ', nameOf(league, game.longestRoute)),
         game.largestArmy && h('li', null, 'Largest Army: ', nameOf(league, game.largestArmy))),
       game.notes && h('p', { class: 'notes' }, game.notes),
+      game.board
+        ? boardSection(game, league)
+        : game.size <= 4 && h('button', {
+          class: 'btn', type: 'button',
+          onClick: () => { close(); openAddBoard(game.id); },
+        }, icon('hex'), 'Add the board and openings'),
       addition && h('p', { class: 'field-hint' }, `Added by ${byLabel(addition)} on ${formatDate(addition.at.slice(0, 10))}.`),
       canManage() && h('div', { class: 'form-acts' },
         h('button', { class: 'btn ghost danger', type: 'button', onClick: remove }, icon('trash'), 'Delete'),

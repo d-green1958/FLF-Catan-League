@@ -1,8 +1,9 @@
 // League-wide statistics: colours, turn order, table sizes, expansions, pairings and records.
 import { getLeague, nameOf, paramsFor } from '../domain/league.js';
 import { colourStats, expansionStats, pairStats, records, tableSizeStats, turnOrderStats } from '../domain/stats.js';
+import { RESOURCE_NAMES, TERRAINS, openingStats } from '../domain/board.js';
 import { h } from '../ui/dom.js';
-import { colourDot, emptyState, page, pageHeader, playerLink, sectionHeader, table } from '../ui/components.js';
+import { colourDot, emptyState, kpi, page, pageHeader, playerLink, sectionHeader, table } from '../ui/components.js';
 import { barList } from '../ui/charts.js';
 import { ordinal, percent, plural } from '../ui/format.js';
 
@@ -82,6 +83,38 @@ function pairMatrix(league, pairs) {
         }))))));
 }
 
+/** What the recorded boards say about starting placements. Shown once any game has everyone's opening. */
+function openingsSection(league) {
+  const stats = openingStats(league.games);
+  if (!stats.games) return null;
+  const top = Math.max(...stats.resources.flatMap((row) => [row.winners, row.others]));
+  return [
+    sectionHeader('Openings', `From ${plural(stats.games, 'game')} with the board and everyone's starting settlements recorded`),
+    h('section', { class: 'kpis' },
+      kpi('Strongest opening won', `${stats.strongestWon} of ${stats.games}`, `${percent(stats.strongestWon / stats.games)} of games`, 'trophy'),
+      kpi('Winners started on', `${stats.winnerPips.toFixed(1)} pips`, `Everyone else: ${stats.otherPips.toFixed(1)}`, 'hex'),
+      kpi('Winners touched', `${stats.winnerVariety.toFixed(1)} resources`, `Everyone else: ${stats.otherVariety.toFixed(1)} of 5`, 'scale')),
+    h('div', { class: 'two-col' },
+      h('div', null,
+        sectionHeader('What winners started on', 'Average pips per resource'),
+        h('div', { class: 'card card-b' }, barList(stats.resources.flatMap((row) => [
+          { lead: h('span', { class: `res-dot res-${row.resource}` }), label: `${RESOURCE_NAMES[row.resource]}, winners`, value: row.winners, display: row.winners.toFixed(1), colour: TERRAINS.find((terrain) => terrain.resource === row.resource).colour },
+          { lead: h('span', { class: 'res-dot faded' }), label: 'everyone else', value: row.others, display: row.others.toFixed(1), colour: 'var(--border-strong)' },
+        ]), { max: top }))),
+      h('div', null,
+        sectionHeader('Openers', 'Average starting pips, and the resource each player leans on'),
+        h('div', { class: 'card' }, table(
+          [{ label: 'Player' }, { label: 'Pips', align: 'right' }, { label: 'Leans on' }, { label: 'Games', align: 'right', optional: true }],
+          stats.players.map((row) => [
+            playerLink(league.profiles.find((player) => player.id === row.playerId)),
+            h('b', { class: 'num' }, row.averagePips.toFixed(1)),
+            h('span', { class: `res-chip res-${row.favourite}` }, RESOURCE_NAMES[row.favourite]),
+            row.games,
+          ]),
+        )))),
+  ];
+}
+
 export function renderInsights() {
   const league = getLeague();
   const header = pageHeader({
@@ -100,6 +133,7 @@ export function renderInsights() {
     header,
     sectionHeader('Records'),
     recordsGrid(league),
+    openingsSection(league),
     h('div', { class: 'two-col' },
       h('div', null, sectionHeader('Win rate by colour'), colourCard(league)),
       h('div', null, sectionHeader('Win rate by turn order', '"Chance" is the rate you would expect from table size alone'), turnOrderCard(league)),

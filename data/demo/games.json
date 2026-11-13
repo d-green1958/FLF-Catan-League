@@ -29,7 +29,45 @@
       ],
       "longestRoute": "ada",
       "largestArmy": "ada",
-      "notes": "Demo data: everything here is made up."
+      "notes": "Demo data: everything here is made up.",
+      "board": {
+        "tiles": "MPPFFFHDMPGHPGHFGMG",
+        "numbers": [
+          10,
+          11,
+          3,
+          4,
+          2,
+          10,
+          6,
+          0,
+          5,
+          6,
+          12,
+          9,
+          9,
+          11,
+          8,
+          3,
+          5,
+          8,
+          4
+        ],
+        "starts": {
+          "ada": [
+            35,
+            25
+          ],
+          "cleo": [
+            45,
+            48
+          ],
+          "ben": [
+            18,
+            39
+          ]
+        }
+      }
     },
     {
       "id": "demo-002",
@@ -63,7 +101,49 @@
         }
       ],
       "longestRoute": "esme",
-      "largestArmy": "finn"
+      "largestArmy": "finn",
+      "board": {
+        "tiles": "HMGDGPHGFFMGPFPMPFH",
+        "numbers": [
+          4,
+          5,
+          8,
+          0,
+          5,
+          3,
+          11,
+          9,
+          12,
+          11,
+          3,
+          10,
+          4,
+          10,
+          6,
+          2,
+          9,
+          8,
+          6
+        ],
+        "starts": {
+          "ben": [
+            45,
+            23
+          ],
+          "dev": [
+            13,
+            25
+          ],
+          "finn": [
+            35,
+            39
+          ],
+          "esme": [
+            48,
+            5
+          ]
+        }
+      }
     },
     {
       "id": "demo-003",
@@ -97,7 +177,49 @@
         }
       ],
       "longestRoute": "dev",
-      "largestArmy": "dev"
+      "largestArmy": "dev",
+      "board": {
+        "tiles": "FMMHPDPPGFHMGGHGPFF",
+        "numbers": [
+          12,
+          11,
+          9,
+          10,
+          8,
+          0,
+          6,
+          4,
+          3,
+          5,
+          5,
+          4,
+          6,
+          2,
+          10,
+          3,
+          9,
+          8,
+          11
+        ],
+        "starts": {
+          "cleo": [
+            25,
+            14
+          ],
+          "finn": [
+            45,
+            28
+          ],
+          "esme": [
+            36,
+            43
+          ],
+          "dev": [
+            23,
+            44
+          ]
+        }
+      }
     },
     {
       "id": "demo-004",
@@ -229,7 +351,45 @@
           "vp": 10
         }
       ],
-      "largestArmy": "cleo"
+      "largestArmy": "cleo",
+      "board": {
+        "tiles": "GMGHPFFDPFGPGHMPMHF",
+        "numbers": [
+          6,
+          12,
+          4,
+          10,
+          3,
+          9,
+          5,
+          0,
+          5,
+          3,
+          11,
+          2,
+          6,
+          11,
+          10,
+          8,
+          4,
+          8,
+          9
+        ],
+        "starts": {
+          "ben": [
+            44,
+            43
+          ],
+          "cleo": [
+            34,
+            46
+          ],
+          "ada": [
+            45,
+            12
+          ]
+        }
+      }
     },
     {
       "id": "demo-008",
@@ -301,7 +461,49 @@
         }
       ],
       "longestRoute": "esme",
-      "largestArmy": "dev"
+      "largestArmy": "dev",
+      "board": {
+        "tiles": "GMHMPDHPMPFFGHGFGFP",
+        "numbers": [
+          12,
+          4,
+          4,
+          5,
+          11,
+          0,
+          8,
+          9,
+          5,
+          10,
+          9,
+          10,
+          8,
+          6,
+          6,
+          3,
+          11,
+          2,
+          3
+        ],
+        "starts": {
+          "dev": [
+            35,
+            20
+          ],
+          "esme": [
+            28,
+            19
+          ],
+          "ben": [
+            36,
+            16
+          ],
+          "cleo": [
+            39,
+            17
+          ]
+        }
+      }
     },
     {
       "id": "demo-010",
@@ -329,7 +531,45 @@
           "vp": 8
         }
       ],
-      "endedEarly": true
+      "endedEarly": true,
+      "board": {
+        "tiles": "HPFMPHMDFFGPGHMFGGP",
+        "numbers": [
+          5,
+          4,
+          2,
+          9,
+          11,
+          10,
+          4,
+          0,
+          8,
+          11,
+          8,
+          9,
+          3,
+          6,
+          12,
+          6,
+          5,
+          3,
+          10
+        ],
+        "starts": {
+          "cleo": [
+            25,
+            12
+          ],
+          "ben": [
+            44,
+            22
+          ],
+          "ada": [
+            29,
+            36
+          ]
+        }
+      }
     },
     {
       "id": "demo-011",
@@ -421,7 +661,45 @@
         }
       ],
       "longestRoute": "ada",
-      "largestArmy": "cleo"
+      "largestArmy": "cleo",
+      "board": {
+        "tiles": "FGPFGGGPHHMHMDFFMPP",
+        "numbers": [
+          12,
+          5,
+          11,
+          9,
+          9,
+          4,
+          4,
+          3,
+          8,
+          2,
+          10,
+          8,
+          6,
+          0,
+          5,
+          11,
+          10,
+          3,
+          6
+        ],
+        "starts": {
+          "cleo": [
+            17,
+            14
+          ],
+          "ada": [
+            13,
+            41
+          ],
+          "ben": [
+            34,
+            31
+          ]
+        }
+      }
     },
     {
       "id": "demo-014",
@@ -493,7 +771,49 @@
           "vp": 7
         }
       ],
-      "largestArmy": "gwen"
+      "largestArmy": "gwen",
+      "board": {
+        "tiles": "PPFMFHMGGHHGDPPGFFM",
+        "numbers": [
+          6,
+          8,
+          2,
+          11,
+          4,
+          4,
+          8,
+          11,
+          3,
+          5,
+          10,
+          5,
+          0,
+          12,
+          9,
+          3,
+          9,
+          10,
+          6
+        ],
+        "starts": {
+          "cleo": [
+            13,
+            39
+          ],
+          "ada": [
+            45,
+            30
+          ],
+          "gwen": [
+            31,
+            23
+          ],
+          "ben": [
+            19,
+            12
+          ]
+        }
+      }
     },
     {
       "id": "demo-016",
@@ -522,7 +842,45 @@
         }
       ],
       "longestRoute": "cleo",
-      "largestArmy": "cleo"
+      "largestArmy": "cleo",
+      "board": {
+        "tiles": "GPMFPFHFDMPHGFMHGGP",
+        "numbers": [
+          9,
+          6,
+          10,
+          5,
+          11,
+          11,
+          6,
+          4,
+          0,
+          4,
+          8,
+          9,
+          10,
+          12,
+          2,
+          3,
+          5,
+          8,
+          3
+        ],
+        "starts": {
+          "cleo": [
+            31,
+            48
+          ],
+          "ben": [
+            20,
+            12
+          ],
+          "ada": [
+            19,
+            9
+          ]
+        }
+      }
     },
     {
       "id": "demo-017",
@@ -647,7 +1005,45 @@
           "colour": "blue",
           "vp": 4
         }
-      ]
+      ],
+      "board": {
+        "tiles": "DGFFFMHPMGPGGPHHFPM",
+        "numbers": [
+          0,
+          9,
+          10,
+          8,
+          3,
+          6,
+          4,
+          3,
+          8,
+          5,
+          11,
+          6,
+          5,
+          11,
+          4,
+          2,
+          10,
+          12,
+          9
+        ],
+        "starts": {
+          "esme": [
+            23,
+            20
+          ],
+          "ada": [
+            24,
+            22
+          ],
+          "gwen": [
+            14,
+            34
+          ]
+        }
+      }
     },
     {
       "id": "demo-021",
@@ -713,7 +1109,45 @@
           "vp": 8
         }
       ],
-      "longestRoute": "ada"
+      "longestRoute": "ada",
+      "board": {
+        "tiles": "FFGHGFGGFHMPPPPHMDM",
+        "numbers": [
+          5,
+          3,
+          8,
+          10,
+          11,
+          10,
+          3,
+          11,
+          12,
+          2,
+          4,
+          5,
+          4,
+          9,
+          6,
+          9,
+          6,
+          0,
+          8
+        ],
+        "starts": {
+          "cleo": [
+            39,
+            8
+          ],
+          "ada": [
+            41,
+            25
+          ],
+          "ben": [
+            9,
+            35
+          ]
+        }
+      }
     },
     {
       "id": "demo-023",
@@ -743,7 +1177,45 @@
       ],
       "endedEarly": true,
       "longestRoute": "dev",
-      "largestArmy": "dev"
+      "largestArmy": "dev",
+      "board": {
+        "tiles": "FFFMGMPHHPPFGDPGHGM",
+        "numbers": [
+          9,
+          6,
+          5,
+          12,
+          5,
+          4,
+          3,
+          8,
+          8,
+          9,
+          11,
+          10,
+          10,
+          0,
+          3,
+          6,
+          2,
+          11,
+          4
+        ],
+        "starts": {
+          "gwen": [
+            28,
+            31
+          ],
+          "dev": [
+            8,
+            9
+          ],
+          "hugo": [
+            23,
+            24
+          ]
+        }
+      }
     },
     {
       "id": "demo-024",
@@ -777,7 +1249,49 @@
         }
       ],
       "longestRoute": "cleo",
-      "largestArmy": "dev"
+      "largestArmy": "dev",
+      "board": {
+        "tiles": "MFGMHHPPFPFHMFGDPGG",
+        "numbers": [
+          5,
+          6,
+          5,
+          8,
+          8,
+          4,
+          11,
+          3,
+          3,
+          6,
+          10,
+          4,
+          12,
+          10,
+          2,
+          0,
+          9,
+          9,
+          11
+        ],
+        "starts": {
+          "dev": [
+            12,
+            5
+          ],
+          "ada": [
+            44,
+            29
+          ],
+          "cleo": [
+            18,
+            22
+          ],
+          "esme": [
+            30,
+            14
+          ]
+        }
+      }
     },
     {
       "id": "demo-025",
@@ -943,7 +1457,49 @@
           "vp": 10
         }
       ],
-      "longestRoute": "gwen"
+      "longestRoute": "gwen",
+      "board": {
+        "tiles": "GPGPFHMFMGHFFPPHGMD",
+        "numbers": [
+          9,
+          6,
+          9,
+          4,
+          10,
+          3,
+          5,
+          10,
+          6,
+          8,
+          11,
+          5,
+          3,
+          4,
+          2,
+          8,
+          12,
+          11,
+          0
+        ],
+        "starts": {
+          "dev": [
+            29,
+            39
+          ],
+          "ada": [
+            17,
+            18
+          ],
+          "hugo": [
+            14,
+            5
+          ],
+          "gwen": [
+            31,
+            8
+          ]
+        }
+      }
     },
     {
       "id": "demo-030",
@@ -975,7 +1531,49 @@
           "colour": "orange",
           "vp": 6
         }
-      ]
+      ],
+      "board": {
+        "tiles": "HMMFPGPFGFHGGPHDFMP",
+        "numbers": [
+          4,
+          8,
+          12,
+          9,
+          11,
+          10,
+          8,
+          3,
+          11,
+          5,
+          6,
+          5,
+          6,
+          10,
+          3,
+          0,
+          4,
+          9,
+          2
+        ],
+        "starts": {
+          "gwen": [
+            25,
+            43
+          ],
+          "ada": [
+            13,
+            44
+          ],
+          "esme": [
+            30,
+            12
+          ],
+          "hugo": [
+            4,
+            14
+          ]
+        }
+      }
     },
     {
       "id": "demo-031",
@@ -1004,7 +1602,45 @@
         }
       ],
       "longestRoute": "ada",
-      "largestArmy": "ada"
+      "largestArmy": "ada",
+      "board": {
+        "tiles": "GHGMHFGFGPDPHMMPPFF",
+        "numbers": [
+          9,
+          8,
+          4,
+          10,
+          8,
+          5,
+          5,
+          10,
+          4,
+          3,
+          0,
+          3,
+          12,
+          6,
+          11,
+          11,
+          9,
+          6,
+          2
+        ],
+        "starts": {
+          "ben": [
+            44,
+            22
+          ],
+          "cleo": [
+            18,
+            12
+          ],
+          "ada": [
+            29,
+            14
+          ]
+        }
+      }
     },
     {
       "id": "demo-032",
@@ -1110,7 +1746,45 @@
           "vp": 5
         }
       ],
-      "longestRoute": "ada"
+      "longestRoute": "ada",
+      "board": {
+        "tiles": "PMHPMFMDGGGGPHHPFFF",
+        "numbers": [
+          11,
+          6,
+          2,
+          8,
+          3,
+          9,
+          8,
+          0,
+          12,
+          4,
+          10,
+          11,
+          5,
+          6,
+          4,
+          3,
+          5,
+          10,
+          9
+        ],
+        "starts": {
+          "ben": [
+            39,
+            12
+          ],
+          "ada": [
+            14,
+            41
+          ],
+          "cleo": [
+            30,
+            40
+          ]
+        }
+      }
     },
     {
       "id": "demo-035",
@@ -1139,7 +1813,45 @@
         }
       ],
       "longestRoute": "esme",
-      "largestArmy": "cleo"
+      "largestArmy": "cleo",
+      "board": {
+        "tiles": "FMGFHPGHGMPFFMPDHGP",
+        "numbers": [
+          8,
+          9,
+          9,
+          4,
+          3,
+          11,
+          8,
+          4,
+          2,
+          10,
+          6,
+          12,
+          6,
+          11,
+          5,
+          0,
+          5,
+          3,
+          10
+        ],
+        "starts": {
+          "esme": [
+            39,
+            40
+          ],
+          "cleo": [
+            30,
+            9
+          ],
+          "ben": [
+            8,
+            25
+          ]
+        }
+      }
     },
     {
       "id": "demo-036",
@@ -1172,7 +1884,49 @@
           "vp": 5
         }
       ],
-      "endedEarly": true
+      "endedEarly": true,
+      "board": {
+        "tiles": "GPMGGFHPMHFPGMFDFPH",
+        "numbers": [
+          8,
+          9,
+          3,
+          5,
+          10,
+          12,
+          9,
+          6,
+          3,
+          6,
+          10,
+          8,
+          2,
+          11,
+          11,
+          0,
+          5,
+          4,
+          4
+        ],
+        "starts": {
+          "gwen": [
+            30,
+            33
+          ],
+          "ada": [
+            25,
+            23
+          ],
+          "esme": [
+            7,
+            45
+          ],
+          "dev": [
+            4,
+            22
+          ]
+        }
+      }
     },
     {
       "id": "demo-037",
@@ -1200,7 +1954,45 @@
           "vp": 9
         }
       ],
-      "longestRoute": "cleo"
+      "longestRoute": "cleo",
+      "board": {
+        "tiles": "PHGDPMFHPHGFGPFMGFM",
+        "numbers": [
+          3,
+          5,
+          11,
+          0,
+          6,
+          11,
+          9,
+          4,
+          8,
+          6,
+          9,
+          3,
+          12,
+          10,
+          10,
+          4,
+          5,
+          8,
+          2
+        ],
+        "starts": {
+          "cleo": [
+            30,
+            8
+          ],
+          "ben": [
+            40,
+            9
+          ],
+          "ada": [
+            29,
+            18
+          ]
+        }
+      }
     },
     {
       "id": "demo-038",
@@ -1233,7 +2025,49 @@
           "vp": 8
         }
       ],
-      "longestRoute": "dev"
+      "longestRoute": "dev",
+      "board": {
+        "tiles": "GHFGMHGPPMPMHFGFPDF",
+        "numbers": [
+          5,
+          11,
+          5,
+          9,
+          10,
+          6,
+          10,
+          2,
+          4,
+          8,
+          8,
+          3,
+          12,
+          6,
+          9,
+          11,
+          4,
+          0,
+          3
+        ],
+        "starts": {
+          "ben": [
+            19,
+            7
+          ],
+          "esme": [
+            29,
+            8
+          ],
+          "dev": [
+            18,
+            36
+          ],
+          "ada": [
+            9,
+            17
+          ]
+        }
+      }
     },
     {
       "id": "demo-039",
@@ -1332,7 +2166,49 @@
           "vp": 7
         }
       ],
-      "largestArmy": "cleo"
+      "largestArmy": "cleo",
+      "board": {
+        "tiles": "PPPMHMDPGGMFGHGHFFF",
+        "numbers": [
+          3,
+          10,
+          5,
+          6,
+          9,
+          4,
+          0,
+          11,
+          12,
+          3,
+          6,
+          2,
+          11,
+          10,
+          4,
+          8,
+          9,
+          8,
+          5
+        ],
+        "starts": {
+          "cleo": [
+            44,
+            19
+          ],
+          "ben": [
+            30,
+            46
+          ],
+          "esme": [
+            31,
+            45
+          ],
+          "gwen": [
+            9,
+            12
+          ]
+        }
+      }
     },
     {
       "id": "demo-042",
@@ -1361,7 +2237,45 @@
         }
       ],
       "longestRoute": "cleo",
-      "largestArmy": "hugo"
+      "largestArmy": "hugo",
+      "board": {
+        "tiles": "FDGMFPMMPGFGHPFPGHH",
+        "numbers": [
+          4,
+          0,
+          11,
+          3,
+          8,
+          5,
+          4,
+          10,
+          10,
+          9,
+          12,
+          8,
+          2,
+          6,
+          5,
+          11,
+          6,
+          3,
+          9
+        ],
+        "starts": {
+          "dev": [
+            17,
+            14
+          ],
+          "hugo": [
+            40,
+            39
+          ],
+          "cleo": [
+            24,
+            29
+          ]
+        }
+      }
     }
   ]
 }

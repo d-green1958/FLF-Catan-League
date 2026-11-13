@@ -27,7 +27,7 @@ node --test
 ```text
 data/               The databases. Plain JSON that you can read and edit by hand.
   profiles.json       Players
-  games.json          Games, with seats listed in turn order
+  games.json          Games, with seats listed in turn order, and optionally the board
   activity.json       Everything added, edited and removed, and by whom (written by the Action)
   profile-options.json  The resources and play styles offered on a profile
   rating-approaches.json  Every scoring system: description, settings, on or off
@@ -77,6 +77,15 @@ GitHub allows 60 of these checks an hour per network without a login, so they ar
 ### Photos
 
 The browser crops a chosen picture to a small square and re-encodes it, which also removes hidden details such as location. It is stored as text in `data/profiles.json`, at most 4,000 characters, so one fits in a GitHub link. Only JPEG and WebP are accepted, and the Action checks this too. Photos are public, and stay in the repo's history even after being removed.
+
+### Boards and openings
+
+A game can record its board: the 19 tiles, the number tokens and, optionally, where each player put their first two settlements. It is stored with the game as `board: { tiles, numbers, starts }` (the format is described at the top of `js/domain/board.js`). From it the site works out each player's opening strength: the dots (pips) under every number their settlements touch, split by resource. Insights then compares winners with everyone else.
+
+- **Entering it:** in the game form, open **The board and openings**. Tap a terrain, then the tiles that have it, then the numbers, then everyone's settlements. The editor counts what is left and moves on by itself.
+- **From a photo:** **Read from a photo** reads the tiles from a picture taken on the phone. You line up a hexagon outline with the board (drag, then size, rotate and tilt), and each tile's colour is matched against the six terrains, using the fact that the box holds exactly 4 forests, 4 pastures, 4 fields, 3 hills, 3 mountains and 1 desert (`js/domain/board-photo.js`). The photo never leaves the device. Tiles it is unsure of are outlined in red to check. Number tokens and settlements are tapped in by hand.
+- **Later:** anyone can add the board to a game that has none, from the game's details. Changing a board that is already there needs the admin code, like any other correction.
+- **Limits:** base-game boards only (19 tiles), not the 5–6 player extension or Seafarers.
 
 ### Set or change the admin code
 

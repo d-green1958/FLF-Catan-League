@@ -8,7 +8,7 @@
 // Submissions too recent to be published yet count as published: see js/domain/live-issues.js.
 import * as storage from './browser-storage.js';
 import { applyRecentIssues, compactIssue, isRecentIssue } from '../domain/live-issues.js';
-import { isPersonalEdit } from '../domain/validate.js';
+import { addsBoardOnly, isPersonalEdit } from '../domain/validate.js';
 
 const LIVE_DRAFT = 'flfoxtan.draft';
 const DEMO_DRAFT = 'flfoxtan.demo-draft';
@@ -257,9 +257,12 @@ export const store = {
         deleted: deleted.length,
       };
       total += changed.length + deleted.length;
-      // Anyone can edit the personal details on a profile. Other changes to what is live need the admin code.
+      // Anyone can edit the personal details on a profile, or add the board to a game that has none.
+      // Other changes to what is live need the admin code.
       const edits = changed.filter((item) => byId.has(item.id));
-      const allowed = (item) => collection === 'profiles' && isPersonalEdit(originals.get(item.id), item);
+      const allowed = (item) => (collection === 'profiles'
+        ? isPersonalEdit(originals.get(item.id), item)
+        : addsBoardOnly(originals.get(item.id), item));
       if (deleted.length || !edits.every(allowed)) needsCode = true;
     }
     return { ...summary, total, needsCode };

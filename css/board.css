@@ -1,0 +1,63 @@
+/* The board drawing, the board editor, the photo reader and resource colours. */
+
+/* Resource colours, matching the tiles. */
+.res-lumber { --res: #3d6b35; } .res-wool { --res: #7fae3e; } .res-grain { --res: #d29a1e; }
+.res-brick { --res: #c4613a; } .res-ore { --res: #7d838c; }
+
+.board-view { display: block; width: 100%; max-width: 460px; height: auto; margin: 6px auto 4px; user-select: none; -webkit-tap-highlight-color: transparent; }
+.bv-sea { fill: #2f5f8a; stroke: #d3ae58; stroke-width: .05; }
+.bv-hex { stroke: #f3e7c9; stroke-width: .06; stroke-linejoin: round; }
+.bv-hex.blank { fill: rgba(255, 255, 255, .14); stroke: rgba(255, 255, 255, .5); stroke-dasharray: .12 .1; }
+.bv-hex.flagged { stroke: #ff4d3d; stroke-width: .12; stroke-dasharray: .2 .1; }
+.interactive .bv-hex { cursor: pointer; }
+.interactive .bv-hex:hover { filter: brightness(1.08); }
+.bv-hex:focus { outline: none; stroke: #fff; stroke-width: .12; }
+.bv-token-disc { fill: #f5ead0; stroke: rgba(60, 40, 10, .35); stroke-width: .02; }
+.bv-number { font: 700 .3px var(--font-display); text-anchor: middle; dominant-baseline: middle; fill: #2a2418; }
+.bv-number.hot, .bv-pip.hot { fill: #b3261e; }
+.bv-pip { fill: #2a2418; }
+.bv-settlement { stroke: #14110c; stroke-width: .035; stroke-linejoin: round; }
+.bv-corner { fill: rgba(255, 255, 255, .9); stroke: rgba(0, 0, 0, .55); stroke-width: .02; }
+.bv-corner-hit { fill: transparent; cursor: pointer; }
+.bv-corner-hit:hover { fill: rgba(255, 255, 255, .35); }
+
+.board-editor { display: grid; gap: 10px; }
+.board-modes { justify-self: start; }
+.palette { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatch-btn, .number-btn { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.swatch-btn[aria-pressed="true"], .number-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); background: var(--accent-soft); }
+.tile-swatch { width: 15px; height: 17px; clip-path: var(--hex); flex: none; }
+.swatch-btn .left, .number-btn .left { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.swatch-btn .left.over { color: var(--bad); font-weight: 700; }
+.number-btn { min-width: 52px; justify-content: center; font-family: var(--font-display); font-size: 16px; font-weight: 650; }
+.number-btn.hot { color: #b3261e; }
+:root[data-theme="dark"] .number-btn.hot { color: #ff7a6e; }
+.photo-btn { margin-left: auto; }
+.board-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; }
+.board-foot .link-btn { font-weight: 500; color: var(--muted); font-size: 13px; }
+.board-status { margin: 0; }
+.board-section { display: grid; gap: 10px; margin-top: 6px; }
+.board-section h3 { font-family: var(--font-display); font-size: 18px; }
+.best-pips { color: var(--gold); }
+
+.res-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.res-chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 7px; border-radius: 6px; font-size: 12px; font-weight: 500; background: color-mix(in srgb, var(--res, var(--muted)) 16%, transparent); color: var(--ink); white-space: nowrap; }
+.res-chip::before { content: ""; width: 8px; height: 9px; clip-path: var(--hex); background: var(--res, var(--muted)); }
+.res-dot { width: 10px; height: 11px; clip-path: var(--hex); background: var(--res); display: inline-block; flex: none; }
+.res-dot.faded { background: var(--border-strong); }
+
+.photo-reader { display: grid; gap: 12px; padding-bottom: 18px; }
+.photo-stage { position: relative; touch-action: none; border-radius: var(--r); overflow: hidden; background: #000; }
+.photo-canvas { display: block; width: 100%; height: auto; }
+.photo-overlay { position: absolute; inset: 0; width: 100%; height: 100%; cursor: move; }
+.photo-hex { fill: rgba(211, 174, 88, .08); stroke: #ffd76a; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.photo-dot { fill: #ffd76a; }
+.photo-controls { display: grid; gap: 8px; }
+.photo-slider { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); }
+.photo-slider input { width: 100%; accent-color: var(--btn); }
+
+@media (max-width: 560px) {
+  .swatch-btn, .number-btn { height: 40px; }
+  .number-btn { min-width: 48px; }
+  .photo-btn { margin-left: 0; width: 100%; }
+}

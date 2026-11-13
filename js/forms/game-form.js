@@ -9,6 +9,7 @@ import { avatar, errorList, field } from '../ui/components.js';
 import { openDrawer, toast } from '../ui/feedback.js';
 import { today } from '../ui/format.js';
 import { finishChange } from './send-dialog.js';
+import { boardEditor } from './board-editor.js';
 
 const blankSeat = () => ({ playerId: '', colour: '', vp: '' });
 
@@ -52,6 +53,14 @@ export function openGameForm(existing = null, { onSaved } = {}) {
     const largestArmyField = field('Largest Army', largestArmy);
     const seatsHolder = h('div', { class: 'seats' });
     const picker = h('div', { class: 'picker', role: 'group', 'aria-label': 'Players, tapped in turn order' });
+    const board = boardEditor({
+      initial: existing?.board ?? null,
+      players: () => state.seats.filter((seat) => seat.playerId).map((seat) => ({
+        playerId: seat.playerId,
+        name: store.player(seat.playerId)?.name ?? seat.playerId,
+        colour: colours.find((colour) => colour.id === seat.colour)?.hex ?? '#888',
+      })),
+    });
     const extensionNote = h('p', { class: 'field-hint' });
 
     const selectedExpansions = () => catalogue.expansions.filter((expansion) => state.expansions.includes(expansion.id));
@@ -112,6 +121,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
     /** Keeps everything that depends on the seats up to date, without rebuilding inputs mid-typing. */
     function refreshDerived() {
       renderPicker();
+      board?.refresh();
       if (!state.winnerChosenByHand) {
         const scored = state.seats.filter((seat) => seat.playerId && Number.isInteger(seat.vp));
         const top = Math.max(-1, ...scored.map((seat) => seat.vp));
@@ -277,7 +287,12 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         ...(largestArmy.value ? { largestArmy: largestArmy.value } : {}),
         ...(notes.value.trim() ? { notes: notes.value.trim() } : {}),
       };
-      const errors = validateGame(game, { profiles: store.profiles(), colours, settings: league.settings });
+      const boardResult = board.read();
+      if (boardResult.board) game.board = boardResult.board;
+      const errors = [
+        ...(boardResult.error ? [boardResult.error] : []),
+        ...validateGame(game, { profiles: store.profiles(), colours, settings: league.settings }),
+      ];
       errorHolder.replaceChildren(...[errorList(errors)].filter(Boolean));
       if (errors.length) {
         errorHolder.scrollIntoView({ block: 'nearest' });
@@ -312,6 +327,11 @@ export function openGameForm(existing = null, { onSaved } = {}) {
       h('fieldset', { class: 'group' },
         h('legend', null, 'Bonus tiles (optional)'),
         h('div', { class: 'form-row' }, field('Longest Route', longestRoute), largestArmyField)),
+
+      h('details', { class: 'more-details', open: Boolean(existing?.board) },
+        h('summary', null, 'The board and openings: who started strongest?'),
+        h('p', { class: 'field-hint' }, 'Optional. Record the layout and where everyone placed their first two settlements, and the site works out who had the strongest start. You can also add it later from the game\'s details.'),
+        board.element),
 
       h('details', { class: 'more-details', open: hasDetails },
         h('summary', null, 'More details: time, place, expansions, target, notes'),

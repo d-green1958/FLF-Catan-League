@@ -1,5 +1,6 @@
 // The rules a player or game must follow before it can be saved.
 // Each function returns a list of plain-English problems; an empty list means valid.
+import { validateBoard } from './board.js';
 
 const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value || '') && !Number.isNaN(Date.parse(value));
 
@@ -20,6 +21,9 @@ export function changedFields(before, after) {
 }
 
 export const isPersonalEdit = (before, after) => changedFields(before, after).every((key) => PERSONAL_FIELDS.includes(key));
+
+/** Adding the board to a game that has none changes nothing anyone already entered, so anyone may do it. */
+export const addsBoardOnly = (before, after) => !before.board && changedFields(before, after).every((key) => key === 'board');
 
 export function validatePlayer(player, allPlayers = []) {
   const errors = [];
@@ -79,6 +83,7 @@ export function validateGame(game, { profiles = [], colours = [], settings = {} 
   for (const [label, holder] of [['Longest Route', game.longestRoute], ['Largest Army', game.largestArmy]]) {
     if (holder && !playerIds.includes(holder)) errors.push(`${label} must be held by someone in the game.`);
   }
+  if (game.board !== undefined) errors.push(...validateBoard(game.board, playerIds));
   return errors;
 }
 
