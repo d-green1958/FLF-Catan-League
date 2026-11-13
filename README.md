@@ -189,7 +189,9 @@ League data is read from and written to the repo's default branch. If the defaul
 
 ## The home page
 
-The home page (`js/pages/home.js`) has the crest and a countdown to the next Fun Lunch Friday (Fridays at 12:30; change `MEET_HOUR` and `MEET_MINUTE` there), the podium, the latest game told as a short story with its board, a window onto the Map, and a few league records. The leaderboard lives at `#/leaderboard`.
+The home page (`js/pages/home.js`) has the crest and the league clock, the podium, the latest game told as a short story with its board, a window onto the Map, and a few league records. The leaderboard lives at `#/leaderboard`.
+
+**The league clock** counts the time since the last game. To count down to a planned game instead, add `"nextGame": "2026-11-20T12:30"` (local time) to `data/league.json`. Once that time passes it goes back to counting up, so it never needs clearing.
 
 ## The Map and the easter eggs
 

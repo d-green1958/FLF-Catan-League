@@ -10,7 +10,7 @@
 //   proverb    Tap the proverb under the menu         another lunchtime proverb
 //   scholar    Run oxtan.reveal() in the browser console
 //   owl        Visit between midnight and 4am         an owl and a word of concern
-//   feast      Visit on a Friday                      the Fun Lunch Friday ribbon
+//   feast      Visit on a Friday                      a ribbon for the day the group is named after
 //   winter     Switch dark mode five times quickly    snow
 //   dragon     Type "dragon", or search for it        a dragon's shadow passes over
 //   recount    Tap the Leaderboard title three times  everyone demands a recount
@@ -35,7 +35,7 @@ export const SECRETS = [
   { id: 'proverb', title: 'The Changing Wisdom', place: 'bodleian', riddle: 'Beneath the list of places lies a saying. Touch it, and it thinks again.' },
   { id: 'scholar', title: 'The Scholar\'s Incantation', place: 'maths', riddle: 'Those who look beneath the hood of the page will find a greeting, and a spell to speak.' },
   { id: 'owl', title: 'The Night Owl', place: 'magdalen', riddle: 'Visit while the owls are awake: after midnight, before the fourth bell.' },
-  { id: 'feast', title: 'The Day of the Feast', place: 'market', riddle: 'Return on the day the realm gathers for lunch.' },
+  { id: 'feast', title: 'The Day of the Feast', place: 'market', riddle: 'Return on the day the group is named after.' },
   { id: 'winter', title: 'The Long Winter', place: 'sighs', riddle: 'Turn day to night and night to day, five times, as fast as you can.' },
   { id: 'dragon', title: 'The Beast of Otmoor', place: 'otmoor', riddle: 'Speak the beast\'s name aloud on your keys, or write it in the ledger of games.' },
   { id: 'recount', title: 'The Great Recount', place: 'schools', riddle: 'The losers always demand it. Strike the title of the rankings three times.' },
@@ -317,9 +317,8 @@ export function installDelights() {
   if (now.getHours() < 4) setTimeout(owl, 1500);
   if (now.getDay() === 5) {
     discover('feast');
-    const lunchtime = now.getHours() >= 12 && now.getHours() < 14;
     const ribbon = h('div', { class: 'feast-ribbon', role: 'status' },
-      lunchtime ? 'It is Fun Lunch Friday, and it is lunchtime. Why are you reading this? Go and play.' : 'It is Friday. The realm gathers for lunch.',
+      'Happy Friday, settlers. Fun Lunch Friday, in name at least.',
       h('button', { class: 'link-btn', type: 'button', 'aria-label': 'Dismiss', onClick: () => ribbon.remove() }, '×'));
     document.getElementById('main').prepend(ribbon);
   }

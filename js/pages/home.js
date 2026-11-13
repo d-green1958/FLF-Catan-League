@@ -1,4 +1,4 @@
-// The home page: the crest and a countdown to the next Fun Lunch Friday, the podium, the latest game told
+// The home page: the crest and the league clock, the podium, the latest game told
 // as a story, a living window onto the Map, and a few league records.
 import { store } from '../data/store.js';
 import { getLeague, leaderboard, nameOf, selectedApproach } from '../domain/league.js';
@@ -13,47 +13,52 @@ import { formatLongDate, formatScore, plural } from '../ui/format.js';
 import { livingMap } from './map.js';
 import { boardView } from '../ui/board-view.js';
 
-// When the group meets. The countdown aims for the next Friday at this time, local time.
-const MEET_DAY = 5;
-const MEET_HOUR = 12;
-const MEET_MINUTE = 30;
-const GAME_LENGTH_MINUTES = 90;
+// Games happen whenever the group can make it, not on a fixed day. If data/league.json has a "nextGame"
+// (for example "2026-11-20T12:30"), the hero counts down to it. Otherwise, or once it has passed, it counts the
+// time since the last game was played.
+let clockTimer = null;
 
-let countdownTimer = null;
+/** When a game was played: its date, and its start time if one was noted (noon otherwise). */
+const playedAt = (game) => new Date(`${game.date}T${game.time || '12:00'}:00`);
 
-/** The next meeting, or the one happening right now. */
-function nextMeeting(now = new Date()) {
-  const start = new Date(now);
-  start.setHours(MEET_HOUR, MEET_MINUTE, 0, 0);
-  start.setDate(start.getDate() + ((MEET_DAY - start.getDay() + 7) % 7));
-  const end = new Date(start.getTime() + GAME_LENGTH_MINUTES * 60000);
-  if (now >= end) start.setDate(start.getDate() + 7);
-  return { start, live: now >= start && now < end };
-}
-
-function countdown() {
+function leagueClock(league) {
   const holder = h('div', { class: 'countdown', role: 'timer', 'aria-live': 'off' });
   const unit = (value, label) => h('div', { class: 'cd-unit' }, h('b', null, String(value).padStart(2, '0')), h('span', null, label));
-  const draw = () => {
-    if (!holder.isConnected && holder.dataset.drawn) { clearInterval(countdownTimer); return; }
-    holder.dataset.drawn = '1';
-    const { start, live } = nextMeeting();
-    if (live) {
-      holder.replaceChildren(h('p', { class: 'cd-live' }, h('span', { class: 'cd-pulse' }), 'Game on. It is Fun Lunch Friday right now.'));
-      return;
-    }
-    let seconds = Math.max(0, Math.floor((start - new Date()) / 1000));
+  const units = (milliseconds) => {
+    let seconds = Math.max(0, Math.floor(milliseconds / 1000));
     const days = Math.floor(seconds / 86400); seconds -= days * 86400;
     const hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     const minutes = Math.floor(seconds / 60);
-    holder.replaceChildren(
-      h('p', { class: 'cd-label' }, 'Next Fun Lunch Friday'),
-      h('div', { class: 'cd-units' }, unit(days, days === 1 ? 'day' : 'days'), unit(hours, 'hours'), unit(minutes, 'mins'), unit(seconds - minutes * 60, 'secs')),
-      h('p', { class: 'cd-when' }, start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }), `, ${String(MEET_HOUR).padStart(2, '0')}:${String(MEET_MINUTE).padStart(2, '0')}`));
+    return h('div', { class: 'cd-units' }, unit(days, days === 1 ? 'day' : 'days'), unit(hours, 'hours'), unit(minutes, 'mins'), unit(seconds - minutes * 60, 'secs'));
+  };
+  const planned = league.reference.league.nextGame ? new Date(league.reference.league.nextGame) : null;
+  const lastGame = league.games.at(-1);
+  let drawn = false;
+
+  const draw = () => {
+    if (drawn && !holder.isConnected) { clearInterval(clockTimer); return; }
+    drawn = true;
+    const now = new Date();
+    if (planned && !Number.isNaN(planned.getTime()) && planned > now) {
+      holder.replaceChildren(
+        h('p', { class: 'cd-label' }, 'Next game'),
+        units(planned - now),
+        h('p', { class: 'cd-when' }, planned.toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })));
+    } else if (lastGame && playedAt(lastGame) > now) {
+      // Only the made-up demo games are dated in the future.
+      holder.replaceChildren(h('p', { class: 'cd-live' }, `The last battle: ${formatLongDate(lastGame.date)}.`));
+    } else if (lastGame) {
+      holder.replaceChildren(
+        h('p', { class: 'cd-label' }, 'Since the last battle'),
+        units(now - playedAt(lastGame)),
+        h('p', { class: 'cd-when' }, 'The board grows cold. Who is up for a game?'));
+    } else {
+      holder.replaceChildren(h('p', { class: 'cd-live' }, 'The first battle awaits.'));
+    }
   };
   draw();
-  clearInterval(countdownTimer);
-  countdownTimer = setInterval(draw, 1000);
+  clearInterval(clockTimer);
+  clockTimer = setInterval(draw, 1000);
   return holder;
 }
 
@@ -64,8 +69,8 @@ function hero(league) {
     h('div', { class: 'hero-text' },
       h('p', { class: 'hero-eyebrow' }, 'Strategy · Trade · Build · Settle'),
       h('h1', { class: 'hero-title' }, 'FLFOxtan League'),
-      h('p', { class: 'hero-sub' }, `${fullName}. Every Friday at lunch, settlers gather, trade and quarrel over sheep. Est. 2026.`),
-      countdown(),
+      h('p', { class: 'hero-sub' }, `${fullName}. Over lunch, settlers gather, trade and quarrel over sheep. Est. 2026.`),
+      leagueClock(league),
       h('div', { class: 'hero-acts' },
         h('button', { class: 'btn gold', type: 'button', onClick: () => openGameForm() }, icon('plus'), 'Log a game'),
         h('a', { class: 'btn ghost-light', href: route('/leaderboard') }, icon('trophy'), 'The table'))));
