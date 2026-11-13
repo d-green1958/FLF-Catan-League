@@ -16,6 +16,7 @@ import { icon } from '../ui/icons.js';
 import { page, pageHeader } from '../ui/components.js';
 import { SECRETS, discover, foundSecrets, onTaps, secretPlace } from '../ui/delights.js';
 import { formatDate } from '../ui/format.js';
+import * as storage from '../data/browser-storage.js';
 import { trail } from './engsci.js';
 
 const W = 1000;
@@ -27,7 +28,7 @@ const PLACES = {
   bodleian: { name: 'Bodleian', x: 472, y: 322, kind: 'hall', label: [0, 29, 'middle'] },
   sheldonian: { name: 'Sheldonian', x: 470, y: 250, kind: 'temple', label: [30, -40, 'middle'] },
   sighs: { name: 'Bridge of Sighs', x: 612, y: 296, kind: 'bridge', label: [0, 37, 'middle'] },
-  carfax: { name: 'Carfax', x: 410, y: 392, kind: 'tower', label: [-20, -27, 'middle'] },
+  carfax: { name: 'Carfax', x: 410, y: 392, kind: 'tower', label: [-34, -27, 'middle'] },
   market: { name: 'Covered Market', x: 488, y: 396, kind: 'market', label: [-19, 23, 'end'] },
   christchurch: { name: 'Christ Church', x: 418, y: 456, kind: 'tower', label: [60, 31, 'middle'] },
   folly: { name: 'Folly Bridge', x: 440, y: 526, kind: 'bridge', label: [-40, 27, 'middle'] },
@@ -129,20 +130,20 @@ function landmark(place, onPlace) {
   const fill = { fill: '#e9d9b0', stroke: INK, 'stroke-width': 1.6, 'stroke-linejoin': 'round' };
   const shapes = {
     dome: [svg('rect', { x: x - 14, y: y - 4, width: 28, height: 12, ...fill }), svg('path', { d: `M${x - 13} ${y - 4}a13 13 0 0 1 26 0Z`, ...fill }), svg('path', { d: `M${x} ${y - 17}v-6M${x - 8} ${y + 8}v-12M${x + 8} ${y + 8}v-12M${x} ${y + 8}v-12`, ...ink })],
-    tall: [svg('path', { d: `M${x - 9} ${y + 12}V${y - 26}h18V${y + 12}Z`, ...fill }), svg('path', { d: `M${x - 9} ${y - 26}h18l-3-8h-12Z`, fill: '#d3ae58', stroke: INK, 'stroke-width': 1.4 }), svg('path', { d: `M${x - 5} ${y - 18}h10M${x - 5} ${y - 10}h10M${x - 5} ${y - 2}h10M${x - 5} ${y + 6}h10`, ...ink })],
+    tall: [svg('path', { d: `M${x - 9} ${y + 12}V${y - 26}h18V${y + 12}Z`, ...fill }), svg('path', { d: `M${x - 9} ${y - 26}h18l-3-8h-12Z`, ...fill }), svg('path', { d: `M${x - 5} ${y - 18}h10M${x - 5} ${y - 10}h10M${x - 5} ${y - 2}h10M${x - 5} ${y + 6}h10`, ...ink })],
     tower: [svg('path', { d: `M${x - 6} ${y + 10}V${y - 10}h12V${y + 10}Z`, ...fill }), svg('path', { d: `M${x - 7} ${y - 10}l7-12 7 12`, ...fill }), svg('path', { d: `M${x - 2} ${y + 10}v-6h4v6`, ...ink })],
     temple: [svg('path', { d: `M${x - 15} ${y - 5}L${x} ${y - 15}L${x + 15} ${y - 5}Z`, ...fill }), svg('rect', { x: x - 14, y: y - 5, width: 28, height: 14, ...fill }), svg('path', { d: `M${x - 8} ${y - 3}v10M${x - 3} ${y - 3}v10M${x + 3} ${y - 3}v10M${x + 8} ${y - 3}v10`, ...ink })],
     hall: [svg('rect', { x: x - 16, y: y - 7, width: 32, height: 15, ...fill }), svg('path', { d: `M${x - 16} ${y - 7}l4-6h24l4 6M${x - 9} ${y + 8}v-7M${x} ${y + 8}v-7M${x + 9} ${y + 8}v-7`, ...ink })],
     bridge: [svg('path', { d: `M${x - 16} ${y + 6}h32M${x - 16} ${y - 2}h32M${x - 10} ${y + 6}a10 8 0 0 1 20 0`, ...ink })],
-    market: [svg('rect', { x: x - 12, y: y - 4, width: 24, height: 12, ...fill }), svg('path', { d: `M${x - 15} ${y - 4}l3-6h24l3 6Z`, fill: '#b44a35', stroke: INK, 'stroke-width': 1.4 })],
-    castle: [svg('path', { d: `M${x - 22} ${y + 12}q22-16 44 0Z`, fill: '#cdbb8a', stroke: INK, 'stroke-width': 1.4 }), svg('path', { d: `M${x - 10} ${y + 4}V${y - 12}h4v4h4v-4h4v4h4v-4h4V${y + 4}`, ...fill })],
+    market: [svg('rect', { x: x - 12, y: y - 4, width: 24, height: 12, ...fill }), svg('path', { d: `M${x - 15} ${y - 4}l3-6h24l3 6Z`, ...fill }), svg('path', { d: `M${x - 9} ${y - 10}l-2 6M${x - 3} ${y - 10}l-1 6M${x + 3} ${y - 10}l1 6M${x + 9} ${y - 10}l2 6`, ...ink })],
+    castle: [svg('path', { d: `M${x - 22} ${y + 12}q22-16 44 0Z`, ...fill }), svg('path', { d: `M${x - 16} ${y + 10}l4-4M${x - 8} ${y + 10}l4-5M${x + 6} ${y + 10}l4-5M${x + 13} ${y + 10}l3-3`, ...ink }), svg('path', { d: `M${x - 10} ${y + 4}V${y - 12}h4v4h4v-4h4v4h4v-4h4V${y + 4}`, ...fill })],
     station: [svg('rect', { x: x - 14, y: y - 6, width: 28, height: 12, ...fill }), svg('path', { d: `M${x + 6} ${y - 6}v-7h4v7M${x - 24} ${y + 10}h48M${x - 24} ${y + 13}h48`, ...ink })],
-    trees: [[-12, 2], [0, -4], [12, 3], [-4, 8], [8, 10]].map(([dx, dy]) => [svg('path', { d: `M${x + dx} ${y + dy + 9}v-5`, ...ink }), svg('circle', { cx: x + dx, cy: y + dy, r: 6, fill: '#7f9a55', stroke: INK, 'stroke-width': 1.2 })]),
-    pub: [svg('path', { d: `M${x - 13} ${y + 10}v-14l13-9 13 9v14Z`, fill: '#e2c48a', stroke: INK, 'stroke-width': 1.5, 'stroke-linejoin': 'round' }), svg('path', { d: `M${x + 13} ${y - 6}h9M${x + 20} ${y - 6}v3`, ...ink }), svg('rect', { x: x + 15, y: y - 3, width: 11, height: 9, fill: '#8b2a1d', stroke: INK, 'stroke-width': 1 }), svg('path', { d: `M${x - 4} ${y + 10}v-7h8v7`, ...ink })],
-    houses: [[-14, 0], [0, -4], [14, 1]].map(([dx, dy]) => svg('path', { d: `M${x + dx - 6} ${y + dy + 8}v-9l6-6 6 6v9Z`, fill: '#c98a5e', stroke: INK, 'stroke-width': 1.3 })),
+    trees: [[-12, 2], [0, -4], [12, 3], [-4, 8], [8, 10]].map(([dx, dy]) => [svg('path', { d: `M${x + dx} ${y + dy + 9}v-5`, ...ink }), svg('path', { d: `M${x + dx - 6} ${y + dy + 1}c-2-6 3-9 6-7 2-4 8-2 7 2 3 2 1 7-2 7-2 2-8 2-11-2Z`, fill: 'none', stroke: INK, 'stroke-width': 1.1 })]),
+    pub: [svg('path', { d: `M${x - 13} ${y + 10}v-14l13-9 13 9v14Z`, ...fill }), svg('path', { d: `M${x + 13} ${y - 6}h9M${x + 20} ${y - 6}v3`, ...ink }), svg('rect', { x: x + 15, y: y - 3, width: 11, height: 9, ...fill }), svg('path', { d: `M${x + 17} ${y + 1}h7M${x + 17} ${y + 3.5}h7`, ...ink }), svg('path', { d: `M${x - 4} ${y + 10}v-7h8v7`, ...ink })],
+    houses: [[-14, 0], [0, -4], [14, 1]].map(([dx, dy]) => svg('path', { d: `M${x + dx - 6} ${y + dy + 8}v-9l6-6 6 6v9Z`, ...fill })),
     meadow: [[-30, 0], [-12, 10], [8, -6], [26, 6], [-22, -14], [18, -18]].map(([dx, dy]) => svg('path', { d: `M${x + dx - 4} ${y + dy}l2-6 2 6 2-7 2 7`, ...ink })),
-    fields: [0, 1, 2, 3].map((row) => svg('path', { d: `M${x - 34} ${y - 12 + row * 8}h68`, stroke: '#a77b2a', 'stroke-width': 1.4, 'stroke-dasharray': '3 3' })),
-    dragon: [svg('path', { d: 'M10 60c20-4 34-14 46-30l8 14 14-26 6 22 20-30 2 34c10 4 20 4 32-2-6 10-18 16-32 16l8 14-22-6-12 16-6-16c-16 6-32 6-48 2l-16 10 6-16Z', fill: '#5d2a1c', opacity: 0.8, transform: `translate(${x - 70} ${y - 40}) scale(.85)` })],
+    fields: [0, 1, 2, 3].map((row) => svg('path', { d: `M${x - 34} ${y - 12 + row * 8}h68`, stroke: INK, 'stroke-width': 1, 'stroke-dasharray': '2 4', opacity: 0.8 })),
+    dragon: [svg('path', { d: 'M10 60c20-4 34-14 46-30l8 14 14-26 6 22 20-30 2 34c10 4 20 4 32-2-6 10-18 16-32 16l8 14-22-6-12 16-6-16c-16 6-32 6-48 2l-16 10 6-16Z', fill: 'rgba(59, 38, 20, .12)', stroke: INK, 'stroke-width': 1.6, 'stroke-linejoin': 'round', transform: `translate(${x - 70} ${y - 40}) scale(.85)` })],
     none: [],
   };
   // label: where the name goes, as [dx, dy, anchor] from the drawing (chosen so no name sits on a road or
@@ -176,9 +177,9 @@ function compassRose(onSpin) {
   const rose = svg('g', { class: 'map-compass', role: 'button', 'aria-label': 'Compass rose', tabindex: '0' },
     svg('circle', { cx: 0, cy: 0, r: 46, fill: 'none', stroke: INK, 'stroke-width': 1.2 }),
     svg('circle', { cx: 0, cy: 0, r: 40, fill: 'none', stroke: INK, 'stroke-width': 0.6, 'stroke-dasharray': '2 3' }),
-    [0, 90, 180, 270].map((angle) => svg('path', { d: 'M0 -44 L7 0 L0 6 L-7 0Z', fill: angle === 0 ? '#8b2a1d' : INK, transform: `rotate(${angle})` })),
-    [45, 135, 225, 315].map((angle) => svg('path', { d: 'M0 -28 L4 0 L0 4 L-4 0Z', fill: '#a58a55', transform: `rotate(${angle})` })),
-    svg('circle', { cx: 0, cy: 0, r: 4, fill: '#d3ae58', stroke: INK }),
+    [0, 90, 180, 270].map((angle) => [svg('path', { d: 'M0 -44 L7 0 L0 0Z', fill: INK, transform: `rotate(${angle})` }), svg('path', { d: 'M0 -44 L-7 0 L0 0Z', fill: '#ead8aa', stroke: INK, 'stroke-width': 0.8, transform: `rotate(${angle})` })]),
+    [45, 135, 225, 315].map((angle) => svg('path', { d: 'M0 -28 L4 0 L0 4 L-4 0Z', fill: 'none', stroke: INK, 'stroke-width': 0.9, transform: `rotate(${angle})` })),
+    svg('circle', { cx: 0, cy: 0, r: 4, fill: '#ead8aa', stroke: INK }),
     text(0, -52, 'N', 'map-compass-n'));
   const holder = svg('g', { transform: `translate(${x} ${y})` }, rose);
   onTaps(rose, 3, onSpin);
@@ -194,34 +195,44 @@ function backdrop() {
         svg('feComposite', { in2: 'SourceGraphic', operator: 'in' })),
       svg('radialGradient', { id: 'paper-burn', cx: '50%', cy: '50%', r: '70%' },
         svg('stop', { offset: '55%', 'stop-color': '#000', 'stop-opacity': 0 }),
-        svg('stop', { offset: '100%', 'stop-color': '#5a3410', 'stop-opacity': 0.55 })),
+        svg('stop', { offset: '100%', 'stop-color': '#4a2a0c', 'stop-opacity': 0.7 })),
       svg('linearGradient', { id: 'paper-tone', x1: 0, y1: 0, x2: 1, y2: 1 },
-        svg('stop', { offset: '0%', 'stop-color': '#f1e2bb' }),
-        svg('stop', { offset: '100%', 'stop-color': '#e3cc98' })),
+        svg('stop', { offset: '0%', 'stop-color': '#efdcae' }),
+        svg('stop', { offset: '100%', 'stop-color': '#d9bd85' })),
+      svg('radialGradient', { id: 'paper-stain' },
+        svg('stop', { offset: '0%', 'stop-color': '#8a5a22', 'stop-opacity': 0.16 }),
+        svg('stop', { offset: '70%', 'stop-color': '#8a5a22', 'stop-opacity': 0.08 }),
+        svg('stop', { offset: '100%', 'stop-color': '#8a5a22', 'stop-opacity': 0 })),
       svg('path', { id: 'isis-path', d: 'M120 20C170 90 190 160 230 230S290 330 320 420S380 520 440 530S560 590 620 640S700 690 760 700' }),
       svg('path', { id: 'cherwell-path', d: 'M800 20C760 90 720 150 690 230S650 320 700 380S690 460 640 520S600 600 612 632' })),
     svg('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#paper-tone)' }),
     svg('rect', { x: 0, y: 0, width: W, height: H, fill: '#e8d6a8', filter: 'url(#paper-grain)' }),
+    // Tea stains and age spots.
+    [[180, 560, 90], [820, 180, 120], [640, 620, 70], [90, 120, 60], [930, 520, 80], [470, 90, 50]].map(([cx, cy, r]) => svg('circle', { cx, cy, r, fill: 'url(#paper-stain)' })),
     svg('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#paper-burn)' }),
     // Fold lines, as if the map has lived in a pocket.
     svg('path', { d: `M${W / 3} 0V${H}M${(2 * W) / 3} 0V${H}M0 ${H / 2}H${W}`, stroke: 'rgba(90, 60, 20, .14)', 'stroke-width': 2 }),
     svg('rect', { x: 14, y: 14, width: W - 28, height: H - 28, fill: 'none', stroke: INK, 'stroke-width': 2.4 }),
     svg('rect', { x: 22, y: 22, width: W - 44, height: H - 44, fill: 'none', stroke: INK, 'stroke-width': 0.8 }),
+    // Flourishes in each corner.
+    [[22, 22, 1, 1], [W - 22, 22, -1, 1], [22, H - 22, 1, -1], [W - 22, H - 22, -1, -1]].map(([cx, cy, sx, sy]) => svg('path', {
+      d: `M${cx} ${cy + sy * 46}c${sx * 10} ${-sy * 4} ${sx * 18} ${-sy * 18} ${sx * 14} ${-sy * 30}M${cx + sx * 46} ${cy}c${-sx * 4} ${sy * 10} ${-sx * 18} ${sy * 18} ${-sx * 30} ${sy * 14}M${cx + sx * 8} ${cy + sy * 8}l${sx * 10} ${sy * 10}`,
+      fill: 'none', stroke: INK, 'stroke-width': 1.2, 'stroke-linecap': 'round' })),
   ];
 }
 
 function cityLayer(onPlace) {
   const road = (d, name, at) => [
     svg('path', { d, class: 'map-road' }),
+    svg('path', { d, class: 'map-road-inner' }),
     name && text(at[0], at[1], name, 'map-road-label', { transform: `rotate(${at[2] ?? 0} ${at[0]} ${at[1]})` }),
   ];
-  return svg('g', null,
+  return svg('g', { class: 'map-ink' },
     // The Ring Road, beyond which lie dragons.
     svg('ellipse', { cx: 500, cy: 360, rx: 440, ry: 310, class: 'map-ring' }),
     text(78, 450, 'The Ring Road', 'map-road-label', { transform: 'rotate(-78 78 450)' }),
     // Rivers, drawn twice for a soft inked edge.
-    svg('use', { href: '#isis-path', class: 'map-river-edge' }), svg('use', { href: '#isis-path', class: 'map-river' }),
-    svg('use', { href: '#cherwell-path', class: 'map-river-edge' }), svg('use', { href: '#cherwell-path', class: 'map-river' }),
+    ['#isis-path', '#cherwell-path'].map((href) => [svg('use', { href, class: 'map-river-edge' }), svg('use', { href, class: 'map-river' }), svg('use', { href, class: 'map-river-ripple' })]),
     svg('text', { class: 'map-water-label' }, svg('textPath', { href: '#isis-path', startOffset: '18%' }, 'River Isis')),
     svg('text', { class: 'map-water-label' }, svg('textPath', { href: '#cherwell-path', startOffset: '10%' }, 'River Cherwell')),
     road('M410 392L425 300L440 230', 'St Giles', [416, 330, -82]),
@@ -239,7 +250,7 @@ function cityLayer(onPlace) {
     text(190, 476, 'CASTLE QUARTER', 'map-district'),
     // A few sheep on Port Meadow, because of course.
     [[230, 178], [282, 184], [292, 134]].map(([x, y]) => svg('g', { transform: `translate(${x} ${y})` },
-      svg('ellipse', { cx: 0, cy: 0, rx: 7, ry: 5, fill: '#fbf6e8', stroke: INK, 'stroke-width': 1 }),
+      svg('ellipse', { cx: 0, cy: 0, rx: 7, ry: 5, fill: '#ead8aa', stroke: INK, 'stroke-width': 1 }),
       svg('circle', { cx: 7, cy: -1, r: 2.6, fill: INK }))),
     Object.values(PLACES).map((place) => landmark(place, onPlace)));
 }
@@ -247,7 +258,7 @@ function cityLayer(onPlace) {
 function cartouche(n, total, games) {
   const date = n > 0 ? formatDate(games[n - 1].date) : 'before the first game';
   return svg('g', { class: 'map-cartouche', transform: 'translate(0 528)' },
-    svg('path', { d: 'M36 36h300v86H36Z', fill: 'rgba(241, 226, 187, .85)', stroke: INK, 'stroke-width': 1.4 }),
+    svg('path', { d: 'M36 36h300v86H36Z', fill: 'rgba(234, 216, 170, .9)', stroke: INK, 'stroke-width': 1.4 }),
     svg('path', { d: 'M42 42h288v74H42Z', fill: 'none', stroke: INK, 'stroke-width': 0.6 }),
     text(186, 74, 'The Realm of Oxtan', 'map-title'),
     text(186, 96, 'a true chart of the city, its settlers and its secrets', 'map-subtitle'),
@@ -262,15 +273,18 @@ function scaleBar() {
 }
 
 // ---------- the settlers ----------
-function walkerFor(spot, colours) {
-  const colour = colours.find((entry) => entry.id === spot.profile.favouriteColour)?.hex ?? '#7a5a3a';
-  const initial = spot.profile.name.trim().slice(0, 1).toUpperCase();
-  const crown = svg('path', { d: 'M-9 -14l3-8 6 5 6-5 3 8Z', fill: '#d3ae58', stroke: INK, 'stroke-width': 1, class: 'map-crown' });
+function walkerFor(spot) {
+  const name = spot.profile.name;
+  const half = Math.max(22, name.length * 3.6 + 10);
+  const crown = svg('path', { d: `M-7 ${-31}l2-6 5 4 5-4 2 6Z`, fill: 'none', stroke: INK, 'stroke-width': 1.2, class: 'map-crown' });
   const body = svg('g', { class: 'map-walker' },
-    svg('title', null, `${spot.profile.name}: ${spot.where}`),
-    svg('circle', { r: 10, fill: colour, stroke: INK, 'stroke-width': 1.6 }),
-    text(0, 4, initial, 'map-walker-initial', { fill: colour === '#f4f3ee' ? INK : '#fffaf0' }),
-    text(0, 25, spot.profile.name, 'map-walker-name'),
+    svg('title', null, `${name}: ${spot.where}`),
+    // Two footprints where they stand.
+    svg('path', { d: 'M-4 4c-2-3-1-8 1-8s3 5 1 8Zm-1 3a1.4 1.4 0 1 0 0.1 0Z', class: 'map-walker-foot' }),
+    svg('path', { d: 'M3 1c-2-3-1-8 1-8s3 5 1 8Zm-1 3a1.4 1.4 0 1 0 0.1 0Z', class: 'map-walker-foot' }),
+    // The name, on a little ribbon.
+    svg('path', { d: `M${-half} -24h${half * 2}l-5 6 5 6h${-half * 2}l5-6Z`, class: 'map-ribbon' }),
+    text(0, -14, name, 'map-walker-name'),
     crown);
   crown.style.display = spot.crowned ? '' : 'none';
   return { body, crown };
@@ -281,7 +295,7 @@ function footprint(layer, from, to, left) {
   const side = left ? -3 : 3;
   const x = (from.x + to.x) / 2 - Math.sin(angle) * side;
   const y = (from.y + to.y) / 2 + Math.cos(angle) * side;
-  const print = svg('ellipse', { cx: x, cy: y, rx: 2.6, ry: 1.5, class: 'map-foot', transform: `rotate(${(angle * 180) / Math.PI} ${x} ${y})` });
+  const print = svg('path', { d: `M${x - 3} ${y}c0-1.4 1.2-1.8 2.6-1.8s2.8.5 2.8 1.8-1.4 1.8-2.8 1.8S${x - 3} ${y + 1.4} ${x - 3} ${y}Zm-2.8 0a1.3 1.2 0 1 0 0.1 0Z`, class: 'map-foot', transform: `rotate(${(angle * 180) / Math.PI} ${x} ${y})` });
   layer.append(print);
   setTimeout(() => print.remove(), 5200);
 }
@@ -302,7 +316,7 @@ export function livingMap(league, approach, { calm = false, under = [], over = [
     for (const spot of positions(league, approach, n)) {
       let walker = walkers.get(spot.profile.id);
       if (!walker) {
-        const { body, crown } = walkerFor(spot, league.reference.colours);
+        const { body, crown } = walkerFor(spot);
         walker = { body, crown, pos: { ...spot.home }, target: { ...spot.home }, left: false };
         body.style.transform = `translate(${spot.home.x}px, ${spot.home.y}px)`;
         people.append(body);
@@ -347,6 +361,27 @@ export function livingMap(league, approach, { calm = false, under = [], over = [
   return { map, place };
 }
 
+const UNFOLD_KEY = 'flfoxtan.unfold-map';
+
+/** The folded front of the map: shown on the Map page until tapped, and on the home page. */
+export function mapFront() {
+  return h('span', { class: 'map-front' },
+    h('span', { class: 'map-front-folds', 'aria-hidden': 'true' }),
+    h('span', { class: 'map-front-over' }, 'Being a faithful chart of'),
+    h('span', { class: 'map-front-title' }, 'The Realm of Oxtan'),
+    h('span', { class: 'map-front-under' }, 'its settlers, its streets and its secrets'),
+    h('span', { class: 'map-front-rule', 'aria-hidden': 'true' }),
+    h('span', { class: 'map-front-tap' }, 'Tap to unfold'));
+}
+
+/** The front of the map as a link, for the home page. Following it opens the map already unfolding. */
+export function mapFrontLink() {
+  return h('a', {
+    class: 'map-cover map-cover-link', href: route('/map'), 'aria-label': 'Open the Map of the Realm of Oxtan',
+    onClick: () => storage.write(UNFOLD_KEY, true),
+  }, mapFront());
+}
+
 export function renderMap() {
   const league = getLeague();
   const approach = selectedApproach(league);
@@ -358,12 +393,12 @@ export function renderMap() {
   const header = pageHeader({
     eyebrow: 'Here be settlers',
     title: 'The Map',
-    intro: `Every settler walks the realm. The higher their rank on ${approach.name}, the closer they stand to the Radcliffe Camera, and each keeps to the quarter of their favourite resource. The red seals hide the site's secrets: ${found.size} of ${SECRETS.length} found in this browser.`,
+    intro: `Every settler walks the realm. The higher their rank on ${approach.name}, the closer they stand to the Radcliffe Camera, and each keeps to the quarter of their favourite resource. The ink seals hide the site's secrets: ${found.size} of ${SECRETS.length} found in this browser.`,
   });
 
   const seals = svg('g');
   const riddle = h('div', { class: 'map-riddle', 'aria-live': 'polite' },
-    h('p', { class: 'map-riddle-hint' }, 'Tap a red seal to read its riddle.'));
+    h('p', { class: 'map-riddle-hint' }, 'Tap an ink seal to read its riddle.'));
   const cartoucheHolder = svg('g');
 
   const showSecret = (secret) => {
@@ -445,22 +480,29 @@ export function renderMap() {
   update();
 
   // The map starts folded. Unfolding it is remembered until the page is reloaded.
+  const unfold = (cover) => {
+    unfolded = true;
+    cover?.remove();
+    if (!calm) {
+      const opening = map.animate([{ clipPath: 'inset(0 50% 0 50%)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 1100, easing: 'cubic-bezier(.6, 0, .2, 1)' });
+      // The ink spreads across the page once it is open, then the settlers appear.
+      const ink = [...map.querySelectorAll('.map-ink, .map-feet, .map-walker, .map-seal, .map-cartouche')].map((layer, index) => layer.animate(
+        [{ opacity: 0 }, { opacity: 1 }], { duration: 1400, delay: 700 + Math.min(index, 12) * 60, easing: 'ease-out', fill: 'backwards' }));
+      // Never leave the map hidden, even if a browser stalls the animation.
+      setTimeout(() => [opening, ...ink].forEach((animation) => { if (animation.playState !== 'finished') animation.finish(); }), 3600);
+    }
+    const scroller = sheet.querySelector('.map-scroll');
+    scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
+  };
+  const cover = !unfolded && h('button', { class: 'map-cover', type: 'button', onClick: (event) => unfold(event.currentTarget) }, mapFront());
   const sheet = h('div', { class: 'map-sheet' },
     h('div', { class: 'map-scroll', tabindex: '0', 'aria-label': 'The map. Scroll sideways on a small screen.' }, map),
-    !unfolded && h('button', {
-      class: 'map-cover', type: 'button',
-      onClick: (event) => {
-        unfolded = true;
-        event.currentTarget.remove();
-        if (!calm) {
-          const opening = map.animate([{ clipPath: 'inset(0 50% 0 50%)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 1100, easing: 'cubic-bezier(.6, 0, .2, 1)' });
-          // Never leave the map hidden, even if a browser stalls the animation.
-          setTimeout(() => { if (opening.playState !== 'finished') opening.finish(); }, 1600);
-        }
-        const scroller = sheet.querySelector('.map-scroll');
-        scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
-      },
-    }, h('span', { class: 'map-cover-title' }, 'The Realm of Oxtan'), h('span', null, 'Tap to unfold the map')));
+    cover);
+  // Arriving from the home page's cover opens the map straight away.
+  if (cover && storage.read(UNFOLD_KEY)) {
+    storage.remove(UNFOLD_KEY);
+    setTimeout(() => { if (cover.isConnected) unfold(cover); }, 250);
+  }
 
   const list = h('details', { class: 'map-secrets' },
     h('summary', null, `All the riddles (${found.size} of ${SECRETS.length} found)`),

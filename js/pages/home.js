@@ -9,8 +9,8 @@ import { openPlayerForm } from '../forms/player-form.js';
 import { h, route, svg } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { avatar, colourDot, page } from '../ui/components.js';
-import { formatLongDate, formatScore, plural } from '../ui/format.js';
-import { livingMap } from './map.js';
+import { formatLongDate, formatScore } from '../ui/format.js';
+import { mapFrontLink } from './map.js';
 import { SECRETS } from '../ui/delights.js';
 import { boardView } from '../ui/board-view.js';
 
@@ -126,18 +126,13 @@ function lastBattle(league) {
     h('a', { class: 'link battle-link', href: route('/games') }, 'Every game', icon('external', 'sm')));
 }
 
-function mapWindow(league, approach) {
-  const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const { map, place } = livingMap(league, approach, { calm, viewBox: '170 110 680 470', label: 'A window onto the Map, with every player walking about' });
-  place(league.games.length);
-  const waiting = league.profiles.filter((player) => !league.games.some((game) => game.seats.some((seat) => seat.playerId === player.id))).length;
-  return h('a', { class: 'card map-window', href: route('/map') },
-    h('div', { class: 'map-window-art' }, map),
+/** The folded front of the Map. Tapping it opens the Map and unfolds it. */
+function mapWindow() {
+  return h('section', { class: 'card map-window' },
+    mapFrontLink(),
     h('div', { class: 'map-window-text' },
-      h('b', null, 'The Realm of Oxtan'),
-      h('span', null, league.games.length
-        ? `Every settler, walking the city by rank and favourite resource. ${SECRETS.length} secrets hide on the Map.`
-        : `${plural(waiting, 'settler')} waiting at the station for the first game. ${SECRETS.length} secrets hide on the Map.`)));
+      h('b', null, 'The Map'),
+      h('span', null, `Every settler, walking Oxford by rank and favourite resource. ${SECRETS.length} secrets hide in its corners.`)));
 }
 
 function recordStrip(league) {
@@ -165,6 +160,6 @@ export function renderHome() {
   return page(
     hero(league),
     league.games.length ? podium(league, approach) : firstSteps(),
-    h('div', { class: 'home-grid' }, lastBattle(league), mapWindow(league, approach)),
+    h('div', { class: 'home-grid' }, lastBattle(league), mapWindow()),
     recordStrip(league));
 }

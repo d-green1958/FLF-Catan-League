@@ -189,7 +189,7 @@ League data is read from and written to the repo's default branch. If the defaul
 
 ## The home page
 
-The home page (`js/pages/home.js`) has the crest and the league clock, the podium, the latest game told as a short story with its board, a window onto the Map, and a few league records. The leaderboard lives at `#/leaderboard`.
+The home page (`js/pages/home.js`) has the crest and the league clock, the podium, the latest game told as a short story with its board, the folded cover of the Map, and a few league records. The leaderboard lives at `#/leaderboard`.
 
 **The league clock** counts the time since the last game. To count down to a planned game instead, add `"nextGame": "2026-11-20T12:30"` (local time) to `data/league.json`. Once that time passes it goes back to counting up, so it never needs clearing.
 
@@ -204,7 +204,7 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 - **Image credits:** the images are from NASA's image library (images.nasa.gov), resized in `assets/sky/` and credited on that page.
 - **Map labels:** place names are positioned so none sits on a road, river or seal. If you move a landmark in `js/pages/map.js`, check its `label` offset too.
 
-**The Map** (`#/map`, `js/pages/map.js`) is an old-style chart of Oxford with every player walking about on it:
+**The Map** (`#/map`, `js/pages/map.js`) is an ink-on-parchment chart of Oxford with every player walking about on it, shown as footprints with a name ribbon. It starts folded. The home page shows only its cover, and tapping that opens the Map and unfolds it:
 - **Quarter:** each player keeps to the quarter of their favourite resource (brick in Jericho, lumber in Christ Church Meadow, wool on Port Meadow, grain in Marston, ore at the Castle). If their profile has none, it uses the resource their recorded openings lean on.
 - **Rank:** the higher a player ranks on the chosen scoring system, the closer they stand to the Radcliffe Camera, which the leader holds.
 - **Others:** newcomers wait at the station, retired players are in the Ashmolean, and the winner of the latest game wears a crown.

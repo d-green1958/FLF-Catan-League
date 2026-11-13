@@ -54,12 +54,11 @@
 .battle-story { margin: 0; font-family: var(--font-display); font-size: 21px; line-height: 1.35; }
 .battle-link { justify-self: start; font-size: 13.5px; }
 .battle .board-view { max-width: 320px; margin: 2px auto 0; }
-.map-window { display: grid; overflow: hidden; text-decoration: none; color: var(--ink); padding: 0; }
-.map-window-art { overflow: hidden; border-bottom: 1px solid var(--border); }
-.map-window .map-svg { min-width: 0; width: 100%; }
+.map-window { display: grid; overflow: hidden; color: var(--ink); padding: 0; }
+.map-window .map-cover-link { position: relative; inset: auto; display: block; aspect-ratio: 4 / 3; border-bottom: 1px solid var(--border); }
 .map-window-text { display: grid; gap: 2px; padding: 12px 16px 14px; font-size: 13.5px; color: var(--ink-2); }
 .map-window-text b { font-family: "IM Fell English SC", var(--font-display); font-size: 19px; font-weight: 400; color: var(--ink); }
-.map-window:hover { border-color: var(--border-strong); }
+
 
 .record-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
 .rec { padding: 14px 16px; display: grid; gap: 2px; }

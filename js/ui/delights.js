@@ -220,20 +220,65 @@ export function dragon() {
   crossScreen(beast, { duration: 4200, bob: 24, steps: 6 });
 }
 
+/** A barn owl seen from the front, wings spread. Each wing is its own group, so it can beat from the shoulder. */
+export function owlDrawing() {
+  const wing = () => svg('g', { class: 'owl-wing' },
+    svg('path', { d: 'M104 58C82 32 44 22 6 33l8 6-10 6 13 4-9 7 14 3-5 8 21-2c24 4 48 6 70 4Z', fill: 'url(#owl-wing-fill)', stroke: '#8a6a40', 'stroke-width': 0.8 }),
+    svg('path', { d: 'M96 56C76 40 50 34 22 38M98 63C74 52 48 50 26 54M92 68C72 62 52 62 36 64', stroke: '#9a7448', 'stroke-width': 1.1, fill: 'none', opacity: 0.75 }),
+    [[30, 40], [44, 38], [58, 40], [40, 50], [56, 50], [70, 47], [50, 60], [66, 58]].map(([x, y]) => svg('circle', { cx: x, cy: y, r: 1.3, fill: '#5b4428', opacity: 0.8 })),
+    svg('path', { d: 'M14 39l-6 2M17 49l-9 1M15 56l-6 2M22 63l-5 3', stroke: '#6b5032', 'stroke-width': 1.4, 'stroke-linecap': 'round' }));
+  return svg('svg', { viewBox: '0 0 240 130', width: 210, height: 114, class: 'owl' },
+    svg('defs', null,
+      svg('linearGradient', { id: 'owl-wing-fill', x1: '1', y1: '0', x2: '0', y2: '0' },
+        svg('stop', { offset: '0%', 'stop-color': '#f1e3c4' }),
+        svg('stop', { offset: '55%', 'stop-color': '#dcb780' }),
+        svg('stop', { offset: '100%', 'stop-color': '#b88b52' }))),
+    // Wings first, so the body sits over their roots. The right wing is the left one, mirrored.
+    wing(),
+    svg('g', { transform: 'translate(240 0) scale(-1 1)' }, wing()),
+    svg('ellipse', { cx: 120, cy: 76, rx: 19, ry: 29, fill: '#f4ecdc' }),
+    [[112, 74], [126, 80], [118, 88], [128, 92], [111, 94], [121, 70]].map(([x, y]) => svg('circle', { cx: x, cy: y, r: 1, fill: '#7a6040' })),
+    svg('path', { d: 'M112 102l-3 9m6-9-1 9m11-9 1 9m6-9 3 9', stroke: '#b9a28a', 'stroke-width': 2, 'stroke-linecap': 'round' }),
+    svg('circle', { cx: 120, cy: 44, r: 20, fill: '#d6ae74' }),
+    svg('path', { d: 'M104 36c4-8 10-11 16-11s12 3 16 11', stroke: '#9a7448', 'stroke-width': 1, fill: 'none', opacity: 0.7 }),
+    // The heart-shaped face.
+    svg('path', { d: 'M120 66C104 60 98 42 107 32c5-5 10-2 13 3 3-5 8-8 13-3 9 10 3 28-13 34Z', fill: '#faf5ea', stroke: '#c69a5f', 'stroke-width': 1.6 }),
+    svg('path', { d: 'M120 38v14', stroke: '#e3d2b4', 'stroke-width': 1.4 }),
+    svg('ellipse', { cx: 112.5, cy: 45, rx: 3.4, ry: 3.9, fill: '#140b04' }),
+    svg('ellipse', { cx: 127.5, cy: 45, rx: 3.4, ry: 3.9, fill: '#140b04' }),
+    svg('circle', { cx: 111.6, cy: 43.8, r: 0.9, fill: '#fff' }),
+    svg('circle', { cx: 126.6, cy: 43.8, r: 0.9, fill: '#fff' }),
+    svg('path', { d: 'M118.5 51q1.5 6 3 0Z', fill: '#d8c3a0', stroke: '#b59a72', 'stroke-width': 0.6 }));
+}
+
 function owl() {
   toast('Up past midnight plotting settlements? The owl approves.');
   discover('owl');
   if (calm()) return;
-  const bird = layer('flyer');
-  bird.style.top = '18vh';
-  bird.append(svg('svg', { viewBox: '0 0 80 80', width: 70, height: 70 },
-    svg('ellipse', { cx: 40, cy: 46, rx: 22, ry: 26, fill: '#6b4f33' }),
-    svg('path', { d: 'M18 46 2 34l14 22Z M62 46l16-12-14 22Z', fill: '#5a4129' }),
-    svg('circle', { cx: 32, cy: 38, r: 8, fill: '#f3e2b0' }), svg('circle', { cx: 48, cy: 38, r: 8, fill: '#f3e2b0' }),
-    svg('circle', { cx: 32, cy: 38, r: 3.5, fill: '#1c140c' }), svg('circle', { cx: 48, cy: 38, r: 3.5, fill: '#1c140c' }),
-    svg('path', { d: 'M38 44h4l-2 5Z', fill: '#e0a43a' }),
-    svg('path', { d: 'M24 24l6 8M56 24l-6 8', stroke: '#5a4129', 'stroke-width': 4, 'stroke-linecap': 'round' })));
-  crossScreen(bird, { duration: 5000, bob: 30, steps: 8 });
+  const bird = layer('owl-flight');
+  const body = owlDrawing();
+  bird.append(body);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  // A smooth route: in from the left, swooping low across the page, then rising away to the upper right.
+  const route = `M -220 ${height * 0.3} C ${width * 0.18} ${height * 0.14}, ${width * 0.34} ${height * 0.52}, ${width * 0.55} ${height * 0.4} S ${width * 0.86} ${height * 0.06}, ${width + 220} ${height * 0.1}`;
+  const duration = 8200;
+  if (CSS.supports('offset-path', 'path("M0 0L1 1")')) {
+    bird.style.offsetPath = `path("${route}")`;
+    bird.style.offsetRotate = '0deg';
+    bird.animate([{ offsetDistance: '0%' }, { offsetDistance: '100%' }], { duration, easing: 'cubic-bezier(.3, .05, .6, .95)' })
+      .finished.then(() => bird.remove());
+    // It grows as it comes closer, then shrinks as it banks away, tilting into each turn.
+    body.animate([
+      { transform: 'scale(.55) rotate(6deg)' },
+      { transform: 'scale(.85) rotate(-4deg)', offset: 0.3 },
+      { transform: 'scale(1.1) rotate(-9deg)', offset: 0.5 },
+      { transform: 'scale(.8) rotate(7deg)', offset: 0.75 },
+      { transform: 'scale(.45) rotate(3deg)' },
+    ], { duration, easing: 'ease-in-out' });
+  } else {
+    crossScreen(bird, { duration: 7000, bob: 26, steps: 8 });
+  }
 }
 
 // ---------- page-specific ones ----------

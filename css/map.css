@@ -3,32 +3,42 @@
 .map-controls input[type=range] { flex: 1 1 200px; accent-color: #8b2a1d; }
 .map-step { font-family: "IM Fell English", var(--font-display); font-style: italic; color: var(--ink-2); min-width: 130px; }
 
-.map-sheet { position: relative; border-radius: 6px; box-shadow: 0 18px 40px -16px rgba(40, 24, 6, .55), 0 0 0 1px rgba(90, 60, 20, .25); background: #e8d6a8; overflow: hidden; }
+.map-sheet { position: relative; border-radius: 6px; box-shadow: 0 18px 40px -16px rgba(40, 24, 6, .55), 0 0 0 1px rgba(90, 60, 20, .25); background: #e3cc98; overflow: hidden; }
 .map-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
 .map-svg { display: block; width: 100%; min-width: 820px; height: auto; font-family: "IM Fell English", Georgia, serif; }
-.map-cover { position: absolute; inset: 0; display: grid; place-content: center; gap: 10px; border: 0; cursor: pointer; color: #3b2a17;
-  background: radial-gradient(ellipse at center, rgba(241, 226, 187, .2), rgba(90, 52, 16, .35)), repeating-linear-gradient(90deg, #e3cc98 0 33.2%, #d7bd86 33.3% 33.5%), #e3cc98;
-  font-family: "IM Fell English", Georgia, serif; font-size: 17px; font-style: italic; }
-.map-cover-title { font-family: "IM Fell English SC", Georgia, serif; font-style: normal; font-size: 40px; letter-spacing: .04em; }
-.map-cover:hover .map-cover-title { text-shadow: 0 0 18px rgba(255, 220, 140, .9); }
+.map-cover { position: absolute; inset: 0; display: block; padding: 0; border: 0; cursor: pointer; color: #3a2614; background: none; text-decoration: none; }
+.map-front { position: relative; display: grid; place-content: center; justify-items: center; gap: 6px; height: 100%; min-height: 260px; padding: 28px 18px; text-align: center; overflow: hidden;
+  font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 16px; color: #3a2614;
+  background: radial-gradient(ellipse at 30% 25%, rgba(138, 90, 34, .14), transparent 40%), radial-gradient(ellipse at 75% 80%, rgba(138, 90, 34, .12), transparent 45%), radial-gradient(ellipse at center, transparent 50%, rgba(74, 42, 12, .55)), linear-gradient(135deg, #efdcae, #d9bd85); }
+.map-front-folds { position: absolute; inset: 0; background: linear-gradient(90deg, transparent calc(33.3% - 1px), rgba(74, 42, 12, .22) 33.3%, rgba(255, 245, 220, .25) calc(33.3% + 2px), transparent calc(33.3% + 3px), transparent calc(66.6% - 1px), rgba(74, 42, 12, .22) 66.6%, rgba(255, 245, 220, .25) calc(66.6% + 2px), transparent calc(66.6% + 3px)); pointer-events: none; }
+.map-front::after { content: ""; position: absolute; inset: 12px; border: 1.5px solid rgba(58, 38, 20, .7); outline: .5px solid rgba(58, 38, 20, .5); outline-offset: -6px; pointer-events: none; }
+.map-front-title { font-family: "Pinyon Script", "IM Fell English", cursive; font-style: normal; font-size: clamp(38px, 7vw, 64px); line-height: 1.05; color: #2a1a0c; }
+.map-front-over, .map-front-under { font-size: 15px; opacity: .85; }
+.map-front-rule { width: 160px; height: 10px; margin: 4px 0; background: radial-gradient(circle, #3a2614 2.4px, transparent 3px) center / 10px 10px no-repeat, linear-gradient(#3a2614, #3a2614) center / 100% 1px no-repeat; }
+.map-front-tap { font-family: "IM Fell English SC", Georgia, serif; font-style: normal; letter-spacing: .16em; font-size: 14px; opacity: .8; }
+.map-cover:hover .map-front-title, .map-cover:focus .map-front-title { text-shadow: 0 0 14px rgba(255, 225, 160, .9); }
+@media (prefers-reduced-motion: no-preference) { .map-front-tap { animation: seal-glow 2.6s ease-in-out infinite; } }
 
-.map-road { fill: none; stroke: rgba(59, 42, 23, .55); stroke-width: 2.2; stroke-dasharray: 7 4; stroke-linecap: round; }
-.map-ring { fill: none; stroke: rgba(139, 42, 29, .35); stroke-width: 2; stroke-dasharray: 2 6; }
-.map-river-edge { fill: none; stroke: #3b2a17; stroke-width: 15; stroke-linecap: round; opacity: .55; }
-.map-river { fill: none; stroke: #8fb3c4; stroke-width: 12; stroke-linecap: round; }
-.map-water-label { font-style: italic; font-size: 15px; fill: #2c4e63; letter-spacing: .08em; }
-.map-label { font-size: 12.5px; fill: #3b2a17; text-anchor: middle; paint-order: stroke; stroke: rgba(241, 226, 187, .9); stroke-width: 3px; }
+.map-road { fill: none; stroke: rgba(58, 38, 20, .75); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.map-road-inner { fill: none; stroke: #e6d2a1; stroke-width: 4.6; stroke-linecap: round; stroke-linejoin: round; }
+.map-ring { fill: none; stroke: rgba(58, 38, 20, .4); stroke-width: 1.6; stroke-dasharray: 2 6; }
+.map-river-edge { fill: none; stroke: #3a2614; stroke-width: 16; stroke-linecap: round; opacity: .8; }
+.map-river { fill: none; stroke: #e4cf9c; stroke-width: 13; stroke-linecap: round; }
+.map-river-ripple { fill: none; stroke: rgba(58, 38, 20, .45); stroke-width: 1; stroke-dasharray: 5 9; }
+.map-water-label { font-style: italic; font-size: 15px; fill: #3a2614; letter-spacing: .08em; }
+.map-label { font-size: 12.5px; font-style: italic; fill: #2a1a0c; text-anchor: middle; paint-order: stroke; stroke: rgba(241, 226, 187, .9); stroke-width: 3px; }
 .map-road-label { font-style: italic; font-size: 11px; fill: rgba(59, 42, 23, .8); text-anchor: middle; }
-.map-district { font-family: "IM Fell English SC", Georgia, serif; font-size: 15px; letter-spacing: .22em; fill: rgba(59, 42, 23, .4); text-anchor: middle; }
-.map-title { font-family: "IM Fell English SC", Georgia, serif; font-size: 26px; fill: #3b2a17; text-anchor: middle; }
+.map-district { font-family: "IM Fell English SC", Georgia, serif; font-size: 15px; letter-spacing: .22em; fill: rgba(42, 26, 12, .5); text-anchor: middle; }
+.map-title { font-family: "Pinyon Script", "IM Fell English", cursive; font-size: 30px; fill: #2a1a0c; text-anchor: middle; }
 .map-subtitle { font-style: italic; font-size: 11.5px; fill: #5a4129; text-anchor: middle; }
 .map-compass { cursor: pointer; transform-box: fill-box; transform-origin: center; }
-.map-compass-n { font-family: "IM Fell English SC", Georgia, serif; font-size: 16px; text-anchor: middle; fill: #8b2a1d; }
+.map-compass-n { font-family: "IM Fell English SC", Georgia, serif; font-size: 16px; text-anchor: middle; fill: #2a1a0c; }
 
 .map-walker { transition: transform .38s linear; cursor: default; }
-.map-walker-initial { font: 700 11px var(--font); text-anchor: middle; pointer-events: none; }
-.map-walker-name { font-size: 13px; font-weight: 700; text-anchor: middle; fill: #2a1d0e; paint-order: stroke; stroke: rgba(241, 226, 187, .95); stroke-width: 3.5px; }
-.map-foot { fill: rgba(59, 42, 23, .75); animation: foot-fade 5s linear forwards; }
+.map-walker-foot { fill: #2a1a0c; }
+.map-ribbon { fill: #ecdbb0; stroke: #2a1a0c; stroke-width: 1.1; stroke-linejoin: round; }
+.map-walker-name { font-size: 12.5px; font-style: italic; text-anchor: middle; fill: #2a1a0c; }
+.map-foot { fill: rgba(42, 26, 12, .8); animation: foot-fade 5s linear forwards; }
 @keyframes foot-fade { to { opacity: 0; } }
 @media (prefers-reduced-motion: no-preference) {
   .map-crown { animation: crown-bob 2.4s ease-in-out infinite; }
@@ -36,11 +46,11 @@
 }
 
 .map-seal { cursor: pointer; }
-.map-seal circle { fill: #9b2c1f; stroke: #5e160d; stroke-width: 1.5; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35)); }
-.map-seal-mark { fill: #e7a596; }
-.map-seal.found circle { fill: #d3ae58; stroke: #7a5a12; }
-.map-seal.found .map-seal-mark { fill: #fff4cf; }
-.map-seal:hover circle, .map-seal:focus circle { stroke: #fff; stroke-width: 2.4; outline: none; }
+.map-seal circle { fill: rgba(234, 216, 170, .9); stroke: #2a1a0c; stroke-width: 1.3; stroke-dasharray: 3 1.6; }
+.map-seal-mark { fill: #2a1a0c; }
+.map-seal.found circle { fill: #2a1a0c; stroke-dasharray: none; }
+.map-seal.found .map-seal-mark { fill: #ecdbb0; }
+.map-seal:hover circle, .map-seal:focus circle { stroke-width: 2.2; outline: none; }
 @media (prefers-reduced-motion: no-preference) {
   .map-seal:not(.found) { animation: seal-glow 3s ease-in-out infinite; }
   @keyframes seal-glow { 50% { opacity: .72; } }

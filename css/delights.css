@@ -34,3 +34,17 @@
   .seafarers .main { animation: waves 6s linear infinite; }
   @keyframes waves { to { background-position: 120px 0, 0 0; } }
 }
+
+/* The owl: wings beat from the shoulders a few times, then it glides with them held level. */
+.owl-flight { left: 0; top: 0; z-index: 2147483000; }
+.owl { display: block; transform-origin: center; filter: drop-shadow(0 14px 10px rgba(0, 0, 0, .32)); }
+.owl-wing { transform-box: view-box; transform-origin: 104px 60px; animation: owl-flap 2.8s ease-in-out infinite; }
+@keyframes owl-flap {
+  0% { transform: rotate(-24deg); }
+  9% { transform: rotate(22deg); }
+  18% { transform: rotate(-24deg); }
+  27% { transform: rotate(22deg); }
+  36% { transform: rotate(-20deg); }
+  48%, 92% { transform: rotate(6deg); }
+  100% { transform: rotate(-24deg); }
+}
