@@ -100,3 +100,25 @@
 .lift-ride.arrived .lift-doors span:last-child { transform: translateX(100%); }
 .lift-ride.arrived .lift-cabin { animation: none; }
 @keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-2px, 1px) rotate(-.3deg); } 75% { transform: translate(2px, -1px) rotate(.3deg); } }
+
+/* Lower Ground: the vault. */
+.vault { position: relative; padding: 26px 22px 30px; border-radius: 14px; overflow: hidden; color: #f3e6c4;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 210, 120, .25), transparent 60%), repeating-linear-gradient(0deg, #2a2620 0 38px, #24201b 38px 40px), #24201b;
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, .7), 0 20px 40px -20px rgba(0, 0, 0, .6); }
+.hoard { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+.hoard-card { display: grid; gap: 4px; justify-items: center; text-align: center; padding: 14px 10px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(211, 174, 88, .25); font-size: 13px; color: rgba(243, 230, 196, .8); }
+.hoard-card b { font-family: var(--font-display); font-size: 17px; color: #f6e7bf; }
+.hoard-count { color: var(--brass); }
+.hoard-pile { width: 110px; height: 90px; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .5)); }
+@media (prefers-reduced-motion: no-preference) {
+  .hoard-pile { animation: glint 3.2s ease-in-out infinite; }
+  .hoard-card:nth-child(2n) .hoard-pile { animation-delay: 1.1s; }
+  .hoard-card:nth-child(3n) .hoard-pile { animation-delay: 2s; }
+  @keyframes glint { 50% { filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .5)) brightness(1.25); } }
+}
+.vault-acts { display: grid; justify-items: center; gap: 8px; margin-top: 22px; text-align: center; }
+.vault-acts p { margin: 0; font-style: italic; color: rgba(243, 230, 196, .75); }
+.harvest-btn { height: 48px; padding: 0 26px; font-size: 16px; }
+.lift-ride.express .lift-cabin { animation: whoosh .12s linear infinite; }
+@keyframes whoosh { 50% { transform: translateY(-3px); filter: blur(1px); } }
+.lift-ride.dropping .lift-cabin { animation: shake .2s ease-in-out infinite; }

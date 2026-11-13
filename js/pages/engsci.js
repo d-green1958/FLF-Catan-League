@@ -1,7 +1,7 @@
 // Inside the Engineering Science complex, reached from the Jenkin and Thom buildings on the Map.
 //
 // The floor plan runs north to south: Cryogenics, then Room 11 on the left alongside both the Wroth Library
-// and the Wallace Room, then the Dead Zone, then Hølder-bygningen, then the Terrible Lift up to the Thom
+// and the Wallace Room, then the Dead Zone, then Hølder-bygningen, then the Lift up to the Thom
 // Building, whose 8th floor is the Penthouse. The Penthouse opens onto a night sky that stays put.
 // Every room has something to say, and a secret (see js/ui/delights.js).
 import { h, route, svg } from '../ui/dom.js';
@@ -55,26 +55,48 @@ const say = (holder, place, title, ...lines) => holder.replaceChildren(
   h('h3', null, title),
   ...lines.map((line) => (typeof line === 'string' ? h('p', null, line) : line)));
 
-/** The slow, shaky, doubtful ride. Calls arrive() at the end. */
+// One ride up in ten, the Lift remembers it has a basement.
+const DROP_CHANCE = 0.1;
+
+/**
+ * The slow, shaky, doubtful ride. Calls arrive(where) at the end, with where = 'up', 'down' or 'lower'
+ * (the vault). Going up, it sometimes drops to Lower Ground instead. 'express' is the ride from the vault
+ * straight to the top.
+ */
 export function rideLift(direction, arrive) {
   discover('lift');
-  if (calm()) { toast('The lift arrives, eventually.'); arrive(); return; }
-  const floor = h('b', { class: 'lift-floor' }, direction === 'up' ? 'G' : '8');
-  const message = h('p', { class: 'lift-message' }, 'Doors closing…');
-  const cabin = overlay('lift-ride', h('div', { class: 'lift-cabin' },
-    h('div', { class: 'lift-display' }, h('span', null, direction === 'up' ? '▲' : '▼'), floor),
+  const drops = direction === 'up' && Math.random() < DROP_CHANCE;
+  const destination = drops ? 'lower' : direction;
+  if (calm()) {
+    toast(drops ? 'The Lift goes down instead. Lower Ground.' : direction === 'express' ? 'The Lift shoots to the top.' : 'The Lift arrives, eventually.');
+    arrive(destination);
+    return;
+  }
+  const scripts = {
+    up: [['G', 'Doors closing…'], ['G', 'Doors closing…'], ['1', 'Going up.'], ['1', 'Still floor 1.'], ['1', 'The Lift is reconsidering its life choices.'], ['2', 'Progress.'], ['1', 'Wait, what?'], ['4', 'Skipping a few.'], ['G', 'Thom Building. You are somehow on the ground floor.']],
+    lower: [['G', 'Doors closing…'], ['1', 'Going up.'], ['G', 'Going… down?'], ['LG', 'This floor is not on any plan.'], ['LG', 'Lower Ground. The doors open onto something glittering.']],
+    down: [['8', 'Doors closing…'], ['7', 'Going down.'], ['7', 'Still 7.'], ['4', 'Brief freefall. All part of the service.'], ['3', 'Recalculating.'], ['1', 'Nearly there.'], ['G', 'Ground. You have survived the Lift.']],
+    express: [['LG', 'Hold on to your resources.'], ['1', ''], ['3', ''], ['5', ''], ['7', 'WHOOSH'], ['8', 'Penthouse. That was quick.']],
+  };
+  const script = scripts[drops ? 'lower' : direction];
+  const step = direction === 'express' ? 230 : 560;
+  const floor = h('b', { class: 'lift-floor' }, script[0][0]);
+  const message = h('p', { class: 'lift-message' }, script[0][1]);
+  const cabin = overlay(`lift-ride ${direction === 'express' ? 'express' : ''} ${drops ? 'dropping' : ''}`.replace(/\s+/g, ' ').trim(), h('div', { class: 'lift-cabin' },
+    h('div', { class: 'lift-display' }, h('span', null, direction === 'down' || drops ? '▼' : '▲'), floor),
     message,
-    h('div', { class: 'lift-doors' }, h('span'), h('span'))), 6400);
-  const script = direction === 'up'
-    ? [['G', 'Doors closing…'], ['G', 'Doors closing…'], ['1', 'Going up.'], ['1', 'Still floor 1.'], ['1', 'The lift is reconsidering its life choices.'], ['2', 'Progress.'], ['1', 'Wait, what?'], ['4', 'Skipping a few.'], ['G', 'Thom Building. You are somehow on the ground floor.']]
-    : [['8', 'Doors closing…'], ['7', 'Going down.'], ['7', 'Still 7.'], ['4', 'Brief freefall. All part of the service.'], ['3', 'Recalculating.'], ['1', 'Nearly there.'], ['G', 'Ground. You have survived the lift.']];
+    h('div', { class: 'lift-doors' }, h('span'), h('span'))), script.length * step + 1400);
   script.forEach(([value, words], index) => setTimeout(() => {
     floor.textContent = value;
-    message.textContent = words;
+    if (words) message.textContent = words;
     if (index === script.length - 1) cabin.classList.add('arrived');
-  }, index * 560));
-  setTimeout(arrive, script.length * 560 + 500);
+  }, index * step));
+  setTimeout(() => arrive(destination), script.length * step + 500);
 }
+
+/** Where each ride ends up. */
+const GO = { up: '/map/thom', down: '/map/engsci', lower: '/map/lower-ground', express: '/map/thom/penthouse' };
+const rideTo = (direction) => rideLift(direction, (where) => { window.location.hash = route(GO[where]); });
 
 // ---------- the floor plan ----------
 // Plain rectangles, drawn like an architect's plan: [x, y, width, height]. North is up.
@@ -85,7 +107,7 @@ const ROOMS = [
   { id: 'wallace', name: 'Wallace Room', box: [260, 335, 290, 125] },
   { id: 'deadzone', name: 'The Dead Zone', box: [50, 460, 500, 86] },
   { id: 'holder', name: 'Hølder-bygningen', box: [50, 546, 500, 134] },
-  { id: 'lift', name: 'Terrible Lift', box: [255, 680, 90, 80] },
+  { id: 'lift', name: 'The Lift', box: [255, 680, 90, 80] },
 ];
 
 // Doors: a gap in a wall and the arc it swings through. [x, y, width, side] where side is the direction it opens.
@@ -201,8 +223,8 @@ export function renderEngSci() {
         discover('holder');
         break;
       case 'lift':
-        say(story, 'The southern end', 'The Terrible Lift', 'It goes up to the Thom Building. In theory.');
-        rideLift('up', () => { window.location.hash = route('/map/thom'); });
+        say(story, 'The southern end', 'The Lift', 'It goes up to the Thom Building. In theory.');
+        rideTo('up');
         break;
       default:
     }
@@ -257,7 +279,7 @@ export function renderThom() {
       window.location.hash = route('/map/thom/penthouse');
     } else if (floor.id === 'ground') {
       say(story, 'Ground floor', 'The lift lobby', 'The lift will take you back down to the rest of the complex, in its own time.',
-        h('button', { class: 'btn sm', type: 'button', onClick: () => rideLift('down', () => { window.location.hash = route('/map/engsci'); }) }, 'Take the Terrible Lift down'));
+        h('button', { class: 'btn sm', type: 'button', onClick: () => rideTo('down') }, 'Take the Lift down'));
     } else {
       say(story, 'The Thom Building', floor.name, `${floor.note}. Nothing much to see here, which is exactly what a secret would want you to think. Keep climbing: the Penthouse is on 8.`);
     }
@@ -280,7 +302,7 @@ export function renderThom() {
     }),
     svg('rect', { x: 90, y: 90, width: 220, height: 66 * floors.length, class: 'plan-outer' }),
     svg('rect', { x: 310, y: 90, width: 30, height: 66 * floors.length, class: 'plan-shaft' }),
-    svg('text', { x: 325, y: 420, class: 'plan-building-name', transform: 'rotate(90 325 420)' }, 'THE TERRIBLE LIFT'));
+    svg('text', { x: 325, y: 420, class: 'plan-building-name', transform: 'rotate(90 325 420)' }, 'THE LIFT'));
 
   return page(
     trail(['The Map', '/map'], ['EngSci complex', '/map/engsci'], ['Thom Building', null]),
@@ -289,7 +311,7 @@ export function renderThom() {
       title: 'The Thom Building',
       intro: 'Floor by floor, with the Penthouse on the 8th floor. Tap a floor.',
       actions: [
-        h('button', { class: 'btn', type: 'button', onClick: () => rideLift('down', () => { window.location.hash = route('/map/engsci'); }) }, 'Lift down to the complex'),
+        h('button', { class: 'btn', type: 'button', onClick: () => rideTo('down') }, 'Lift down to the complex'),
         h('a', { class: 'btn', href: route('/map') }, icon('map'), 'Back to the Map'),
       ],
     }),
@@ -423,4 +445,56 @@ export function renderPenthouse() {
         ` · ${image.credit} · `,
         h('a', { class: 'link', href: image.source, target: '_blank', rel: 'noopener' }, 'NASA image library')))),
       h('p', { class: 'field-hint' }, `Images from NASA's image library (images.nasa.gov), shown with credit. Constellation figures are drawn as rough likenesses, plus ${CONSTELLATIONS.length} classics and one newcomer.`)));
+}
+
+// ---------- Lower Ground: the vault the Lift does not admit to ----------
+const HOARD = [
+  { name: 'Brick', colour: '#c4613a', note: 'Enough for every road in Oxford, twice.' },
+  { name: 'Lumber', colour: '#3d6b35', note: 'A forest, neatly stacked.' },
+  { name: 'Wool', colour: '#9cc45a', note: 'Every sheep that was ever traded, and their cousins.' },
+  { name: 'Grain', colour: '#e3b23c', note: 'Sheaves to the ceiling. Somebody has been hoarding.' },
+  { name: 'Ore', colour: '#8c9199', note: 'Mountains of it, in a basement.' },
+  { name: 'Gold', colour: '#d3ae58', note: 'For the settler who has everything.' },
+  { name: 'Development cards', colour: '#6b4fa0', note: 'All knights. Every single one.' },
+  { name: 'Wood for sheep', colour: '#b98a5a', note: 'A signed trade agreement. The only one in existence.' },
+];
+
+/** A pile of hexagons in one colour, stacked like a heap of resource cards. */
+function pile(colour) {
+  const hexes = [[30, 70], [62, 70], [94, 70], [46, 44], [78, 44], [62, 18]];
+  return svg('svg', { viewBox: '0 0 124 100', class: 'hoard-pile', 'aria-hidden': 'true' },
+    hexes.map(([x, y]) => svg('path', { d: `M${x} ${y - 18}l15.6 9v18L${x} ${y + 18}l-15.6-9v-18Z`, fill: colour, stroke: 'rgba(0, 0, 0, .35)', 'stroke-width': 2 })));
+}
+
+export function renderLowerGround() {
+  discover('vault');
+  const harvest = h('button', { class: 'btn gold harvest-btn', type: 'button' }, 'Harvest resources');
+  const cards = HOARD.map((item) => h('div', { class: 'hoard-card' },
+    pile(item.colour),
+    h('b', null, item.name, h('span', { class: 'hoard-count' }, ' × ∞')),
+    h('span', null, item.note)));
+  harvest.addEventListener('click', () => {
+    harvest.disabled = true;
+    harvest.textContent = 'Harvesting…';
+    toast('+∞ of everything. The Lift is waiting, and it looks excited.', 'good');
+    if (!calm()) {
+      cards.forEach((card, index) => card.querySelector('.hoard-pile').animate([
+        { transform: 'translateY(0) scale(1)', opacity: 1 },
+        { transform: `translate(${(Math.random() - 0.5) * 80}px, -70vh) scale(.4) rotate(${(Math.random() - 0.5) * 360}deg)`, opacity: 0 },
+      ], { duration: 900, delay: index * 70, easing: 'cubic-bezier(.5,0,.8,.4)', fill: 'forwards' }));
+    }
+    setTimeout(() => rideTo('express'), calm() ? 300 : 1500);
+  });
+
+  return page(
+    trail(['The Map', '/map'], ['EngSci complex', '/map/engsci'], ['Lower Ground', null]),
+    pageHeader({
+      eyebrow: 'The Lift · Lower Ground',
+      title: 'The vault',
+      intro: 'This floor is not on any plan. Every resource a settler could dream of, in endless supply, and nobody guarding it.',
+    }),
+    h('section', { class: 'vault' },
+      h('div', { class: 'hoard' }, cards),
+      h('div', { class: 'vault-acts' }, harvest,
+        h('p', null, 'Harvest everything, and the Lift will take you straight to the top. Probably.'))));
 }

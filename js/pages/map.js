@@ -46,6 +46,9 @@ const PLACES = {
   portmeadow: { name: 'Port Meadow', x: 250, y: 150, kind: 'meadow', label: null },
   marston: { name: 'Marston', x: 850, y: 214, kind: 'fields', label: null },
   castle: { name: 'Oxford Castle', x: 272, y: 410, kind: 'castle', label: [-20, -17, 'middle'] },
+  // Two pubs, for after the game.
+  jude: { name: 'Jude the Obscure', x: 290, y: 205, kind: 'pub', note: 'Walton Street, Jericho. A fine place to argue about who really won, and why the dice were against you.', label: [7, -18, 'middle'] },
+  star: { name: 'The Star', x: 815, y: 408, kind: 'pub', note: 'Rectory Road, over Magdalen Bridge. Lunch may end; the evening game need not.', label: [7, -18, 'middle'] },
   station: { name: 'Station', x: 262, y: 345, kind: 'station', label: [-20, -18, 'middle'] },
   otmoor: { name: 'Otmoor', x: 900, y: 92, kind: 'dragon' },
   ringroad: { name: 'The Ring Road', x: 70, y: 420, kind: 'none' },
@@ -120,7 +123,7 @@ function positions(league, approach, n) {
 // ---------- drawing the map ----------
 const text = (x, y, value, className, extra = {}) => svg('text', { x, y, class: className, ...extra }, value);
 
-function landmark(place) {
+function landmark(place, onPlace) {
   const { x, y, kind } = place;
   const ink = { stroke: INK, 'stroke-width': 1.6, fill: 'none', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
   const fill = { fill: '#e9d9b0', stroke: INK, 'stroke-width': 1.6, 'stroke-linejoin': 'round' };
@@ -135,6 +138,7 @@ function landmark(place) {
     castle: [svg('path', { d: `M${x - 22} ${y + 12}q22-16 44 0Z`, fill: '#cdbb8a', stroke: INK, 'stroke-width': 1.4 }), svg('path', { d: `M${x - 10} ${y + 4}V${y - 12}h4v4h4v-4h4v4h4v-4h4V${y + 4}`, ...fill })],
     station: [svg('rect', { x: x - 14, y: y - 6, width: 28, height: 12, ...fill }), svg('path', { d: `M${x + 6} ${y - 6}v-7h4v7M${x - 24} ${y + 10}h48M${x - 24} ${y + 13}h48`, ...ink })],
     trees: [[-12, 2], [0, -4], [12, 3], [-4, 8], [8, 10]].map(([dx, dy]) => [svg('path', { d: `M${x + dx} ${y + dy + 9}v-5`, ...ink }), svg('circle', { cx: x + dx, cy: y + dy, r: 6, fill: '#7f9a55', stroke: INK, 'stroke-width': 1.2 })]),
+    pub: [svg('path', { d: `M${x - 13} ${y + 10}v-14l13-9 13 9v14Z`, fill: '#e2c48a', stroke: INK, 'stroke-width': 1.5, 'stroke-linejoin': 'round' }), svg('path', { d: `M${x + 13} ${y - 6}h9M${x + 20} ${y - 6}v3`, ...ink }), svg('rect', { x: x + 15, y: y - 3, width: 11, height: 9, fill: '#8b2a1d', stroke: INK, 'stroke-width': 1 }), svg('path', { d: `M${x - 4} ${y + 10}v-7h8v7`, ...ink })],
     houses: [[-14, 0], [0, -4], [14, 1]].map(([dx, dy]) => svg('path', { d: `M${x + dx - 6} ${y + dy + 8}v-9l6-6 6 6v9Z`, fill: '#c98a5e', stroke: INK, 'stroke-width': 1.3 })),
     meadow: [[-30, 0], [-12, 10], [8, -6], [26, 6], [-22, -14], [18, -18]].map(([dx, dy]) => svg('path', { d: `M${x + dx - 4} ${y + dy}l2-6 2 6 2-7 2 7`, ...ink })),
     fields: [0, 1, 2, 3].map((row) => svg('path', { d: `M${x - 34} ${y - 12 + row * 8}h68`, stroke: '#a77b2a', 'stroke-width': 1.4, 'stroke-dasharray': '3 3' })),
@@ -146,6 +150,15 @@ function landmark(place) {
   const [dx, dy, anchor] = place.label === undefined ? [0, 26, 'middle'] : place.label ?? [];
   const group = svg('g', { class: `map-landmark ${place.link ? 'map-door' : ''}`.trim() }, shapes[kind],
     kind !== 'none' && place.label !== null && text(x + dx, y + dy, place.short ?? place.name, 'map-label', { 'text-anchor': anchor, 'data-place': place.key, 'data-x': x, 'data-y': y }));
+  if (place.note && onPlace) {
+    // A place with something to say when tapped.
+    group.classList.add('map-door');
+    group.setAttribute('role', 'button');
+    group.setAttribute('tabindex', '0');
+    group.setAttribute('aria-label', place.name);
+    group.addEventListener('click', () => onPlace(place));
+    group.addEventListener('keydown', (event) => { if (event.key === 'Enter') onPlace(place); });
+  }
   if (place.link) {
     // A building you can go into.
     group.setAttribute('role', 'link');
@@ -197,7 +210,7 @@ function backdrop() {
   ];
 }
 
-function cityLayer() {
+function cityLayer(onPlace) {
   const road = (d, name, at) => [
     svg('path', { d, class: 'map-road' }),
     name && text(at[0], at[1], name, 'map-road-label', { transform: `rotate(${at[2] ?? 0} ${at[0]} ${at[1]})` }),
@@ -228,7 +241,7 @@ function cityLayer() {
     [[230, 178], [282, 184], [292, 134]].map(([x, y]) => svg('g', { transform: `translate(${x} ${y})` },
       svg('ellipse', { cx: 0, cy: 0, rx: 7, ry: 5, fill: '#fbf6e8', stroke: INK, 'stroke-width': 1 }),
       svg('circle', { cx: 7, cy: -1, r: 2.6, fill: INK }))),
-    Object.values(PLACES).map(landmark));
+    Object.values(PLACES).map((place) => landmark(place, onPlace)));
 }
 
 function cartouche(n, total, games) {
@@ -277,11 +290,11 @@ function footprint(layer, from, to, left) {
  * The chart with everyone walking about on it. Returns the SVG, and place(n) to move everyone to where they
  * stood after n games. under and over are extra layers drawn below and above the settlers. A viewBox crops it.
  */
-export function livingMap(league, approach, { calm = false, under = [], over = [], viewBox = `0 0 ${W} ${H}`, label = 'An illustrated map of Oxford with each player marked on it' } = {}) {
+export function livingMap(league, approach, { calm = false, under = [], over = [], onPlace = null, viewBox = `0 0 ${W} ${H}`, label = 'An illustrated map of Oxford with each player marked on it' } = {}) {
   const feet = svg('g', { class: 'map-feet' });
   const people = svg('g');
   const map = svg('svg', { class: 'map-svg', viewBox, role: 'img', 'aria-label': label },
-    backdrop(), cityLayer(), under, feet, people, over);
+    backdrop(), cityLayer(onPlace), under, feet, people, over);
 
   // Each settler walks to their place, then potters about it, leaving footprints that fade.
   const walkers = new Map();
@@ -399,7 +412,8 @@ export function renderMap() {
       h('p', null, 'Every hex on the board is worth exactly the same until the dice say otherwise. Every settler is equal until lunch begins. Well spun.'));
   });
 
-  const { map, place: placeSettlers } = livingMap(league, approach, { calm, under: [scaleBar(), compass, cartoucheHolder], over: [seals] });
+  const onPlace = (spot) => riddle.replaceChildren(h('p', { class: 'map-riddle-place' }, 'A public house'), h('h3', null, spot.name), h('p', null, spot.note));
+  const { map, place: placeSettlers } = livingMap(league, approach, { calm, onPlace, under: [scaleBar(), compass, cartoucheHolder], over: [seals] });
   const place = (n) => {
     cartoucheHolder.replaceChildren(cartouche(n, total, league.games));
     placeSettlers(n);

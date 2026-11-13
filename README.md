@@ -196,8 +196,10 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 ## The Map and the easter eggs
 
 **Inside the Engineering Science complex** (`js/pages/engsci.js`): tap the Jenkin or Thom Building on the Map.
-- **The floor plan,** north to south: Cryogenics; Room 11 on the left, alongside the Wroth Library and the Wallace Room; the Dead Zone; Hølder-bygningen; and the Terrible Lift.
+- **The floor plan,** north to south: Cryogenics; Room 11 on the left, alongside the Wroth Library and the Wallace Room; the Dead Zone; Hølder-bygningen; and the Lift.
 - **The lift** goes up to the Thom Building, whose 8th floor is the Penthouse.
+- **The Lift:** one ride up in ten (`DROP_CHANCE` in `js/pages/engsci.js`), it drops to **Lower Ground** instead: a vault of every resource. **Harvest resources** sends it straight to the Penthouse.
+- **Two pubs** on the Oxford map, the Jude the Obscure and The Star, each with a note when tapped.
 - **The Penthouse** opens onto a night sky: deep-sky images, constellations, and a constellation called Ryan that stays.
 - **Image credits:** the images are from NASA's image library (images.nasa.gov), resized in `assets/sky/` and credited on that page.
 - **Map labels:** place names are positioned so none sits on a road, river or seal. If you move a landmark in `js/pages/map.js`, check its `label` offset too.
@@ -208,7 +210,7 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 - **Others:** newcomers wait at the station, retired players are in the Ashmolean, and the winner of the latest game wears a crown.
 - **Replay the league:** steps through every game so you can watch everyone move.
 
-There are 24 secrets around the site, 8 of them inside the Engineering Science complex, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
+There are 25 secrets around the site, 9 of them inside the Engineering Science complex, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
 
 ## Credits
 

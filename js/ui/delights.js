@@ -24,7 +24,8 @@
 //   room11     Visit Room 11 eleven times             a fresh whiteboard each time
 //   deadzone   Tap the Dead Zone                      the signal drops
 //   holder     Tap Hølder-bygningen                   velkommen
-//   lift       Ride the Terrible Lift                 eventually, it arrives
+//   lift       Ride the Lift                 eventually, it arrives
+//   vault      One ride in ten, the Lift drops to Lower Ground: harvest everything, then shoot to the top
 //   penthouse  Reach the Penthouse, on the 8th floor of the Thom Building: a night sky that stays
 import * as storage from '../data/browser-storage.js';
 import { h, svg } from './dom.js';
@@ -57,7 +58,8 @@ export const SECRETS = [
   { id: 'room11', title: 'It Goes Up to Eleven', place: 'jenkin', inside: 'engsci', where: 'Room 11', riddle: 'Its whiteboard never runs dry. Visit it as many times as its number.' },
   { id: 'deadzone', title: 'No Signal', place: 'jenkin', inside: 'engsci', where: 'The Dead Zone', riddle: 'Between the old and the Danish lies a place where phones go quiet.' },
   { id: 'holder', title: 'Velkommen', place: 'jenkin', inside: 'engsci', where: 'Hølder-bygningen', riddle: 'One building speaks another tongue. Knock and be greeted.' },
-  { id: 'lift', title: 'The Terrible Lift', place: 'jenkin', inside: 'engsci', where: 'The Terrible Lift', riddle: 'Brave the lift at the southern end. It goes up. Eventually.' },
+  { id: 'lift', title: 'The Lift', place: 'jenkin', inside: 'engsci', where: 'The Lift', riddle: 'Brave the lift at the southern end. It goes up. Eventually.' },
+  { id: 'vault', title: 'Lower Ground', place: 'jenkin', inside: 'engsci', where: 'The Lift', riddle: 'The Lift has a floor it does not admit to. One ride in ten, it remembers. Keep riding.' },
   { id: 'penthouse', title: 'The View from the Top', place: 'thom', inside: 'thom', where: 'The Penthouse', riddle: 'Climb the Thom Building to the eighth floor, and look up.' },
 ];
 export const secretPlace = (secret, places) => secret.where ?? places[secret.place]?.name ?? secret.place;
