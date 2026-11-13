@@ -19,6 +19,7 @@ Live site: <https://d-green1958.github.io/FLF-Catan-League/>
 | **Scoring systems** | How each of the 16 systems works, its weaknesses, and settings anyone can try in their own browser |
 | **Rules** | A summary of the Catan rules and the league's own rules |
 | **About** | What the group is and when it meets |
+| **The Map** | An old-style map of Oxford with every player walking about on it, placed by rank and favourite resource, a replay of the whole league, and riddles for the site's 16 secrets |
 | **Review** | Everything added, edited and removed, and by whom, where admins can correct or remove anything |
 
 **Try the demo**, on the Review page, fills the site with made-up players and games for exploring. It never touches the real data.

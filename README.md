@@ -187,9 +187,15 @@ The repo owner goes to **Settings → Pages → Build and deployment → Source*
 
 League data is read from and written to the repo's default branch. If the default branch changes, the Actions need to be on the new one too.
 
-## Easter eggs
+## The Map and the easter eggs
 
-There are a few, all harmless and all switched off for anyone whose device asks for reduced motion. The list is at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
+**The Map** (`#/map`, `js/pages/map.js`) is an old-style chart of Oxford with every player walking about on it:
+- **Quarter:** each player keeps to the quarter of their favourite resource (brick in Jericho, lumber in Christ Church Meadow, wool on Port Meadow, grain in Marston, ore at the Castle). If their profile has none, it uses the resource their recorded openings lean on.
+- **Rank:** the higher a player ranks on the chosen scoring system, the closer they stand to the Radcliffe Camera, which the leader holds.
+- **Others:** newcomers wait at the station, retired players are in the Ashmolean, and the winner of the latest game wears a crown.
+- **Replay the league:** steps through every game so you can watch everyone move.
+
+There are 16 secrets around the site, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
 
 ## Credits
 

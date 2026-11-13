@@ -8,7 +8,8 @@ import { renderSendBar } from './forms/send-dialog.js';
 import { loadApproachModules } from './ratings/engine.js';
 import { h, route } from './ui/dom.js';
 import { icon } from './ui/icons.js';
-import { installDelights, proverb } from './ui/delights.js';
+import { installDelights, lostPage, noteThemeSwitch, proverb } from './ui/delights.js';
+import { renderMap } from './pages/map.js';
 import { renderAbout } from './pages/about.js';
 import { renderData } from './pages/data.js';
 import { renderGames } from './pages/games.js';
@@ -30,6 +31,7 @@ const NAV = [
     { path: '/scoring', label: 'Scoring systems', icon: 'scale' },
     { path: '/rules', label: 'Rules', icon: 'book' },
     { path: '/about', label: 'About', icon: 'info' },
+    { path: '/map', label: 'The Map', icon: 'map' },
   ] },
   { group: 'Data', items: [
     { path: '/data', label: 'Review', icon: 'edit' },
@@ -45,6 +47,7 @@ const ROUTES = [
   { match: /^\/scoring$/, render: renderScoring, nav: '/scoring' },
   { match: /^\/rules$/, render: renderRules, nav: '/rules' },
   { match: /^\/about$/, render: renderAbout, nav: '/about' },
+  { match: /^\/map$/, render: renderMap, nav: '/map' },
   { match: /^\/data$/, render: renderData, nav: '/data' },
 ];
 
@@ -104,7 +107,7 @@ function themeButton() {
   return h('button', {
     class: 'btn ghost sm block',
     type: 'button',
-    onClick: () => settings.set('theme', next),
+    onClick: () => { settings.set('theme', next); noteThemeSwitch(); },
   }, icon(theme === 'dark' ? 'sun' : 'moon'), `${next === 'dark' ? 'Dark' : 'Light'} mode`);
 }
 
@@ -168,10 +171,9 @@ function showPage() {
   if (matched) {
     view.replaceChildren(matched.candidate.render(...matched.found.slice(1)));
   } else {
-    view.replaceChildren(h('div', { class: 'page' }, h('div', { class: 'empty card' },
-      h('h2', null, 'Page not found'),
-      h('p', null, 'That address does not lead anywhere on this island.'),
-      h('a', { class: 'btn', href: route('/') }, 'Back to the leaderboard'))));
+    view.replaceChildren(lostPage(
+      h('a', { class: 'btn', href: route('/') }, 'Back to the leaderboard'),
+      h('a', { class: 'btn primary', href: route('/map') }, icon('map'), 'Consult the Map')));
   }
 
   renderNav(matched?.candidate.nav);
@@ -180,7 +182,7 @@ function showPage() {
   renderDemoBanner();
   renderSendBar();
   renderThemeToggle();
-  document.title = `${document.querySelector('#view h1')?.textContent ?? 'Page not found'} · ${store.reference().league.shortName}`;
+  document.title = `${document.querySelector('#view h1, #view h2')?.textContent ?? 'Page not found'} · ${store.reference().league.shortName}`;
 
   scroller.scrollTop = samePage ? scrollTop : 0;
   if (anchor && !samePage) document.getElementById(anchor)?.scrollIntoView({ block: 'start' });

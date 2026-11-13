@@ -1,0 +1,56 @@
+/* The Map of Oxtan (js/pages/map.js): parchment, ink and footprints. */
+.map-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 12px; }
+.map-controls input[type=range] { flex: 1 1 200px; accent-color: #8b2a1d; }
+.map-step { font-family: "IM Fell English", var(--font-display); font-style: italic; color: var(--ink-2); min-width: 130px; }
+
+.map-sheet { position: relative; border-radius: 6px; box-shadow: 0 18px 40px -16px rgba(40, 24, 6, .55), 0 0 0 1px rgba(90, 60, 20, .25); background: #e8d6a8; overflow: hidden; }
+.map-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+.map-svg { display: block; width: 100%; min-width: 820px; height: auto; font-family: "IM Fell English", Georgia, serif; }
+.map-cover { position: absolute; inset: 0; display: grid; place-content: center; gap: 10px; border: 0; cursor: pointer; color: #3b2a17;
+  background: radial-gradient(ellipse at center, rgba(241, 226, 187, .2), rgba(90, 52, 16, .35)), repeating-linear-gradient(90deg, #e3cc98 0 33.2%, #d7bd86 33.3% 33.5%), #e3cc98;
+  font-family: "IM Fell English", Georgia, serif; font-size: 17px; font-style: italic; }
+.map-cover-title { font-family: "IM Fell English SC", Georgia, serif; font-style: normal; font-size: 40px; letter-spacing: .04em; }
+.map-cover:hover .map-cover-title { text-shadow: 0 0 18px rgba(255, 220, 140, .9); }
+
+.map-road { fill: none; stroke: rgba(59, 42, 23, .55); stroke-width: 2.2; stroke-dasharray: 7 4; stroke-linecap: round; }
+.map-ring { fill: none; stroke: rgba(139, 42, 29, .35); stroke-width: 2; stroke-dasharray: 2 6; }
+.map-river-edge { fill: none; stroke: #3b2a17; stroke-width: 15; stroke-linecap: round; opacity: .55; }
+.map-river { fill: none; stroke: #8fb3c4; stroke-width: 12; stroke-linecap: round; }
+.map-water-label { font-style: italic; font-size: 15px; fill: #2c4e63; letter-spacing: .08em; }
+.map-label { font-size: 12.5px; fill: #3b2a17; text-anchor: middle; paint-order: stroke; stroke: rgba(241, 226, 187, .9); stroke-width: 3px; }
+.map-road-label { font-style: italic; font-size: 11px; fill: rgba(59, 42, 23, .8); text-anchor: middle; }
+.map-district { font-family: "IM Fell English SC", Georgia, serif; font-size: 17px; letter-spacing: .3em; fill: rgba(59, 42, 23, .4); text-anchor: middle; }
+.map-title { font-family: "IM Fell English SC", Georgia, serif; font-size: 26px; fill: #3b2a17; text-anchor: middle; }
+.map-subtitle { font-style: italic; font-size: 11.5px; fill: #5a4129; text-anchor: middle; }
+.map-compass { cursor: pointer; transform-box: fill-box; transform-origin: center; }
+.map-compass-n { font-family: "IM Fell English SC", Georgia, serif; font-size: 16px; text-anchor: middle; fill: #8b2a1d; }
+
+.map-walker { transition: transform .38s linear; cursor: default; }
+.map-walker-initial { font: 700 11px var(--font); text-anchor: middle; pointer-events: none; }
+.map-walker-name { font-size: 13px; font-weight: 700; text-anchor: middle; fill: #2a1d0e; paint-order: stroke; stroke: rgba(241, 226, 187, .95); stroke-width: 3.5px; }
+.map-foot { fill: rgba(59, 42, 23, .75); animation: foot-fade 5s linear forwards; }
+@keyframes foot-fade { to { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .map-crown { animation: crown-bob 2.4s ease-in-out infinite; }
+  @keyframes crown-bob { 50% { transform: translateY(-2px); } }
+}
+
+.map-seal { cursor: pointer; }
+.map-seal circle { fill: #9b2c1f; stroke: #5e160d; stroke-width: 1.5; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35)); }
+.map-seal-mark { fill: #e7a596; }
+.map-seal.found circle { fill: #d3ae58; stroke: #7a5a12; }
+.map-seal.found .map-seal-mark { fill: #fff4cf; }
+.map-seal:hover circle, .map-seal:focus circle { stroke: #fff; stroke-width: 2.4; outline: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .map-seal:not(.found) { animation: seal-glow 3s ease-in-out infinite; }
+  @keyframes seal-glow { 50% { opacity: .72; } }
+}
+
+.map-riddle { margin-top: 14px; padding: 16px 20px; border-radius: 6px; background: linear-gradient(135deg, #f1e2bb, #e3cc98); color: #3b2a17; font-family: "IM Fell English", Georgia, serif; font-size: 16.5px; box-shadow: 0 6px 18px -10px rgba(40, 24, 6, .5); }
+.map-riddle h3 { font-family: "IM Fell English SC", Georgia, serif; font-size: 22px; font-weight: 400; margin: 2px 0 6px; }
+.map-riddle p { margin: 0; }
+.map-riddle-place, .map-riddle-hint { font-style: italic; opacity: .75; font-size: 14px; }
+.map-secrets { margin: 14px 0; }
+.map-secrets summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.map-secrets ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 8px; color: var(--ink-2); }
+.map-secrets li.found b { color: var(--gold); }
