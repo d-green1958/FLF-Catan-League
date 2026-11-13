@@ -8,11 +8,13 @@ import { field } from '../ui/components.js';
 import { confirmAction, toast } from '../ui/feedback.js';
 import { plural } from '../ui/format.js';
 
-function passwordStep({ onUnlocked, onBack }) {
-  const name = h('input', { class: 'input', maxlength: 60, autocomplete: 'off', value: settings.get('groupMemberName') ?? '', 'aria-label': 'Your name' });
-  const password = h('input', { class: 'input', type: 'password', autocomplete: 'off', 'aria-label': 'Group password' });
+/** The name and password form. It is the first thing shown when a group password exists. */
+function passwordStep({ summary, onUnlocked, onGitHub, onCancel }) {
+  const name = h('input', { class: 'input', maxlength: 60, autocomplete: 'nickname', value: settings.get('groupMemberName') ?? '', 'aria-label': 'Your name' });
+  const password = h('input', { class: 'input', type: 'password', autocomplete: 'current-password', 'aria-label': 'Group password' });
+  const remember = h('input', { type: 'checkbox', checked: true });
   const problem = h('p', { class: 'field-hint', role: 'alert' });
-  const button = h('button', { class: 'btn primary', type: 'submit' }, 'Send');
+  const button = h('button', { class: 'btn primary block', type: 'submit' }, 'Send to the league');
   const submit = async (event) => {
     event.preventDefault();
     problem.textContent = '';
@@ -22,7 +24,7 @@ function passwordStep({ onUnlocked, onBack }) {
     }
     button.disabled = true;
     try {
-      if (await unlockGroup(password.value, name.value)) {
+      if (await unlockGroup(password.value, name.value, { remember: remember.checked })) {
         settings.set('groupMemberName', name.value.trim());
         onUnlocked();
         return;
@@ -35,14 +37,16 @@ function passwordStep({ onUnlocked, onBack }) {
     button.disabled = false;
   };
   return h('form', { class: 'send-form', onSubmit: submit },
-    h('h2', null, 'Use the group password'),
-    h('p', null, 'Your name is shown publicly next to what you add, so a first name or nickname is best. Reloading the page locks this again.'),
-    field('Your name', name),
+    h('h2', null, 'Send this to the league'),
+    h('p', null, summary),
+    field('Your name', name, 'Shown publicly next to what you add, so a first name or nickname is best.'),
     field('Group password', password),
+    h('label', { class: 'remember' }, remember, 'Remember me on this device'),
     problem,
-    h('div', { class: 'confirm-acts' },
-      h('button', { class: 'btn', type: 'button', onClick: onBack }, 'Back'),
-      button));
+    button,
+    h('div', { class: 'send-alt' },
+      h('button', { class: 'link-btn', type: 'button', onClick: onGitHub }, 'Use a GitHub account instead'),
+      h('button', { class: 'link-btn', type: 'button', onClick: onCancel }, 'Not now')));
 }
 
 /** Asks how to send the waiting changes. Saying "not now" keeps them in this browser. */
@@ -62,32 +66,31 @@ function askHowToSend() {
     dialog.close();
     sendWithGitHubAccount();
   };
-  const showChoice = () => dialog.replaceChildren(h('div', null,
-    h('h2', null, 'Send this to the league'),
-    h('p', null, summary),
-    groupAccessIsSet()
-      ? h('p', null, h('b', null, 'Do you have a GitHub account?'))
-      : h('p', null, 'This needs a free GitHub account, and your username is shown next to the entry.'),
-    groupAccessIsSet() && h('p', { class: 'field-hint' }, 'The group password is the quickest: it takes effect at once, with nothing more to press.'),
-    h('div', { class: 'send-choice' },
-      h('button', { class: 'btn primary', type: 'button', onClick: openGitHub }, groupAccessIsSet() ? 'Yes, open GitHub' : 'Open GitHub'),
-      groupAccessIsSet() && h('button', { class: 'btn', type: 'button', onClick: showPassword }, 'No, use the group password'),
-      h('button', { class: 'btn ghost', type: 'button', onClick: () => dialog.close() }, 'Not now'))));
-  const showPassword = () => {
-    const step = passwordStep({
+
+  if (groupAccessIsSet()) {
+    // The group password is the quick route, so it comes first. GitHub stays one tap away.
+    dialog.append(passwordStep({
+      summary,
       onUnlocked: () => {
         sent = true;
         dialog.close();
         sendDirectly();
       },
-      onBack: showChoice,
-    });
-    dialog.replaceChildren(step);
-    step.querySelector('input').focus();
-  };
-  showChoice();
+      onGitHub: openGitHub,
+      onCancel: () => dialog.close(),
+    }));
+  } else {
+    dialog.append(h('div', null,
+      h('h2', null, 'Send this to the league'),
+      h('p', null, summary),
+      h('p', null, 'This needs a free GitHub account, and your username is shown next to the entry.'),
+      h('div', { class: 'send-choice' },
+        h('button', { class: 'btn primary', type: 'button', onClick: openGitHub }, 'Open GitHub'),
+        h('button', { class: 'btn ghost', type: 'button', onClick: () => dialog.close() }, 'Not now'))));
+  }
   document.body.append(dialog);
   dialog.showModal();
+  [...dialog.querySelectorAll('input.input')].find((input) => !input.value)?.focus();
 }
 
 /** Sends the waiting changes, asking how only if it has to. */

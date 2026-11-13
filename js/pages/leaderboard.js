@@ -70,11 +70,11 @@ function singleSystem(league, approach) {
     { label: 'Rank' },
     { label: 'Player' },
     { label: approach.shortName, align: 'right', title: approach.name },
-    { label: 'Last game', align: 'right', title: 'Change from their most recent game' },
+    { label: 'Last game', align: 'right', title: 'Change from their most recent game', optional: true },
     { label: 'Games', align: 'right' },
     { label: 'Wins', align: 'right' },
-    { label: 'Win rate', align: 'right' },
-    { label: 'Avg VP', align: 'right' },
+    { label: 'Win rate', align: 'right', optional: true },
+    { label: 'Avg VP', align: 'right', optional: true },
   ];
   const tableRows = rows.map((row) => ({
     className: row.player.active === false ? 'dim' : null,

@@ -5,8 +5,9 @@
 // js/domain/submission.js. It also opens the admins' copy of the GitHub token, if one has been set up,
 // so an unlocked admin's changes go straight through. Reloading or closing the tab locks it again.
 //
-// The group password is separate. It lets someone add without a GitHub account, and it is also forgotten
-// when the tab closes. It gives no extra rights: the same checks apply on GitHub.
+// The group password is separate. It lets someone add without a GitHub account, and it gives no extra
+// rights: the same checks apply on GitHub. By default this device remembers it (as the unlocked token and the
+// person's name), so a phone asks only once. "Forget" clears it, and so does any change of group password.
 import * as storage from './browser-storage.js';
 import { store } from './store.js';
 import { signChanges, unlockWithCode } from '../domain/admin-key.js';
@@ -15,6 +16,7 @@ import { buildIssue, buildIssueLink, fitChanges, fitsInIssue } from '../domain/s
 import { toast } from '../ui/feedback.js';
 
 const SENT_KEY = 'flfoxtan.sent';
+const GROUP_KEY = 'flfoxtan.group';
 const ADMIN_NAME = 'Admin';
 // How long before saying sent changes seem overdue. Saving takes about 40 seconds at most.
 const OVERDUE_AFTER_MS = 5 * 60 * 1000;
@@ -44,17 +46,42 @@ export const canSendDirectly = () => Boolean(adminToken || groupToken);
 /** True if an admin is unlocked but will still be asked how to send, because no copy of the token was set up. */
 export const adminMustChooseRoute = () => isUnlocked() && !canSendDirectly();
 
-/** Returns true if the password is right. */
-export async function unlockGroup(password, name) {
-  groupToken = await openGroupAccess(password, store.reference().league.groupAccess);
+/** True if this device keeps the group password between visits. */
+export const groupIsRemembered = () => Boolean(storage.read(GROUP_KEY));
+
+/** Returns true if the password is right. With remember, this device will not ask again. */
+export async function unlockGroup(password, name, { remember = true } = {}) {
+  const { groupAccess } = store.reference().league;
+  groupToken = await openGroupAccess(password, groupAccess);
   groupName = groupToken ? name.trim() : '';
+  if (groupToken && remember) {
+    // The ciphertext ties what is kept to this password: once the password changes, it no longer matches.
+    storage.write(GROUP_KEY, { token: groupToken, name: groupName, ciphertext: groupAccess.ciphertext });
+  } else if (groupToken) {
+    storage.remove(GROUP_KEY);
+  }
   if (groupToken) store.refresh();
   return isGroupUnlocked();
 }
 
+/** Picks up a group password this device remembered on an earlier visit. Call once the league is loaded. */
+export function restoreGroupAccess() {
+  const kept = storage.read(GROUP_KEY);
+  if (!kept) return;
+  const { groupAccess } = store.reference().league;
+  if (!groupAccess || kept.ciphertext !== groupAccess.ciphertext || !kept.token) {
+    storage.remove(GROUP_KEY);
+    return;
+  }
+  groupToken = kept.token;
+  groupName = kept.name ?? '';
+}
+
+/** Forgets the group password on this device. */
 export function lockGroup() {
   groupToken = null;
   groupName = '';
+  storage.remove(GROUP_KEY);
   store.refresh();
 }
 
@@ -183,10 +210,11 @@ export async function sendDirectly() {
       body: JSON.stringify(buildIssue(changes, { authorisation, submittedBy: adminToken ? ADMIN_NAME : groupName })),
     });
     if (!response.ok) {
-      // Forgetting the token means pressing Send again offers the GitHub account route instead.
+      // Forgetting the token means pressing Send again asks for the password, or offers a GitHub account.
       adminToken = null;
       groupToken = null;
       groupName = '';
+      storage.remove(GROUP_KEY);
       store.refresh();
       toast('GitHub refused that, so please tell an admin. Your changes are safe here, and you can send them with a GitHub account.', 'warn');
       return;
@@ -231,5 +259,6 @@ export async function sendWithGitHubAccount() {
 export function sendingHint() {
   if (adminToken) return 'This goes straight into the league.';
   if (groupToken) return `This goes straight into the league, under the name ${groupName}.`;
-  return 'Next, you choose how to send this to the league.';
+  if (groupAccessIsSet()) return 'Next, you enter the group password. Tick "Remember me" and this device will not ask again.';
+  return 'Next, GitHub opens so you can send this to the league.';
 }

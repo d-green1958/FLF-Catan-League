@@ -75,7 +75,7 @@ function rivalsTable(league, player) {
       { label: 'Games together', align: 'right' },
       { label: `${player.name} won`, align: 'right' },
       { label: 'They won', align: 'right' },
-      { label: 'Next game counts', align: 'right', title: `From repeat decay with a half-life of ${halfLife} games` },
+      { label: 'Next game counts', align: 'right', optional: true, title: `From repeat decay with a half-life of ${halfLife} games` },
     ],
     rows.map((row) => [
       playerLink(league.profiles.find((other) => other.id === row.playerId)),
@@ -90,7 +90,7 @@ function rivalsTable(league, player) {
 function recentGames(league, player) {
   const games = league.games.filter((game) => game.seats.some((seat) => seat.playerId === player.id)).slice(-RECENT_GAMES).reverse();
   return h('div', { class: 'card' }, table(
-    [{ label: 'Date' }, { label: 'Finish' }, { label: 'VP', align: 'right' }, { label: 'Colour' }, { label: 'Winner' }, { label: '' }],
+    [{ label: 'Date' }, { label: 'Finish' }, { label: 'VP', align: 'right' }, { label: 'Colour', optional: true }, { label: 'Winner', optional: true }, { label: '' }],
     games.map((game) => {
       const seat = game.seats.find((item) => item.playerId === player.id);
       return [

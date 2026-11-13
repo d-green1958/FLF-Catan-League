@@ -52,14 +52,15 @@ export function initials(name) {
   return (parts.length > 1 ? parts[0][0] + parts.at(-1)[0] : name.slice(0, 2)).toUpperCase();
 }
 
-/** A player's photo, or their initials if they have none, ringed with their favourite colour. */
+/** A player's photo, or their initials if they have none, in a hexagon edged with their favourite colour. */
 export function avatar(player, size = '') {
   const colour = colourById(player?.favouriteColour);
   return h('span', {
     class: `avatar ${size}`.trim(),
     style: colour ? { '--ring': colour.hex } : null,
     'aria-hidden': 'true',
-  }, isPhoto(player?.photo) ? h('img', { src: player.photo, alt: '', loading: 'lazy' }) : initials(player?.name ?? '?'));
+  }, h('span', { class: 'avatar-in' },
+    isPhoto(player?.photo) ? h('img', { src: player.photo, alt: '', loading: 'lazy' }) : initials(player?.name ?? '?')));
 }
 
 export function playerLink(player) {
@@ -92,7 +93,7 @@ export function errorList(errors) {
   return h('ul', { class: 'errors', role: 'alert' }, errors.map((error) => h('li', null, error)));
 }
 
-/** A scrolling table. Columns are { label, align?, sticky? }, and rows are arrays of cells. */
+/** A scrolling table. Columns are { label, align?, sticky?, optional? }, and rows are arrays of cells. Optional columns are hidden on phones. */
 export function table(columns, rows) {
   return h('div', { class: 'table-wrap', tabindex: '0' },
     h('table', { class: 'tbl' },
@@ -104,5 +105,5 @@ export function table(columns, rows) {
 }
 
 function columnClass(column) {
-  return [column.align === 'right' && 'num-col', column.sticky && 'sticky-col'].filter(Boolean).join(' ') || null;
+  return [column.align === 'right' && 'num-col', column.sticky && 'sticky-col', column.optional && 'opt'].filter(Boolean).join(' ') || null;
 }

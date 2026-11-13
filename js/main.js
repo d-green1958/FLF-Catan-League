@@ -1,8 +1,9 @@
 // Starts the app: loads the data, draws the sidebar and shows the page named in the URL.
-import { startLiveUpdates } from './data/access.js';
+import { groupIsRemembered, groupMemberName, isGroupUnlocked, lockGroup, restoreGroupAccess, startLiveUpdates } from './data/access.js';
 import { store } from './data/store.js';
 import { settings } from './data/settings.js';
 import { useApproachModules } from './domain/league.js';
+import { openGameForm } from './forms/game-form.js';
 import { renderSendBar } from './forms/send-dialog.js';
 import { loadApproachModules } from './ratings/engine.js';
 import { h, route } from './ui/dom.js';
@@ -65,6 +66,67 @@ function renderNav(activePath) {
   ]).flat(Infinity));
 }
 
+// On phones the sidebar becomes a bottom tab bar. These pages get their own tab; the rest live under More.
+const TABS = ['/', '/games', '/players'];
+const TAB_LABELS = { '/': 'Table', '/games': 'Games', '/players': 'Players' };
+const navItems = () => NAV.flatMap(({ items }) => items);
+
+function renderTabBar(activePath) {
+  const tab = (item) => h('a', {
+    class: `tab ${item.path === activePath ? 'active' : ''}`.trim(),
+    href: route(item.path),
+    'aria-current': item.path === activePath ? 'page' : null,
+  }, icon(item.icon), h('span', null, TAB_LABELS[item.path]));
+  const [table, games, players] = TABS.map((path) => navItems().find((item) => item.path === path));
+  const inMore = activePath && !TABS.includes(activePath);
+  document.getElementById('tabbar').replaceChildren(
+    tab(table),
+    tab(games),
+    h('button', { class: 'tab tab-log', type: 'button', onClick: () => openGameForm() },
+      h('span', { class: 'hexbtn' }, icon('plus')), h('span', null, 'Log game')),
+    tab(players),
+    h('button', { class: `tab ${inMore ? 'active' : ''}`.trim(), type: 'button', 'aria-haspopup': 'dialog', onClick: () => openMoreSheet(activePath) },
+      icon('menu'), h('span', null, 'More')));
+}
+
+/** "Sending as Sam · Forget", once the group password has been entered on this device. */
+function sessionLine() {
+  if (!isGroupUnlocked()) return null;
+  return h('div', { class: 'session' },
+    h('span', null, 'Sending as ', h('b', null, groupMemberName() || 'group member'), groupIsRemembered() ? '' : ' until this tab closes'),
+    h('button', { class: 'link-btn', type: 'button', onClick: () => lockGroup() }, 'Forget'));
+}
+
+function themeButton() {
+  const theme = currentTheme();
+  const next = theme === 'dark' ? 'light' : 'dark';
+  return h('button', {
+    class: 'btn ghost sm block',
+    type: 'button',
+    onClick: () => settings.set('theme', next),
+  }, icon(theme === 'dark' ? 'sun' : 'moon'), `${next === 'dark' ? 'Dark' : 'Light'} mode`);
+}
+
+function openMoreSheet(activePath) {
+  const sheet = h('dialog', {
+    class: 'sheet',
+    'aria-label': 'More pages',
+    onClose: () => sheet.remove(),
+    onClick: (event) => { if (event.target === sheet) sheet.close(); },
+  });
+  const links = navItems().filter((item) => !TABS.includes(item.path)).map((item) => h('a', {
+    href: route(item.path),
+    class: item.path === activePath ? 'active' : null,
+    onClick: () => sheet.close(),
+  }, icon(item.icon), item.label));
+  sheet.append(h('div', { class: 'sheet-inner', tabindex: '-1', autofocus: true },
+    h('div', { class: 'sheet-grip' }),
+    h('nav', { class: 'sheet-links', 'aria-label': 'More pages' }, links),
+    h('div', { class: 'sheet-foot' }, sessionLine(), themeButton())));
+  document.body.append(sheet);
+  sheet.showModal();
+}
+
 function renderDemoBanner() {
   const banner = document.getElementById('demo-banner');
   banner.hidden = store.mode() !== 'demo';
@@ -87,13 +149,7 @@ function currentTheme() {
 }
 
 function renderThemeToggle() {
-  const theme = currentTheme();
-  const next = theme === 'dark' ? 'light' : 'dark';
-  document.getElementById('theme-toggle').replaceChildren(h('button', {
-    class: 'btn ghost sm block',
-    type: 'button',
-    onClick: () => settings.set('theme', next),
-  }, icon(theme === 'dark' ? 'sun' : 'moon'), `${next === 'dark' ? 'Dark' : 'Light'} mode`));
+  document.getElementById('theme-toggle').replaceChildren(themeButton());
 }
 
 let lastPath = null;
@@ -118,6 +174,8 @@ function showPage() {
   }
 
   renderNav(matched?.candidate.nav);
+  renderTabBar(matched?.candidate.nav);
+  document.getElementById('session').replaceChildren(...[sessionLine()].filter(Boolean));
   renderDemoBanner();
   renderSendBar();
   renderThemeToggle();
@@ -141,6 +199,7 @@ async function start() {
   try {
     await store.init();
     useApproachModules(await loadApproachModules(store.reference().approaches));
+    restoreGroupAccess();
   } catch (error) {
     showFatalError(error);
     return;

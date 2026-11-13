@@ -47,7 +47,7 @@ js/
   forms/              The player and game forms, and the prompt that sends them (send-dialog.js)
   ui/                 Shared building blocks, such as tables and charts
 
-css/                  tokens.css holds all colours and sizes, so start there to re-theme
+css/                  tokens.css holds all colours, fonts and sizes (taken from the crest), so start there to re-theme
 scripts/              The script the Action runs, and those that set the admin code and passwords
 .github/workflows/    The Actions that save submissions and publish the site
 tests/                Tests for the scoring maths, validation, submissions and data files
@@ -60,7 +60,7 @@ Anyone can view the site without an account. **Anyone with a free GitHub account
 
 **Admins** are whoever knows the admin code. They check the **Review** page, which lists everything added, edited and removed, and by whom, and can edit or remove anything spurious.
 
-After someone saves a player or game, the site asks **Do you have a GitHub account?** Yes opens GitHub with the issue filled in. No asks for their name and the group password, then sends it straight away, and they are not asked again until they reload the page. Admins who have entered the code are not asked at all, once `set-admin-access.js` has been run.
+After someone saves a player or game, the site asks for their name and the group password, then sends it straight away. **Remember me on this device** is ticked by default, so each phone asks only once (**Forget** clears it, and changing the group password makes every device ask again). **Use a GitHub account instead** opens GitHub with the issue filled in. Admins who have entered the code are not asked at all, once `set-admin-access.js` has been run.
 
 Anyone can also edit the personal details on a profile: photo, nickname, signature move, about, favourite colour and resource, and play style. The log says who changed what, and an admin can change it back. A name, joining date, retirement or deletion needs the admin code.
 

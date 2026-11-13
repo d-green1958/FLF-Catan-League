@@ -15,7 +15,8 @@ export function openDrawer(title, content) {
   },
     h('div', { class: 'drawer-inner' },
       h('header', { class: 'drawer-head' },
-        h('h2', null, title),
+        // Focus starts on the title, so the panel opens without a focus ring on the Close button.
+        h('h2', { tabindex: '-1', autofocus: true }, title),
         h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close', onClick: close }, icon('x'))),
       h('div', { class: 'drawer-body' }, typeof content === 'function' ? content(close) : content)));
   document.body.append(dialog);

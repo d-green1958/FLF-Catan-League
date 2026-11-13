@@ -1,10 +1,11 @@
 // Log a new game, or correct an existing one. Seats are entered in turn order.
+// The quick way: tap the players in turn order, type each score, and press Log game. Everything else is optional.
 import { sendingHint } from '../data/access.js';
 import { store } from '../data/store.js';
 import { validateGame, validatePlayer } from '../domain/validate.js';
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
-import { errorList, field } from '../ui/components.js';
+import { avatar, errorList, field } from '../ui/components.js';
 import { openDrawer, toast } from '../ui/feedback.js';
 import { today } from '../ui/format.js';
 import { finishChange } from './send-dialog.js';
@@ -22,10 +23,10 @@ function suggestedTarget(selected, catalogue) {
 export function openGameForm(existing = null, { onSaved } = {}) {
   openDrawer(existing ? 'Correct this game' : 'Log a game', (close) => {
     const { colours, expansions: catalogue, league } = store.reference();
-    const { minPlayers, maxPlayers } = league.settings;
+    const { maxPlayers } = league.settings;
 
     const state = {
-      seats: existing ? existing.seats.map((seat) => ({ ...seat })) : Array.from({ length: Math.min(4, maxPlayers) }, blankSeat),
+      seats: existing ? existing.seats.map((seat) => ({ ...seat })) : [],
       winnerId: existing?.winnerId ?? '',
       winnerChosenByHand: Boolean(existing),
       targetChosenByHand: Boolean(existing),
@@ -50,6 +51,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
     const largestArmy = h('select', { class: 'select' });
     const largestArmyField = field('Largest Army', largestArmy);
     const seatsHolder = h('div', { class: 'seats' });
+    const picker = h('div', { class: 'picker', role: 'group', 'aria-label': 'Players, tapped in turn order' });
     const extensionNote = h('p', { class: 'field-hint' });
 
     const selectedExpansions = () => catalogue.expansions.filter((expansion) => state.expansions.includes(expansion.id));
@@ -64,8 +66,52 @@ export function openGameForm(existing = null, { onSaved } = {}) {
       if (noArmy) largestArmy.value = '';
     }
 
+    /** Their favourite colour if nobody has it yet, otherwise the next free one. */
+    function colourFor(playerId) {
+      const preferred = store.player(playerId)?.favouriteColour;
+      const preferredFree = preferred && !state.seats.some((other) => other.colour === preferred);
+      return preferredFree ? preferred : availableColour();
+    }
+
+    /** Tapping a player seats them next in turn order. Tapping them again takes them out. */
+    function togglePick(player) {
+      const index = state.seats.findIndex((seat) => seat.playerId === player.id);
+      if (index >= 0) {
+        state.seats.splice(index, 1);
+        if (player.id === state.winnerId) { state.winnerId = ''; state.winnerChosenByHand = false; }
+      } else {
+        let seat = state.seats.find((candidate) => !candidate.playerId);
+        if (!seat) {
+          if (state.seats.length >= maxPlayers) {
+            toast(`A game can have at most ${maxPlayers} players.`, 'warn');
+            return;
+          }
+          seat = blankSeat();
+          state.seats.push(seat);
+        }
+        seat.playerId = player.id;
+        if (!seat.colour) seat.colour = colourFor(player.id);
+      }
+      renderSeats();
+    }
+
+    function renderPicker() {
+      const players = [...store.profiles()]
+        .filter((player) => player.active !== false || state.seats.some((seat) => seat.playerId === player.id))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      picker.replaceChildren(...players.map((player) => {
+        const index = state.seats.findIndex((seat) => seat.playerId === player.id);
+        return h('button', {
+          class: 'pick', type: 'button', 'aria-pressed': String(index >= 0),
+          'aria-label': index >= 0 ? `${player.name}, seat ${index + 1}. Tap to remove` : `Add ${player.name}`,
+          onClick: () => togglePick(player),
+        }, avatar(player), h('span', null, player.name), index >= 0 && h('span', { class: 'pick-seat' }, index + 1));
+      }));
+    }
+
     /** Keeps everything that depends on the seats up to date, without rebuilding inputs mid-typing. */
     function refreshDerived() {
+      renderPicker();
       if (!state.winnerChosenByHand) {
         const scored = state.seats.filter((seat) => seat.playerId && Number.isInteger(seat.vp));
         const top = Math.max(-1, ...scored.map((seat) => seat.vp));
@@ -114,10 +160,8 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         class: 'select', 'data-role': 'player', 'aria-label': `Seat ${index + 1} player`,
         onChange: (event) => {
           seat.playerId = event.target.value;
-          const preferred = store.player(seat.playerId)?.favouriteColour;
           if (!seat.colour) {
-            const preferredFree = preferred && !state.seats.some((other) => other.colour === preferred);
-            seat.colour = preferredFree ? preferred : availableColour();
+            seat.colour = colourFor(seat.playerId);
             colourSelect.value = seat.colour;
           }
           refreshDerived();
@@ -166,7 +210,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
           h('button', { class: 'icon-btn sm', type: 'button', 'aria-label': `Move seat ${index + 1} later`, disabled: index === state.seats.length - 1, onClick: () => move(1) }, icon('down', 'sm')),
           h('button', {
             class: 'icon-btn sm', type: 'button', 'aria-label': `Remove seat ${index + 1}`,
-            disabled: state.seats.length <= minPlayers,
+            disabled: state.seats.length <= 1,
             onClick: () => {
               state.seats.splice(index, 1);
               if (seat.playerId === state.winnerId) { state.winnerId = ''; state.winnerChosenByHand = false; }
@@ -194,12 +238,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
       if (problems.length) return;
       const saved = store.savePlayer(player);
       newPlayerName.value = '';
-      const emptySeat = state.seats.find((seat) => !seat.playerId);
-      if (emptySeat) {
-        emptySeat.playerId = saved.id;
-        emptySeat.colour = emptySeat.colour || availableColour();
-      }
-      renderSeats();
+      togglePick(saved);
       toast(`${saved.name} registered`, 'good');
     };
     newPlayerName.addEventListener('keydown', (event) => {
@@ -230,7 +269,10 @@ export function openGameForm(existing = null, { onSaved } = {}) {
         vpTarget: Number(vpTarget.value),
         winnerId: state.winnerId,
         ...(endedEarly.checked ? { endedEarly: true } : {}),
-        seats: state.seats.map((seat) => ({ playerId: seat.playerId, colour: seat.colour, vp: seat.vp === '' ? null : seat.vp })),
+        // Seats left completely blank are dropped, so nobody has to remove spare rows by hand.
+        seats: state.seats
+          .filter((seat) => seat.playerId || seat.vp !== '')
+          .map((seat) => ({ playerId: seat.playerId, colour: seat.colour, vp: seat.vp === '' ? null : seat.vp })),
         ...(longestRoute.value ? { longestRoute: longestRoute.value } : {}),
         ...(largestArmy.value ? { largestArmy: largestArmy.value } : {}),
         ...(notes.value.trim() ? { notes: notes.value.trim() } : {}),
@@ -247,14 +289,18 @@ export function openGameForm(existing = null, { onSaved } = {}) {
       onSaved?.(saved);
     };
 
+    const defaultTarget = catalogue.base.defaultVp;
+    const hasDetails = Boolean(existing && (existing.time || existing.location || existing.expansions?.length || existing.scenario
+      || existing.notes || existing.endedEarly || (existing.vpTarget && existing.vpTarget !== defaultTarget)));
+
     const form = h('form', { class: 'form', onSubmit: submit, novalidate: true },
       errorHolder,
-      h('div', { class: 'form-row' }, field('Date', date), field('Start time (optional)', time)),
-      field('Location (optional)', location),
+      field('Date', date),
 
       h('fieldset', { class: 'group' },
         h('legend', null, 'Who played?'),
-        h('p', { class: 'field-hint' }, 'List the seats in turn order, with the first player at the top. Tick the trophy for the winner: it fills in by itself from the highest VPs.'),
+        h('p', { class: 'field-hint' }, 'Tap the players in turn order, starting with whoever went first. Then type each score: the winner fills in from the highest, or tick the trophy yourself.'),
+        picker,
         seatsHolder,
         extensionNote,
         h('div', { class: 'seat-add' },
@@ -264,23 +310,27 @@ export function openGameForm(existing = null, { onSaved } = {}) {
             h('button', { class: 'btn sm', type: 'button', onClick: addNewPlayer }, 'Register')))),
 
       h('fieldset', { class: 'group' },
-        h('legend', null, 'What was on the table?'),
-        h('p', { class: 'field-hint' }, 'The base game is always in play. Tick anything added to it.'),
-        h('div', { class: 'checks' }, catalogue.expansions.map(expansionChoice)),
-        h('details', null,
-          h('summary', null, 'Other official additions'),
-          h('div', { class: 'checks' }, catalogue.extras.map(expansionChoice)))),
-      field('Scenario or variant (optional)', scenario),
-      scenarioOptions,
-      h('div', { class: 'field' },
-        h('label', { class: 'field-label' }, 'Victory point target', vpTarget),
-        vpNote),
-      h('label', { class: 'switch' }, endedEarly, 'Ended early (lunch ran out before anyone reached the target)'),
+        h('legend', null, 'Bonus tiles (optional)'),
+        h('div', { class: 'form-row' }, field('Longest Route', longestRoute), largestArmyField)),
 
-      h('fieldset', { class: 'group' },
-        h('legend', null, 'Extras (optional)'),
-        h('div', { class: 'form-row' }, field('Longest Route', longestRoute), largestArmyField),
-        field('Notes', notes)),
+      h('details', { class: 'more-details', open: hasDetails },
+        h('summary', null, 'More details: time, place, expansions, target, notes'),
+        h('div', { class: 'form' },
+          h('div', { class: 'form-row' }, field('Start time', time), field('Location', location)),
+          h('fieldset', { class: 'group' },
+            h('legend', null, 'What was on the table?'),
+            h('p', { class: 'field-hint' }, 'The base game is always in play. Tick anything added to it.'),
+            h('div', { class: 'checks' }, catalogue.expansions.map(expansionChoice)),
+            h('details', null,
+              h('summary', null, 'Other official additions'),
+              h('div', { class: 'checks' }, catalogue.extras.map(expansionChoice)))),
+          field('Scenario or variant', scenario),
+          scenarioOptions,
+          h('div', { class: 'field' },
+            h('label', { class: 'field-label' }, 'Victory point target', vpTarget),
+            vpNote),
+          h('label', { class: 'switch' }, endedEarly, 'Ended early (lunch ran out before anyone reached the target)'),
+          field('Notes', notes))),
 
       store.mode() !== 'demo' && h('p', { class: 'field-hint' }, sendingHint()),
       h('div', { class: 'form-acts' },

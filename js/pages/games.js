@@ -133,7 +133,7 @@ function gameTable(games, league) {
   const catalogue = league.reference.expansions;
   const newestFirst = [...games].reverse();
   return h('div', { class: 'card' }, table(
-    [{ label: 'Date' }, { label: 'Winner' }, { label: 'Players, in turn order (with VPs)' }, { label: 'Setup' }, { label: '' }],
+    [{ label: 'Date' }, { label: 'Winner', optional: true }, { label: 'Players, in turn order (with VPs)' }, { label: 'Setup', optional: true }, { label: '' }],
     newestFirst.map((game) => {
       const winner = winnerSeat(game);
       return [

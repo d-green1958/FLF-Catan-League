@@ -35,10 +35,9 @@ Everything goes live without waiting for approval. Admins check the **Review** p
 
 ## Adding something
 
-1. Fill in the form and save. To add several players at once, use **Register several** (a list of names) or **Save and add another**.
-2. The site asks **Do you have a GitHub account?**
-   - **No, use the group password:** type your name and the password, and it goes straight in. You are not asked again until you reload the page. This is the quickest route.
-   - **Yes, open GitHub:** a GitHub page opens with everything filled in. Press the green button, then come back to the site.
+1. Fill in the form and save. To log a game, tap the players in turn order, type each score and press **Log game**. Time, place, expansions, target and notes are tucked under **More details**. To add several players at once, use **Register several** (a list of names) or **Save and add another**.
+2. The first time, the site asks for **your name and the group password**, with **Remember me on this device** ticked. After that, this device sends straight away and never asks again. **Forget** (at the bottom of the sidebar, or under **More** on a phone) clears it.
+   - **Use a GitHub account instead:** a GitHub page opens with everything filled in. Press the green button, then come back to the site.
    - **Not now:** the change stays in your browser, with a notice at the top of every page to send or discard it later.
 3. Admins who have entered the admin code are not asked anything. Their changes go straight in.
 
@@ -78,7 +77,7 @@ If the league refuses something, the notice at the top of the site says why. Com
 ## Security in brief
 
 - **Admin code:** never stored anywhere. The repo holds only a public key made from it. The browser uses the code to sign an admin's changes, and the Action checks the signature. Signatures expire after an hour.
-- **Group password:** it unlocks a GitHub token, stored in the repo in encrypted form. The token belongs to the repo owner and is limited to opening issues on this repo. The Action applies the same checks to these submissions, so the password grants no extra rights.
+- **Group password:** it unlocks a GitHub token, stored in the repo in encrypted form. The token belongs to the repo owner and is limited to opening issues on this repo. The Action applies the same checks to these submissions, so the password grants no extra rights. With **Remember me** ticked, the unlocked token stays in that browser's storage, so anyone using that device can add to the league. Untick it on a shared computer. Changing the group password makes every remembered device ask again.
 - **Admin access to the token:** a second encrypted copy of the token opens with the admin code, so admins need only the code.
 - **Without the code**, a submission can only add, or edit the personal details on a profile. It cannot remove anything, change names or touch games already logged. One submission can add at most 25 things.
 - **Photos** are shrunk and re-encoded in the browser, which strips hidden details such as location. Only JPEG and WebP pictures are accepted, and the Action checks this too.
