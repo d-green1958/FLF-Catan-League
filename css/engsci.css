@@ -336,3 +336,8 @@
   @keyframes spice { 0% { transform: translate(0, 0); opacity: 0; } 30% { opacity: .9; } 100% { transform: translate(-120px, -60px); opacity: 0; } }
   .arrakis-svg.tremor { animation: quake .16s linear infinite; }
 }
+.signet-caption { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 17px; fill: rgba(48, 28, 10, .75); text-anchor: middle; pointer-events: none; }
+.thumper { cursor: grab; touch-action: none; }
+.thumper:active { cursor: grabbing; }
+.thumper:focus { outline: none; }
+.thumper-label { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 18px; fill: rgba(48, 28, 10, .8); pointer-events: none; }
