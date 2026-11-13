@@ -11,6 +11,7 @@ import { icon } from '../ui/icons.js';
 import { avatar, colourDot, page } from '../ui/components.js';
 import { formatLongDate, formatScore, plural } from '../ui/format.js';
 import { livingMap } from './map.js';
+import { SECRETS } from '../ui/delights.js';
 import { boardView } from '../ui/board-view.js';
 
 // Games happen whenever the group can make it, not on a fixed day. If data/league.json has a "nextGame"
@@ -69,7 +70,7 @@ function hero(league) {
     h('div', { class: 'hero-text' },
       h('p', { class: 'hero-eyebrow' }, 'Strategy · Trade · Build · Settle'),
       h('h1', { class: 'hero-title' }, 'FLFOxtan League'),
-      h('p', { class: 'hero-sub' }, `${fullName}. Over lunch, settlers gather, trade and quarrel over sheep. Est. 2026.`),
+      h('p', { class: 'hero-sub' }, `${fullName}. Whenever they are free, settlers gather, trade and quarrel over sheep. Est. 2026.`),
       leagueClock(league),
       h('div', { class: 'hero-acts' },
         h('button', { class: 'btn gold', type: 'button', onClick: () => openGameForm() }, icon('plus'), 'Log a game'),
@@ -135,8 +136,8 @@ function mapWindow(league, approach) {
     h('div', { class: 'map-window-text' },
       h('b', null, 'The Realm of Oxtan'),
       h('span', null, league.games.length
-        ? 'Every settler, walking the city by rank and favourite resource. Sixteen secrets hide on the Map.'
-        : `${plural(waiting, 'settler')} waiting at the station for the first game. Sixteen secrets hide on the Map.`)));
+        ? `Every settler, walking the city by rank and favourite resource. ${SECRETS.length} secrets hide on the Map.`
+        : `${plural(waiting, 'settler')} waiting at the station for the first game. ${SECRETS.length} secrets hide on the Map.`)));
 }
 
 function recordStrip(league) {

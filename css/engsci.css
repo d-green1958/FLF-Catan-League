@@ -1,0 +1,70 @@
+/* The Engineering Science complex and the Thom Building (js/pages/engsci.js), and the breadcrumb trail. */
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: -8px 0 16px; font-size: 13.5px; color: var(--muted); }
+.crumbs a { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); text-decoration: none; font-weight: 500; padding: 4px 8px; border-radius: 7px; background: var(--surface); border: 1px solid var(--border); }
+.crumbs a:hover { border-color: var(--border-strong); color: var(--ink); }
+.crumbs a .ic { color: var(--gold); }
+.crumbs [aria-current] { color: var(--ink); font-weight: 600; }
+.crumb-sep { color: var(--faint); }
+
+.plan-sheet { max-width: 620px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(40, 24, 6, .55), 0 0 0 1px rgba(90, 60, 20, .25); }
+.thom-sheet { max-width: 420px; }
+.plan-svg { display: block; width: 100%; height: auto; font-family: "IM Fell English", Georgia, serif; }
+.plan-paper { fill: #ecdcb1; }
+.plan-building { fill: rgba(59, 42, 23, .05); stroke: #3b2a17; stroke-width: 3; }
+.plan-building-name { font-family: "IM Fell English SC", Georgia, serif; font-size: 14px; letter-spacing: .3em; text-anchor: middle; fill: rgba(59, 42, 23, .55); }
+.plan-title { font-family: "IM Fell English SC", Georgia, serif; font-size: 26px; text-anchor: middle; fill: #3b2a17; }
+.plan-subtitle { font-style: italic; font-size: 13px; text-anchor: middle; fill: #5a4129; }
+.plan-north { font-family: "IM Fell English SC", Georgia, serif; font-size: 15px; text-anchor: middle; fill: #8b2a1d; }
+.plan-room { cursor: pointer; }
+.plan-floor { fill: #f4e8c6; stroke: #3b2a17; stroke-width: 2; transition: fill .15s; }
+.plan-room:hover .plan-floor, .plan-room:focus .plan-floor { fill: #fff3d2; outline: none; }
+.plan-room:focus { outline: none; }
+.room-cryo .plan-floor { fill: #dbe9ef; }
+.room-cryo:hover .plan-floor { fill: #e9f4f8; }
+.room-deadzone .plan-floor { fill: #d9cbb0; }
+.room-holder .plan-floor { fill: #f0d9cf; }
+.room-lift .plan-floor { fill: #cbbd9e; }
+.plan-hatch { pointer-events: none; }
+.plan-flake { font-size: 18px; fill: #7fa8bb; text-anchor: middle; pointer-events: none; }
+.plan-shelf { fill: #b98a5a; stroke: #3b2a17; stroke-width: 1; pointer-events: none; }
+.plan-board { fill: #fdfdf8; stroke: #3b2a17; stroke-width: 1.5; pointer-events: none; }
+.plan-board-text { font-family: var(--font); font-size: 15px; font-style: italic; text-anchor: middle; fill: #2459a8; pointer-events: none; }
+.plan-name { font-family: "IM Fell English SC", Georgia, serif; font-size: 21px; text-anchor: middle; fill: #3b2a17; pointer-events: none; }
+.plan-name.danish { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 24px; fill: #8b2a1d; }
+.plan-found { fill: #d3ae58; stroke: #7a5a12; stroke-width: 1.5; pointer-events: none; }
+.plan-window { fill: #9fb7c4; stroke: #3b2a17; stroke-width: 1; pointer-events: none; }
+.plan-floor-name { font-family: "IM Fell English SC", Georgia, serif; font-size: 15px; text-anchor: middle; fill: #3b2a17; pointer-events: none; }
+.plan-shaft { fill: #cbbd9e; stroke: #3b2a17; stroke-width: 1.5; }
+.penthouse .plan-floor { fill: #f3dc94; }
+@media (prefers-reduced-motion: no-preference) {
+  .penthouse:not(.found) .plan-floor { animation: penthouse-glow 2.6s ease-in-out infinite; }
+  @keyframes penthouse-glow { 50% { fill: #fff0bf; } }
+}
+.whiteboard { font-family: var(--font); font-style: italic; color: #2459a8; background: #fdfdf8; border: 1px solid rgba(59, 42, 23, .3); border-radius: 6px; padding: 8px 12px; margin: 8px 0 !important; font-size: 17px; }
+.map-enter { margin-top: 10px; }
+.map-door { cursor: pointer; }
+.map-door:hover .map-label, .map-door:focus .map-label { fill: #8b2a1d; text-decoration: underline; }
+.map-door:focus { outline: none; }
+
+/* The surprises in the complex. */
+.frost { inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(210, 236, 248, .85) 100%); backdrop-filter: blur(1.5px) saturate(.6); animation: frost 3.2s ease-out forwards; }
+@keyframes frost { 0% { opacity: 0; } 20%, 70% { opacity: 1; } 100% { opacity: 0; } }
+.shhh { inset: 0; display: grid; place-items: center; background: rgba(10, 8, 4, .35); animation: frost 1.8s ease-out forwards; }
+.shhh span { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 72px; color: #fff4dc; }
+.no-signal { inset: 0; display: grid; place-items: center; background: rgba(40, 40, 44, .82); filter: grayscale(1); animation: frost 2.6s ease-out forwards; }
+.no-signal div { display: grid; gap: 6px; text-align: center; color: #eee; padding: 0 24px; }
+.no-signal b { font-size: 28px; font-family: var(--font-display); }
+.night-view { inset: 0; background: linear-gradient(180deg, #0b1430, #253a6b 70%, #c98c4a); animation: frost 3.4s ease-out forwards; }
+.night-sky span { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; animation: twinkle 1.4s ease-in-out infinite alternate; }
+@keyframes twinkle { to { opacity: .2; } }
+.lift-ride { inset: 0; display: grid; place-items: center; background: rgba(8, 10, 16, .78); }
+.lift-cabin { position: relative; width: min(320px, 86vw); height: 420px; border-radius: 10px; background: linear-gradient(180deg, #8c8f94, #5d6066); box-shadow: inset 0 0 0 6px #3d4045, 0 30px 60px rgba(0, 0, 0, .6); display: grid; grid-template-rows: auto 1fr; overflow: hidden; animation: shake .35s ease-in-out infinite; }
+.lift-display { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px auto 0; padding: 6px 14px; background: #120d06; border-radius: 6px; color: #ff9b2f; font-family: ui-monospace, monospace; font-size: 20px; z-index: 1; }
+.lift-floor { font-size: 28px; min-width: 24px; text-align: center; }
+.lift-message { position: absolute; left: 16px; right: 16px; bottom: 26px; margin: 0; text-align: center; color: #fff; font-family: var(--font-display); font-size: 18px; z-index: 1; text-shadow: 0 1px 2px #000; }
+.lift-doors { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; }
+.lift-doors span { background: linear-gradient(90deg, #a9adb3, #7d8187); border: 1px solid #55585d; transition: transform .5s ease-in; }
+.lift-ride.arrived .lift-doors span:first-child { transform: translateX(-100%); }
+.lift-ride.arrived .lift-doors span:last-child { transform: translateX(100%); }
+.lift-ride.arrived .lift-cabin { animation: none; }
+@keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-2px, 1px) rotate(-.3deg); } 75% { transform: translate(2px, -1px) rotate(.3deg); } }

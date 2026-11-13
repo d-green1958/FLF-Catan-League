@@ -1,7 +1,7 @@
 // Small surprises for the curious. None of them change any league data, and all of them respect "reduce motion".
 // The Map page (js/pages/map.js) gives a riddle for each one and marks the ones this browser has found.
 //
-//   dice       Tap the crest                          roll two dice
+//   dice       Tap the crest three times quickly      roll two dice (one tap still goes home)
 //   robber     Roll a 7                               the robber walks across the screen
 //   confetti   Log a game                             hexagon confetti in the resource colours
 //   seafarers  Konami code, or "seafarers" in the games search     waves behind the page
@@ -17,6 +17,15 @@
 //   answer     Search the games for 42
 //   lost       Visit a page that does not exist       here be dragons
 //   compass    Spin the compass on the Map three times
+// Inside the Engineering Science complex (js/pages/engsci.js):
+//   cryo       Tap Cryogenics                         the screen frosts over
+//   library    Tap the Wroth Library                  shhh
+//   wallace    Eat every biscuit in the Wallace Room
+//   room11     Visit Room 11 eleven times             a fresh whiteboard each time
+//   deadzone   Tap the Dead Zone                      the signal drops
+//   holder     Tap Hølder-bygningen                   velkommen
+//   lift       Ride the Terrible Lift                 eventually, it arrives
+//   penthouse  Reach the Penthouse of the Thom Building
 import * as storage from '../data/browser-storage.js';
 import { h, svg } from './dom.js';
 import { toast } from './feedback.js';
@@ -26,7 +35,7 @@ const RESOURCE_COLOURS = ['#3d6b35', '#9cc45a', '#e3b23c', '#c4613a', '#8c9199']
 
 // ---------- the secrets, and which ones this browser has found ----------
 export const SECRETS = [
-  { id: 'dice', title: 'The Bones of Carfax', place: 'carfax', riddle: 'Where four roads meet and the bells keep time, press the seal of the realm and let the bones fall.' },
+  { id: 'dice', title: 'The Bones of Carfax', place: 'carfax', riddle: 'Where four roads meet and the bells keep time, press the seal of the realm three times and let the bones fall.' },
   { id: 'robber', title: 'The Hooded One', place: 'christchurch', riddle: 'Of all the sums the bones can make, one is cursed. When it falls, a hooded figure walks.' },
   { id: 'confetti', title: 'A Feast of Hexes', place: 'sheldonian', riddle: 'Write a battle into the ledger and the sky itself will celebrate.' },
   { id: 'seafarers', title: 'The Sailors\' Chant', place: 'folly', riddle: 'Up, up, down, down, left, right, left, right, then the two letters of a sailor\'s grunt. Or simply name the sea-folk in the ledger of games.' },
@@ -42,7 +51,16 @@ export const SECRETS = [
   { id: 'answer', title: 'The Answer', place: 'pittrivers', riddle: 'Ask the ledger of games for the answer to life, the universe and everything.' },
   { id: 'lost', title: 'Beyond the Ring Road', place: 'ringroad', riddle: 'Wander off the edge of the map: go to a page that does not exist.' },
   { id: 'compass', title: 'The Hidden Hex', place: 'compass', riddle: 'The compass rose knows a secret. Spin it three times.' },
+  { id: 'cryo', title: 'Absolute Zero', place: 'jenkin', inside: 'engsci', where: 'Cryogenics', riddle: 'At the northern edge of the complex, the cold runs deep. Touch it.' },
+  { id: 'library', title: 'The Whispering Stacks', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'Below the cold lies a room of books that does not like noise.' },
+  { id: 'wallace', title: 'The Last Biscuit', place: 'jenkin', inside: 'engsci', where: 'Wallace Room', riddle: 'Every seminar has biscuits. Every plate runs out. Find out who took the last one.' },
+  { id: 'room11', title: 'It Goes Up to Eleven', place: 'jenkin', inside: 'engsci', where: 'Room 11', riddle: 'Its whiteboard never runs dry. Visit it as many times as its number.' },
+  { id: 'deadzone', title: 'No Signal', place: 'jenkin', inside: 'engsci', where: 'The Dead Zone', riddle: 'Between the old and the Danish lies a place where phones go quiet.' },
+  { id: 'holder', title: 'Velkommen', place: 'jenkin', inside: 'engsci', where: 'Hølder-bygningen', riddle: 'One building speaks another tongue. Knock and be greeted.' },
+  { id: 'lift', title: 'The Terrible Lift', place: 'jenkin', inside: 'engsci', where: 'The Terrible Lift', riddle: 'Brave the lift at the southern end. It goes up. Eventually.' },
+  { id: 'penthouse', title: 'The View from the Top', place: 'thom', inside: 'thom', where: 'The Penthouse', riddle: 'Climb the tallest tower in the complex, to the very top.' },
 ];
+export const secretPlace = (secret, places) => secret.where ?? places[secret.place]?.name ?? secret.place;
 const FOUND_KEY = 'flfoxtan.secrets';
 export const foundSecrets = () => new Set(storage.read(FOUND_KEY, []));
 
@@ -279,10 +297,9 @@ export function lostPage(homeLink, mapLink) {
 
 /** Sets up the site-wide ones. Call once, after the first page is drawn. */
 export function installDelights() {
-  document.querySelector('.brand .mark')?.addEventListener('click', (event) => {
-    event.preventDefault();
-    rollDice();
-  });
+  // One tap on the crest goes home, as anyone would expect. Three quick taps roll the dice.
+  const crest = document.querySelector('.brand .mark');
+  if (crest) onTaps(crest, 3, rollDice);
 
   // Keys typed anywhere: the Konami code, and the beast's name.
   const konami = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
@@ -327,7 +344,7 @@ export function installDelights() {
   window.oxtan = {
     reveal() {
       discover('scholar');
-      return 'Well read, scholar. There are sixteen secrets in all, and the Map knows where.';
+      return `Well read, scholar. There are ${SECRETS.length} secrets in all, and the Map knows where.`;
     },
   };
   console.log('%c⬢ FLFOxtan', 'font: 700 20px Georgia, serif; color: #d3ae58; background: #0f1f36; padding: 6px 12px; border-radius: 6px;');

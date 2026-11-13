@@ -14,8 +14,9 @@ import { scoreHistory } from '../ratings/engine.js';
 import { h, route, svg } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { page, pageHeader } from '../ui/components.js';
-import { SECRETS, discover, foundSecrets, onTaps } from '../ui/delights.js';
+import { SECRETS, discover, foundSecrets, onTaps, secretPlace } from '../ui/delights.js';
 import { formatDate } from '../ui/format.js';
+import { trail } from './engsci.js';
 
 const W = 1000;
 const H = 700;
@@ -36,8 +37,11 @@ const PLACES = {
   botanic: { name: 'Botanic Garden', x: 676, y: 452, kind: 'trees' },
   ashmolean: { name: 'Ashmolean', x: 362, y: 300, kind: 'temple' },
   pittrivers: { name: 'Pitt Rivers', x: 575, y: 222, kind: 'hall' },
+  // The Engineering Science complex on Parks Road. Both buildings open a map of their own.
+  thom: { name: 'Thom Building', x: 540, y: 150, kind: 'tall', label: -46, link: '/map/thom' },
+  jenkin: { name: 'Jenkin Building', x: 590, y: 150, kind: 'hall', link: '/map/engsci' },
   maths: { name: 'Mathematical Institute', x: 455, y: 168, kind: 'hall' },
-  parks: { name: 'University Parks', x: 650, y: 172, kind: 'trees' },
+  parks: { name: 'University Parks', x: 668, y: 196, kind: 'trees' },
   jericho: { name: 'Jericho', x: 330, y: 222, kind: 'houses', label: null },
   portmeadow: { name: 'Port Meadow', x: 250, y: 150, kind: 'meadow', label: null },
   marston: { name: 'Marston', x: 850, y: 214, kind: 'fields', label: null },
@@ -121,6 +125,7 @@ function landmark(place) {
   const fill = { fill: '#e9d9b0', stroke: INK, 'stroke-width': 1.6, 'stroke-linejoin': 'round' };
   const shapes = {
     dome: [svg('rect', { x: x - 14, y: y - 4, width: 28, height: 12, ...fill }), svg('path', { d: `M${x - 13} ${y - 4}a13 13 0 0 1 26 0Z`, ...fill }), svg('path', { d: `M${x} ${y - 17}v-6M${x - 8} ${y + 8}v-12M${x + 8} ${y + 8}v-12M${x} ${y + 8}v-12`, ...ink })],
+    tall: [svg('path', { d: `M${x - 9} ${y + 12}V${y - 26}h18V${y + 12}Z`, ...fill }), svg('path', { d: `M${x - 9} ${y - 26}h18l-3-8h-12Z`, fill: '#d3ae58', stroke: INK, 'stroke-width': 1.4 }), svg('path', { d: `M${x - 5} ${y - 18}h10M${x - 5} ${y - 10}h10M${x - 5} ${y - 2}h10M${x - 5} ${y + 6}h10`, ...ink })],
     tower: [svg('path', { d: `M${x - 6} ${y + 10}V${y - 10}h12V${y + 10}Z`, ...fill }), svg('path', { d: `M${x - 7} ${y - 10}l7-12 7 12`, ...fill }), svg('path', { d: `M${x - 2} ${y + 10}v-6h4v6`, ...ink })],
     temple: [svg('path', { d: `M${x - 15} ${y - 5}L${x} ${y - 15}L${x + 15} ${y - 5}Z`, ...fill }), svg('rect', { x: x - 14, y: y - 5, width: 28, height: 14, ...fill }), svg('path', { d: `M${x - 8} ${y - 3}v10M${x - 3} ${y - 3}v10M${x + 3} ${y - 3}v10M${x + 8} ${y - 3}v10`, ...ink })],
     hall: [svg('rect', { x: x - 16, y: y - 7, width: 32, height: 15, ...fill }), svg('path', { d: `M${x - 16} ${y - 7}l4-6h24l4 6M${x - 9} ${y + 8}v-7M${x} ${y + 8}v-7M${x + 9} ${y + 8}v-7`, ...ink })],
@@ -137,8 +142,18 @@ function landmark(place) {
   };
   // label: how far below (or, if negative, above) the drawing the name goes. null means the district name does the job.
   const offset = place.label === undefined ? 26 : place.label;
-  return svg('g', { class: 'map-landmark' }, shapes[kind],
+  const group = svg('g', { class: `map-landmark ${place.link ? 'map-door' : ''}`.trim() }, shapes[kind],
     kind !== 'none' && offset !== null && text(x, y + offset, place.name, 'map-label'));
+  if (place.link) {
+    // A building you can go into.
+    group.setAttribute('role', 'link');
+    group.setAttribute('tabindex', '0');
+    group.setAttribute('aria-label', `Go into the ${place.name}`);
+    const enter = () => { window.location.hash = route(place.link); };
+    group.addEventListener('click', enter);
+    group.addEventListener('keydown', (event) => { if (event.key === 'Enter') enter(); });
+  }
+  return group;
 }
 
 function compassRose(onSpin) {
@@ -344,20 +359,32 @@ export function renderMap() {
       h('p', null, secret.riddle));
   };
 
-  for (const secret of SECRETS) {
-    const place = PLACES[secret.place];
-    const isFound = found.has(secret.id);
-    const dx = secret.place === 'compass' ? 40 : 16;
+  const addSeal = (place, dx, isFound, label, onOpen) => {
     const seal = svg('g', {
-      class: `map-seal ${isFound ? 'found' : ''}`.trim(), role: 'button', tabindex: '0',
-      'aria-label': `${place.name}: ${isFound ? secret.title : 'an unsolved riddle'}`,
+      class: `map-seal ${isFound ? 'found' : ''}`.trim(), role: 'button', tabindex: '0', 'aria-label': label,
       transform: `translate(${place.x + dx} ${place.y - 18})`,
     },
     svg('circle', { r: 9 }),
     svg('path', { d: 'M0 -5l4.3 2.5v5L0 5l-4.3-2.5v-5Z', class: 'map-seal-mark' }));
-    seal.addEventListener('click', () => showSecret(secret));
-    seal.addEventListener('keydown', (event) => { if (event.key === 'Enter') showSecret(secret); });
+    seal.addEventListener('click', onOpen);
+    seal.addEventListener('keydown', (event) => { if (event.key === 'Enter') onOpen(); });
     seals.append(seal);
+  };
+  for (const secret of SECRETS.filter((item) => !item.inside)) {
+    const place = PLACES[secret.place];
+    const isFound = found.has(secret.id);
+    addSeal(place, secret.place === 'compass' ? 40 : 16, isFound, `${place.name}: ${isFound ? secret.title : 'an unsolved riddle'}`, () => showSecret(secret));
+  }
+  for (const [building, link, title] of [['jenkin', '/map/engsci', 'The Engineering Science complex'], ['thom', '/map/thom', 'The Thom Building']]) {
+    const inside = SECRETS.filter((item) => item.place === building);
+    const count = inside.filter((item) => found.has(item.id)).length;
+    addSeal(PLACES[building], 18, count === inside.length, `${PLACES[building].name}: ${count} of ${inside.length} secrets found`, () => {
+      riddle.replaceChildren(
+        h('p', { class: 'map-riddle-place' }, PLACES[building].name),
+        h('h3', null, title),
+        h('p', null, `${inside.length === 1 ? 'One secret waits' : `${inside.length} secrets wait`} inside (${count} found). Tap the building to go in.`),
+        h('a', { class: 'btn sm map-enter', href: route(link) }, icon('map', 'sm'), 'Go inside'));
+    });
   }
 
   const compass = compassRose(() => {
@@ -422,7 +449,7 @@ export function renderMap() {
   const list = h('details', { class: 'map-secrets' },
     h('summary', null, `All the riddles (${found.size} of ${SECRETS.length} found)`),
     h('ol', null, SECRETS.map((secret) => h('li', { class: found.has(secret.id) ? 'found' : null },
-      h('b', null, found.has(secret.id) ? secret.title : '???'), ` · ${PLACES[secret.place].name}. `, secret.riddle))));
+      h('b', null, found.has(secret.id) ? secret.title : '???'), ` · ${secretPlace(secret, PLACES)}. `, secret.riddle))));
 
   queueMicrotask(() => {
     const scroller = sheet.querySelector('.map-scroll');
@@ -430,6 +457,7 @@ export function renderMap() {
   });
 
   return page(
+    trail(['The Map', null]),
     header,
     h('div', { class: 'map-controls' }, playButton, slider, label),
     sheet,

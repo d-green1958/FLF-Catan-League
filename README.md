@@ -201,7 +201,7 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 - **Others:** newcomers wait at the station, retired players are in the Ashmolean, and the winner of the latest game wears a crown.
 - **Replay the league:** steps through every game so you can watch everyone move.
 
-There are 16 secrets around the site, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
+There are 24 secrets around the site, 8 of them inside the Engineering Science complex, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
 
 ## Credits
 
