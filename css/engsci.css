@@ -295,3 +295,44 @@
 
 .plan-svg .plan-outer.thin { stroke-width: 5; }
 .plan-svg .plan-lift .plan-floor { fill: #e6d4a6; }
+
+/* The zoomable reading room. */
+.zoom-wrap { position: relative; }
+.zoom-viewport { position: relative; overflow: hidden; max-height: 80vh; border-radius: 10px; background: #24170c; touch-action: none; cursor: grab; box-shadow: 0 20px 44px -20px rgba(30, 18, 8, .7); }
+.zoom-viewport:active { cursor: grabbing; }
+.zoom-stage { transform-origin: 0 0; }
+.library-scene { display: block; width: 100%; height: auto; user-select: none; }
+.zoom-controls { position: absolute; right: 12px; top: 12px; display: flex; gap: 6px; }
+.zoom-btn { display: grid; place-items: center; min-width: 38px; height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid rgba(211, 174, 88, .5); background: rgba(20, 12, 6, .72); color: #f3e2b8; font-size: 20px; cursor: pointer; backdrop-filter: blur(4px); }
+.zoom-btn.wide { font-size: 13px; font-weight: 600; }
+.zoom-btn:hover { background: rgba(40, 24, 10, .85); }
+.shelf-book { cursor: pointer; }
+.shelf-book:focus { outline: none; }
+.shelf-book:hover rect:first-child, .shelf-book:focus rect:first-child { filter: brightness(1.25); }
+.spine-title { font-family: "Cinzel", "IM Fell English SC", Georgia, serif; font-weight: 700; letter-spacing: .03em; fill: url(#gilt); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.spine-title.modern { font-family: "Fraunces", Georgia, serif; font-weight: 600; letter-spacing: 0; fill: #f5ecd6; }
+.spine-author { font-family: "IM Fell English", Georgia, serif; font-style: italic; fill: #e3c77e; text-anchor: middle; opacity: .85; pointer-events: none; }
+.case-plate { font-family: "Cinzel", Georgia, serif; font-weight: 700; font-size: 11px; letter-spacing: .3em; text-anchor: middle; fill: #3a2808; }
+.book-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.book-page.right { position: relative; }
+.marginalia { position: absolute; right: 16px; bottom: 10px; font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 10px; letter-spacing: .02em; color: rgba(110, 82, 40, .42); transform: rotate(-2deg); user-select: text; }
+
+/* Arrakis. */
+.arrakis-sheet { border-radius: 10px; overflow: hidden; box-shadow: 0 24px 50px -22px rgba(60, 30, 6, .75); background: #c7843f; }
+.arrakis-svg { display: block; width: 100%; height: auto; }
+.signet { cursor: pointer; }
+.signet:focus { outline: none; }
+.signet:hover { filter: brightness(1.12) drop-shadow(0 0 10px rgba(255, 220, 140, .7)); }
+.glint { fill: #fffbe8; }
+.arrakis-photos { margin-top: 22px; }
+.arrakis-photos h2 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; }
+.arrakis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px; }
+.arrakis-grid figure { margin: 0; display: grid; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
+.arrakis-grid img { display: block; width: 100%; height: 200px; object-fit: cover; border-radius: 8px; box-shadow: 0 10px 22px -12px rgba(60, 30, 6, .7); }
+@media (prefers-reduced-motion: no-preference) {
+  .glint { animation: glint-star 3.4s ease-in-out infinite; }
+  @keyframes glint-star { 0%, 70%, 100% { opacity: 0; } 80% { opacity: 1; } }
+  .spice-motes circle { animation-name: spice; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+  @keyframes spice { 0% { transform: translate(0, 0); opacity: 0; } 30% { opacity: .9; } 100% { transform: translate(-120px, -60px); opacity: 0; } }
+  .arrakis-svg.tremor { animation: quake .16s linear infinite; }
+}

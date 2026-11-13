@@ -21,7 +21,10 @@
 //   cryo       Step into Cryogenics                   the cold lab
 //   arctic     Open the door at the back of the lab   the Arctic, with polar bears and some lost penguins
 //   library    Step into the Wroth Library            the reading room and its shelves
-//   dune       Open Dune on the Library shelves       something stirs under the sand
+//   dune       Open Dune on the Library shelves       the shelves tremble; a faint note in the margin
+//   arrakis    Follow the sand out of Dune             the desert planet
+//   signet     Find Duke Leto's ring in the sand
+//   worm       Plant a thumper on Arrakis
 //   wallace    Eat every biscuit in the Wallace Room
 //   room11     Visit Room 11 eleven times             a fresh whiteboard each time
 //   deadzone   Tap the Dead Zone                      the signal drops
@@ -59,6 +62,9 @@ export const SECRETS = [
   { id: 'arctic', title: 'The Wrong Pole', place: 'jenkin', inside: 'engsci', where: 'Cryogenics', riddle: 'The cold lab has a door marked keep closed. Do not keep it closed.' },
   { id: 'library', title: 'The Reading Room', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'Below the cold lies a quiet room of books. Its only door is on its south side.' },
   { id: 'dune', title: 'Shai-Hulud', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'On the Library shelves, one book is full of sand. Open it.' },
+  { id: 'arrakis', title: 'The Desert Planet', place: 'jenkin', inside: 'engsci', where: 'Wroth Library', riddle: 'The sand in that book leads somewhere. Follow it.' },
+  { id: 'signet', title: 'The Duke\'s Ring', place: 'jenkin', inside: 'engsci', where: 'Arrakis', riddle: 'On the desert planet, something gold lies half buried in the foreground.' },
+  { id: 'worm', title: 'Something Answers', place: 'jenkin', inside: 'engsci', where: 'Arrakis', riddle: 'On the desert planet, make a rhythm the sand cannot ignore.' },
   { id: 'wallace', title: 'The Last Biscuit', place: 'jenkin', inside: 'engsci', where: 'Wallace Room', riddle: 'Every seminar has biscuits. Every plate runs out. Find out who took the last one.' },
   { id: 'room11', title: 'It Goes Up to Eleven', place: 'jenkin', inside: 'engsci', where: 'Room 11', riddle: 'Its whiteboard never runs dry. Visit it as many times as its number.' },
   { id: 'deadzone', title: 'No Signal', place: 'jenkin', inside: 'engsci', where: 'The Dead Zone', riddle: 'Between the old and the Danish lies a place where phones go quiet.' },

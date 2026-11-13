@@ -202,6 +202,7 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 - **Cryogenics** opens a cold lab whose back door leads to the Arctic (`js/pages/expeditions.js`).
 - **The Wroth Library** is a reading room with 101 books on its shelves (`js/pages/library-books.js`, blurbs written for this site). Tap a spine to open a book.
 - **The Thom Building** is an inked elevation with the Lift's car visible in its shaft. **Floor 3** has an aquarium with a catch-the-fish game (`js/pages/aquarium.js`); the best score is kept in each browser.
+- **The Wroth Library** can be zoomed (pinch, scroll or the + / − buttons) and panned. **Dune** has a faint note in its margin, and its **Follow the sand** button leads to **Arrakis** (`js/pages/arrakis.js`): real Martian dunes photographed by NASA's Curiosity rover (in `assets/arrakis/`, credited on the page), with an original sky, two moons, Duke Leto's signet ring and a thumper that calls a sandworm.
 - **Two pubs** on the Oxford map, the Jude the Obscure and The Star, each with a note when tapped.
 - **The Penthouse** opens onto a night sky: deep-sky images, constellations, and a constellation called Ryan that stays.
 - **Image credits:** the images are from NASA's image library (images.nasa.gov), resized in `assets/sky/` and credited on that page.
@@ -213,7 +214,7 @@ The home page (`js/pages/home.js`) has the crest and the league clock, the podiu
 - **Others:** newcomers wait at the station, retired players are in the Ashmolean, and the winner of the latest game wears a crown.
 - **Replay the league:** steps through every game so you can watch everyone move.
 
-There are 28 secrets around the site, many of them inside the Engineering Science complex, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
+There are 31 secrets around the site, many of them inside the Engineering Science complex, all harmless and all quieter for anyone whose device asks for reduced motion. The Map has a riddle for each, at a landmark, and marks the ones this browser has found. The answers are at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
 
 ## Credits
 
