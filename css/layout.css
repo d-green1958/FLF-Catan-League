@@ -66,7 +66,6 @@
   .tab-log .hexbtn { width: 58px; height: 64px; margin-top: -26px; display: grid; place-items: center; clip-path: var(--hex); background: linear-gradient(160deg, #e6c674, var(--brass) 55%, #b48b34); color: #0f1f36; }
   .tab-log .hexbtn .ic { width: 26px; height: 26px; stroke-width: 2.6; }
   .tab-log span:last-child { color: var(--frame-ink); }
-  .toasts { bottom: calc(var(--bar-h) + 14px + env(safe-area-inset-bottom)); }
 }
 
 /* "More" on phones: a sheet that slides up from the bottom. */

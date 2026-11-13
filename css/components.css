@@ -205,6 +205,7 @@ dialog::backdrop { background: rgba(10, 14, 22, .45); }
   .drawer-body { padding: 16px 16px 0; }
   .form-acts { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
   .form-acts .btn { flex: 1; }
+  .toasts { left: 16px; right: 16px; bottom: calc(var(--bar-h) + 14px + env(safe-area-inset-bottom)); justify-items: center; }
 }
 
 @media (max-width: 560px) {

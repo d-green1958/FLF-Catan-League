@@ -12,6 +12,7 @@ import { avatar, colourDot, colourName, emptyState, kpi, page, pageHeader, playe
 import { barList, lineChart } from '../ui/charts.js';
 import { byLabel, formatDate, formatScore, formatShortDate, ordinal, percent, plural } from '../ui/format.js';
 import { openGameDetail } from './games.js';
+import { onTaps, sheep } from '../ui/delights.js';
 
 const RECENT_GAMES = 8;
 
@@ -202,7 +203,7 @@ export function renderPlayer(id) {
   const standing = leaderboard(league, approach.id, { includeRetired: true }).find((row) => row.playerId === player.id);
 
   const header = h('div', { class: 'profile-head' },
-    avatar(player, 'xl'),
+    onTaps(avatar(player, 'xl'), 5, sheep),
     pageHeader({
       eyebrow: [player.nickname, player.active === false ? 'Retired' : null].filter(Boolean).join(' · '),
       title: player.name,

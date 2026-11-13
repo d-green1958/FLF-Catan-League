@@ -10,6 +10,7 @@ import { openDrawer, toast } from '../ui/feedback.js';
 import { today } from '../ui/format.js';
 import { finishChange } from './send-dialog.js';
 import { boardEditor } from './board-editor.js';
+import { confetti } from '../ui/delights.js';
 
 const blankSeat = () => ({ playerId: '', colour: '', vp: '' });
 
@@ -301,6 +302,7 @@ export function openGameForm(existing = null, { onSaved } = {}) {
       const saved = store.saveGame(game);
       close();
       finishChange(existing ? 'Game corrected. Ratings recalculated.' : 'Game logged. Ratings updated.');
+      if (!existing) confetti();
       onSaved?.(saved);
     };
 

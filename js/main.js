@@ -8,6 +8,7 @@ import { renderSendBar } from './forms/send-dialog.js';
 import { loadApproachModules } from './ratings/engine.js';
 import { h, route } from './ui/dom.js';
 import { icon } from './ui/icons.js';
+import { installDelights, proverb } from './ui/delights.js';
 import { renderAbout } from './pages/about.js';
 import { renderData } from './pages/data.js';
 import { renderGames } from './pages/games.js';
@@ -122,7 +123,7 @@ function openMoreSheet(activePath) {
   sheet.append(h('div', { class: 'sheet-inner', tabindex: '-1', autofocus: true },
     h('div', { class: 'sheet-grip' }),
     h('nav', { class: 'sheet-links', 'aria-label': 'More pages' }, links),
-    h('div', { class: 'sheet-foot' }, sessionLine(), themeButton())));
+    h('div', { class: 'sheet-foot' }, sessionLine(), themeButton(), h('p', { class: 'proverb' }, proverb()))));
   document.body.append(sheet);
   sheet.showModal();
 }
@@ -210,6 +211,8 @@ async function start() {
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderThemeToggle);
   showPage();
   startLiveUpdates();
+  document.getElementById('proverb').textContent = proverb();
+  installDelights();
 }
 
 start();

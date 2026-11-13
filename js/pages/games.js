@@ -6,6 +6,7 @@ import { winnerSeat } from '../domain/games.js';
 import { RESOURCES, RESOURCE_NAMES, openingFor } from '../domain/board.js';
 import { boardEditor } from '../forms/board-editor.js';
 import { boardView } from '../ui/board-view.js';
+import { searchSecrets } from '../ui/delights.js';
 import { openGameForm } from '../forms/game-form.js';
 import { finishChange } from '../forms/send-dialog.js';
 import { h } from '../ui/dom.js';
@@ -179,7 +180,7 @@ function filterBar(league, count, rerender) {
     h('input', {
       class: 'input grow', type: 'search', placeholder: 'Search players, places, notes…', 'aria-label': 'Search games',
       value: filters.search,
-      onInput: (event) => { filters.search = event.target.value; rerender(); },
+      onInput: (event) => { filters.search = event.target.value; searchSecrets(event.target.value); rerender(); },
     }),
     h('select', {
       class: 'select', 'aria-label': 'Filter by player',

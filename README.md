@@ -187,6 +187,10 @@ The repo owner goes to **Settings → Pages → Build and deployment → Source*
 
 League data is read from and written to the repo's default branch. If the default branch changes, the Actions need to be on the new one too.
 
+## Easter eggs
+
+There are a few, all harmless and all switched off for anyone whose device asks for reduced motion. The list is at the top of `js/ui/delights.js`, for anyone who would rather not find them the fun way.
+
 ## Credits
 
 Game facts and rulebook links come from [catan.com](https://www.catan.com/understand-catan/game-rules). The rules summary is written in our own words, and the official rulebooks remain the authority.

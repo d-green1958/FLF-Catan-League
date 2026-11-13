@@ -1,0 +1,31 @@
+/* Easter eggs and small flourishes (see js/ui/delights.js). Nothing here moves for anyone who asks for reduced motion. */
+.delight { position: fixed; z-index: 2147483000; pointer-events: none; }
+.dice-tray { inset: 0; display: flex; align-items: center; justify-content: center; gap: 18px; }
+.die { width: 74px; height: 74px; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .35)); }
+.robber { left: 0; bottom: calc(var(--bar-h) + 10px); }
+.sheep { left: 0; bottom: calc(var(--bar-h) + 6px); }
+@media (min-width: 861px) { .robber, .sheep { bottom: 24px; } }
+.confetti { inset: 0; overflow: hidden; }
+.confetti-bit { position: absolute; top: 0; clip-path: var(--hex); }
+.brand .mark { cursor: pointer; transition: transform .2s; }
+.brand .mark:active { transform: rotate(-8deg) scale(.94); }
+
+.proverb { margin: 4px 10px 0; font-family: var(--font-display); font-style: italic; font-size: 12.5px; color: var(--frame-muted); opacity: .85; }
+.sheet .proverb { color: var(--muted); text-align: center; margin: 2px 0 0; }
+
+/* The leader's hexagon catches the light now and then. */
+@media (prefers-reduced-motion: no-preference) {
+  .rank-1 { background-size: 250% 100%; background-image: linear-gradient(115deg, #b48b34 0%, #d3ae58 35%, #fff3c4 50%, #d3ae58 65%, #b48b34 100%); animation: sheen 5s ease-in-out infinite; }
+  @keyframes sheen { 0%, 70% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+  .tab-log .hexbtn { transition: transform .15s; }
+  .tab-log:active .hexbtn { transform: scale(.92) rotate(30deg); }
+}
+
+/* Seafarers mode: waves roll along behind the page. */
+.seafarers .main { background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cpath d='M0 20q15-12 30 0t30 0 30 0 30 0' fill='none' stroke='%232f5f8a' stroke-opacity='.18' stroke-width='3'/%3E%3C/svg%3E") 0 0 / 120px 40px,
+  linear-gradient(180deg, color-mix(in srgb, #2f5f8a 10%, var(--bg)), var(--bg)); }
+@media (prefers-reduced-motion: no-preference) {
+  .seafarers .main { animation: waves 6s linear infinite; }
+  @keyframes waves { to { background-position: 120px 0, 0 0; } }
+}
