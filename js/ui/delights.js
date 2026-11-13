@@ -28,6 +28,7 @@
 //   holder     Tap Hølder-bygningen                   velkommen
 //   lift       Ride the Lift                 eventually, it arrives
 //   vault      One ride in ten, the Lift drops to Lower Ground: harvest everything, then shoot to the top
+//   aquarium   Find the fish tank on Floor 3 of the Thom Building, and play
 //   penthouse  Reach the Penthouse, on the 8th floor of the Thom Building: a night sky that stays
 import * as storage from '../data/browser-storage.js';
 import { h, svg } from './dom.js';
@@ -64,6 +65,7 @@ export const SECRETS = [
   { id: 'holder', title: 'Velkommen', place: 'jenkin', inside: 'engsci', where: 'Hølder-bygningen', riddle: 'One building speaks another tongue. Knock and be greeted.' },
   { id: 'lift', title: 'The Lift', place: 'jenkin', inside: 'engsci', where: 'The Lift', riddle: 'Brave the lift at the southern end. It goes up. Eventually.' },
   { id: 'vault', title: 'Lower Ground', place: 'jenkin', inside: 'engsci', where: 'The Lift', riddle: 'The Lift has a floor it does not admit to. One ride in ten, it remembers. Keep riding.' },
+  { id: 'aquarium', title: 'Something Fishy', place: 'thom', inside: 'thom', where: 'Floor 3', riddle: 'Halfway up the Thom Building, something swims in the corner.' },
   { id: 'penthouse', title: 'The View from the Top', place: 'thom', inside: 'thom', where: 'The Penthouse', riddle: 'Climb the Thom Building to the eighth floor, and look up.' },
 ];
 export const secretPlace = (secret, places) => secret.where ?? places[secret.place]?.name ?? secret.place;

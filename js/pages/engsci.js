@@ -55,8 +55,8 @@ const say = (holder, place, title, ...lines) => holder.replaceChildren(
   h('h3', null, title),
   ...lines.map((line) => (typeof line === 'string' ? h('p', null, line) : line)));
 
-// One ride up in ten, the Lift remembers it has a basement.
-const DROP_CHANCE = 0.1;
+// Two rides up in five, the Lift remembers it has a basement.
+const DROP_CHANCE = 0.4;
 
 /**
  * The slow, shaky, doubtful ride. Calls arrive(where) at the end, with where = 'up', 'down' or 'lower'
@@ -319,50 +319,95 @@ export function renderEngSci() {
 }
 
 // ---------- the Thom Building ----------
+// Drawn as an inked elevation on parchment, in the same hand as the Map: Ground to Floor 7, then the
+// Penthouse on Floor 8. The Lift runs up the side in its own shaft, and you can see its car waiting below.
 export function renderThom() {
-  const story = panel('Tap a floor. The best is at the top.');
+  const story = panel('Tap a floor. The Penthouse is at the top, and Floor 3 has something swimming in it.');
+  const notes = {
+    7: 'A meeting room nobody booked', 6: 'Offices with a view of the Parks', 5: 'Labs, humming quietly', 4: 'More offices',
+    2: 'Offices', 1: 'Printers, mostly jammed',
+  };
+  // From the top down: the Penthouse, Floors 7 to 1, then the ground floor.
   const floors = [
-    { id: 'penthouse', name: 'Floor 8: The Penthouse' },
-    ...['A meeting room nobody booked', 'Offices with a view', 'Labs, humming', 'More offices', 'Labs', 'Offices', 'Printers, mostly jammed']
-      .map((note, index) => ({ id: `floor-${7 - index}`, name: `Floor ${7 - index}`, note })),
-    { id: 'ground', name: 'Ground floor', note: 'Lift lobby. You arrive here, eventually.' },
+    { id: 'penthouse', level: 8, name: 'Floor 8 · The Penthouse' },
+    ...[7, 6, 5, 4, 3, 2, 1].map((level) => ({ id: level === 3 ? 'aquarium' : `floor-${level}`, level, name: level === 3 ? 'Floor 3 · The Aquarium' : `Floor ${level}` })),
+    { id: 'ground', level: 0, name: 'Ground floor' },
   ];
   const tap = (floor) => {
-    if (floor.id === 'penthouse') {
-      window.location.hash = route('/map/thom/penthouse');
-    } else if (floor.id === 'ground') {
-      say(story, 'Ground floor', 'The lift lobby', 'The lift will take you back down to the rest of the complex, in its own time.',
+    if (floor.id === 'penthouse') window.location.hash = route('/map/thom/penthouse');
+    else if (floor.id === 'aquarium') window.location.hash = route('/map/thom/aquarium');
+    else if (floor.id === 'ground') {
+      say(story, 'Ground floor', 'The lift lobby', 'The Lift waits in its shaft. It goes back down to the rest of the complex, in its own time.',
         h('button', { class: 'btn sm', type: 'button', onClick: () => rideTo('down') }, 'Take the Lift down'));
     } else {
-      say(story, 'The Thom Building', floor.name, `${floor.note}. Nothing much to see here, which is exactly what a secret would want you to think. Keep climbing: the Penthouse is on 8.`);
+      say(story, 'The Thom Building', `Floor ${floor.level}`, `${notes[floor.level]}. Nothing much to see here. The Aquarium is on 3 and the Penthouse on 8.`);
     }
   };
 
-  const tower = svg('svg', { class: 'plan-svg thom-svg', viewBox: '0 0 400 800', role: 'img', 'aria-label': 'The Thom Building, floor by floor, with the Penthouse on the 8th floor' },
-    svg('rect', { x: 0, y: 0, width: 400, height: 800, class: 'plan-paper' }),
-    svg('text', { x: 200, y: 52, class: 'plan-title centre' }, 'THOM BUILDING · SECTION'),
-    floors.map((floor, index) => {
-      const y = 90 + index * 66;
-      const isPenthouse = floor.id === 'penthouse';
-      const found = isPenthouse && foundSecrets().has('penthouse');
-      const group = svg('g', { class: `plan-room ${isPenthouse ? 'penthouse' : ''} ${found ? 'found' : ''}`.replace(/\s+/g, ' ').trim(), role: 'button', tabindex: '0', 'aria-label': floor.name },
-        svg('rect', { x: 90, y, width: 220, height: 66, class: 'plan-floor' }),
-        [0, 1, 2, 3, 4].map((window) => svg('rect', { x: 102 + window * 40, y: y + 12, width: 26, height: 22, class: 'plan-window' })),
-        svg('text', { x: 200, y: y + 54, class: 'plan-floor-name' }, floor.name));
-      group.addEventListener('click', () => tap(floor));
-      group.addEventListener('keydown', (event) => { if (event.key === 'Enter') tap(floor); });
-      return group;
-    }),
-    svg('rect', { x: 90, y: 90, width: 220, height: 66 * floors.length, class: 'plan-outer' }),
-    svg('rect', { x: 310, y: 90, width: 30, height: 66 * floors.length, class: 'plan-shaft' }),
-    svg('text', { x: 325, y: 420, class: 'plan-building-name', transform: 'rotate(90 325 420)' }, 'THE LIFT'));
+  const X = 86;
+  const WIDTH = 220;
+  const ROW = 64;
+  const TOP = 150;
+  const bottom = TOP + floors.length * ROW;
+  const ink = '#2a1a0c';
+
+  const storey = (floor, index) => {
+    const y = TOP + index * ROW;
+    const special = floor.id === 'penthouse' || floor.id === 'aquarium';
+    const windows = floor.id === 'penthouse'
+      // The Penthouse: tall arched glazing.
+      ? [0, 1, 2, 3, 4].map((i) => svg('path', { d: `M${X + 18 + i * 40} ${y + 52}v-28a10 10 0 0 1 20 0v28Z`, class: 'thom-glass warm' }))
+      : [0, 1, 2, 3, 4].map((i) => svg('g', null,
+        svg('rect', { x: X + 18 + i * 40, y: y + 14, width: 20, height: 30, class: `thom-glass ${floor.id === 'aquarium' ? 'water' : ''}`.trim() }),
+        svg('path', { d: `M${X + 28 + i * 40} ${y + 14}v30M${X + 18 + i * 40} ${y + 29}h20`, class: 'thom-mullion' })));
+    const group = svg('g', { class: `thom-floor ${special ? 'special' : ''} ${floor.id === 'penthouse' && foundSecrets().has('penthouse') ? 'found' : ''}`.replace(/\s+/g, ' ').trim(), role: 'button', tabindex: '0', 'aria-label': floor.name },
+      svg('rect', { x: X, y, width: WIDTH, height: ROW, class: 'thom-wash' }),
+      windows,
+      svg('path', { d: `M${X - 6} ${y + ROW}h${WIDTH + 12}`, class: 'thom-cornice' }),
+      svg('text', { x: X + WIDTH + 52, y: y + ROW / 2 + 5, class: `thom-label ${special ? 'special' : ''}`.trim() }, floor.name));
+    group.addEventListener('click', () => tap(floor));
+    group.addEventListener('keydown', (event) => { if (event.key === 'Enter') tap(floor); });
+    return group;
+  };
+
+  // The Lift car, waiting at the ground floor. Tap it to ride down to the complex.
+  const car = svg('g', { class: 'thom-lift-car', role: 'button', tabindex: '0', 'aria-label': 'The Lift. Ride down to the complex.' },
+    svg('rect', { x: X + WIDTH + 8, y: bottom - ROW + 8, width: 30, height: ROW - 14, class: 'thom-car' }),
+    svg('path', { d: `M${X + WIDTH + 23} ${bottom - ROW + 8}v${ROW - 14}`, class: 'thom-mullion' }),
+    svg('path', { d: `M${X + WIDTH + 23} ${TOP - 30}V${bottom - ROW + 8}`, class: 'thom-cable' }));
+  car.addEventListener('click', () => rideTo('down'));
+  car.addEventListener('keydown', (event) => { if (event.key === 'Enter') rideTo('down'); });
+
+  const tower = svg('svg', { class: 'thom-svg', viewBox: '0 0 560 900', role: 'img', 'aria-label': 'An inked elevation of the Thom Building, floor by floor, with the Penthouse on Floor 8 and the Lift in its shaft' },
+    svg('defs', null,
+      svg('linearGradient', { id: 'thom-paper', x1: 0, y1: 0, x2: 1, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#efdcae' }), svg('stop', { offset: '100%', 'stop-color': '#d9bd85' })),
+      svg('radialGradient', { id: 'thom-burn', cx: '50%', cy: '50%', r: '72%' }, svg('stop', { offset: '60%', 'stop-color': '#000', 'stop-opacity': 0 }), svg('stop', { offset: '100%', 'stop-color': '#4a2a0c', 'stop-opacity': 0.6 }))),
+    svg('rect', { width: 560, height: 900, fill: 'url(#thom-paper)' }),
+    svg('rect', { width: 560, height: 900, fill: 'url(#thom-burn)' }),
+    svg('rect', { x: 14, y: 14, width: 532, height: 872, fill: 'none', stroke: ink, 'stroke-width': 2 }),
+    svg('rect', { x: 21, y: 21, width: 518, height: 858, fill: 'none', stroke: ink, 'stroke-width': 0.7 }),
+    svg('text', { x: 280, y: 66, class: 'thom-title' }, 'The Thom Building'),
+    svg('text', { x: 280, y: 90, class: 'thom-subtitle' }, 'an elevation, from the lobby to the Penthouse'),
+    // The roof: a parapet and a slender flagpole above the Penthouse.
+    svg('path', { d: `M${X - 10} ${TOP}h${WIDTH + 20}M${X} ${TOP - 10}h${WIDTH}v10M${X} ${TOP - 10}v10M${X + WIDTH / 2} ${TOP - 10}v-30`, class: 'thom-line' }),
+    svg('path', { d: `M${X + WIDTH / 2} ${TOP - 40}l18 6-18 6`, class: 'thom-line' }),
+    // The lift shaft, alongside.
+    svg('rect', { x: X + WIDTH + 4, y: TOP - 30, width: 38, height: bottom - TOP + 30, class: 'thom-shaft' }),
+    svg('path', { d: `M${X + WIDTH + 4} ${TOP - 30}h38`, class: 'thom-line' }),
+    floors.map(storey),
+    car,
+    svg('rect', { x: X, y: TOP, width: WIDTH, height: bottom - TOP, class: 'thom-outline' }),
+    // A plinth and the ground.
+    svg('path', { d: `M${X - 16} ${bottom}h${WIDTH + 80}M${X - 40} ${bottom + 10}h${WIDTH + 140}`, class: 'thom-line' }),
+    svg('path', { d: `M${X + WIDTH / 2 - 16} ${bottom}v-30h32v30`, class: 'thom-line' }),
+    svg('text', { x: X + WIDTH + 23, y: bottom + 34, class: 'thom-subtitle' }, 'the Lift'));
 
   return page(
     trail(['The Map', '/map'], ['EngSci complex', '/map/engsci'], ['Thom Building', null]),
     pageHeader({
-      eyebrow: 'The tallest tower in the complex',
+      eyebrow: 'Across the bridge from the Dead Zone',
       title: 'The Thom Building',
-      intro: 'Floor by floor, with the Penthouse on the 8th floor. Tap a floor.',
+      intro: 'Floor by floor, with the Aquarium on 3 and the Penthouse on 8. The Lift waits in its shaft at the bottom.',
       actions: [
         h('button', { class: 'btn', type: 'button', onClick: () => rideTo('down') }, 'Lift down to the complex'),
         h('a', { class: 'btn', href: route('/map') }, icon('map'), 'Back to the Map'),
