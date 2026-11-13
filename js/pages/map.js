@@ -55,7 +55,6 @@ const QUARTER_NAMES = { brick: 'Jericho brickworks', lumber: 'Christ Church wood
 // Remembered between redraws, so the map stays unfolded and the slider keeps its place.
 let unfolded = false;
 let step = null;
-let ticker = null;
 let player = null;
 
 /** A stable number from a string, used to spread people out the same way every time. */
@@ -257,6 +256,67 @@ function footprint(layer, from, to, left) {
   setTimeout(() => print.remove(), 5200);
 }
 
+/**
+ * The chart with everyone walking about on it. Returns the SVG, and place(n) to move everyone to where they
+ * stood after n games. under and over are extra layers drawn below and above the settlers. A viewBox crops it.
+ */
+export function livingMap(league, approach, { calm = false, under = [], over = [], viewBox = `0 0 ${W} ${H}`, label = 'An illustrated map of Oxford with each player marked on it' } = {}) {
+  const feet = svg('g', { class: 'map-feet' });
+  const people = svg('g');
+  const map = svg('svg', { class: 'map-svg', viewBox, role: 'img', 'aria-label': label },
+    backdrop(), cityLayer(), under, feet, people, over);
+
+  // Each settler walks to their place, then potters about it, leaving footprints that fade.
+  const walkers = new Map();
+  function place(n) {
+    for (const spot of positions(league, approach, n)) {
+      let walker = walkers.get(spot.profile.id);
+      if (!walker) {
+        const { body, crown } = walkerFor(spot, league.reference.colours);
+        walker = { body, crown, pos: { ...spot.home }, target: { ...spot.home }, left: false };
+        body.style.transform = `translate(${spot.home.x}px, ${spot.home.y}px)`;
+        people.append(body);
+        walkers.set(spot.profile.id, walker);
+      }
+      walker.home = spot.home;
+      walker.target = { ...spot.home };
+      walker.crown.style.display = spot.crowned ? '' : 'none';
+      walker.body.querySelector('title').textContent = `${spot.profile.name}: ${spot.where}`;
+      if (calm) {
+        walker.pos = { ...spot.home };
+        walker.body.style.transform = `translate(${spot.home.x}px, ${spot.home.y}px)`;
+      }
+    }
+  }
+
+  let seen = false;
+  let waited = 0;
+  const ticker = calm ? null : setInterval(() => {
+    // Stop once the map has been taken off the page, or if it never arrived on it.
+    if (map.isConnected) seen = true;
+    else if (seen || (waited += 1) > 20) { clearInterval(ticker); return; }
+    for (const walker of walkers.values()) {
+      const dx = walker.target.x - walker.pos.x;
+      const dy = walker.target.y - walker.pos.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance < 3) {
+        const angle = Math.random() * Math.PI * 2;
+        const reach = 4 + Math.random() * 12;
+        walker.target = { x: walker.home.x + Math.cos(angle) * reach, y: walker.home.y + Math.sin(angle) * reach };
+        continue;
+      }
+      const stride = Math.min(distance, distance > 40 ? 22 : 7);
+      const next = { x: walker.pos.x + (dx / distance) * stride, y: walker.pos.y + (dy / distance) * stride };
+      footprint(feet, walker.pos, next, walker.left);
+      walker.left = !walker.left;
+      walker.pos = next;
+      walker.body.style.transform = `translate(${next.x}px, ${next.y}px)`;
+    }
+  }, 380);
+
+  return { map, place };
+}
+
 export function renderMap() {
   const league = getLeague();
   const approach = selectedApproach(league);
@@ -271,8 +331,6 @@ export function renderMap() {
     intro: `Every settler walks the realm. The higher their rank on ${approach.name}, the closer they stand to the Radcliffe Camera, and each keeps to the quarter of their favourite resource. The red seals hide the site's secrets: ${found.size} of ${SECRETS.length} found in this browser.`,
   });
 
-  const feet = svg('g', { class: 'map-feet' });
-  const people = svg('g');
   const seals = svg('g');
   const riddle = h('div', { class: 'map-riddle', 'aria-live': 'polite' },
     h('p', { class: 'map-riddle-hint' }, 'Tap a red seal to read its riddle.'));
@@ -312,54 +370,11 @@ export function renderMap() {
       h('p', null, 'Every hex on the board is worth exactly the same until the dice say otherwise. Every settler is equal until lunch begins. Well spun.'));
   });
 
-  const map = svg('svg', { class: 'map-svg', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'An illustrated map of Oxford with each player marked on it' },
-    backdrop(), cityLayer(), scaleBar(), compass, cartoucheHolder, feet, people, seals);
-
-  // Settlers: each walks to their place, then potters about it, leaving footprints that fade.
-  const walkers = new Map();
-  function place(n) {
+  const { map, place: placeSettlers } = livingMap(league, approach, { calm, under: [scaleBar(), compass, cartoucheHolder], over: [seals] });
+  const place = (n) => {
     cartoucheHolder.replaceChildren(cartouche(n, total, league.games));
-    for (const spot of positions(league, approach, n)) {
-      let walker = walkers.get(spot.profile.id);
-      if (!walker) {
-        const { body, crown } = walkerFor(spot, league.reference.colours);
-        walker = { body, crown, pos: { ...spot.home }, target: { ...spot.home }, left: false };
-        body.style.transform = `translate(${spot.home.x}px, ${spot.home.y}px)`;
-        people.append(body);
-        walkers.set(spot.profile.id, walker);
-      }
-      walker.home = spot.home;
-      walker.target = { ...spot.home };
-      walker.crown.style.display = spot.crowned ? '' : 'none';
-      walker.body.querySelector('title').textContent = `${spot.profile.name}: ${spot.where}`;
-      if (calm) {
-        walker.pos = { ...spot.home };
-        walker.body.style.transform = `translate(${spot.home.x}px, ${spot.home.y}px)`;
-      }
-    }
-  }
-
-  function tick() {
-    if (!map.isConnected) { clearInterval(ticker); ticker = null; return; }
-    for (const walker of walkers.values()) {
-      const dx = walker.target.x - walker.pos.x;
-      const dy = walker.target.y - walker.pos.y;
-      const distance = Math.hypot(dx, dy);
-      if (distance < 3) {
-        // Potter about near home.
-        const angle = Math.random() * Math.PI * 2;
-        const reach = 4 + Math.random() * 12;
-        walker.target = { x: walker.home.x + Math.cos(angle) * reach, y: walker.home.y + Math.sin(angle) * reach };
-        continue;
-      }
-      const stride = Math.min(distance, distance > 40 ? 22 : 7);
-      const next = { x: walker.pos.x + (dx / distance) * stride, y: walker.pos.y + (dy / distance) * stride };
-      footprint(feet, walker.pos, next, walker.left);
-      walker.left = !walker.left;
-      walker.pos = next;
-      walker.body.style.transform = `translate(${next.x}px, ${next.y}px)`;
-    }
-  }
+    placeSettlers(n);
+  };
 
   // The history slider: drag it, or press play to watch the league unfold.
   const label = h('span', { class: 'map-step' });
@@ -385,10 +400,6 @@ export function renderMap() {
   });
 
   update();
-  if (!calm) {
-    clearInterval(ticker);
-    ticker = setInterval(tick, 380);
-  }
 
   // The map starts folded. Unfolding it is remembered until the page is reloaded.
   const sheet = h('div', { class: 'map-sheet' },
@@ -424,5 +435,5 @@ export function renderMap() {
     sheet,
     riddle,
     list,
-    h('p', { class: 'field-hint' }, 'Found secrets are remembered in this browser only. ', h('a', { class: 'link', href: route('/') }, 'Back to the leaderboard')));
+    h('p', { class: 'field-hint' }, 'Found secrets are remembered in this browser only. ', h('a', { class: 'link', href: route('/') }, 'Back home')));
 }

@@ -10,6 +10,7 @@ import { h, route } from './ui/dom.js';
 import { icon } from './ui/icons.js';
 import { installDelights, lostPage, noteThemeSwitch, proverb } from './ui/delights.js';
 import { renderMap } from './pages/map.js';
+import { renderHome } from './pages/home.js';
 import { renderAbout } from './pages/about.js';
 import { renderData } from './pages/data.js';
 import { renderGames } from './pages/games.js';
@@ -22,7 +23,8 @@ import { renderScoring } from './pages/scoring.js';
 
 const NAV = [
   { group: 'League', items: [
-    { path: '/', label: 'Leaderboard', icon: 'trophy' },
+    { path: '/', label: 'Home', icon: 'hex' },
+    { path: '/leaderboard', label: 'Leaderboard', icon: 'trophy' },
     { path: '/games', label: 'Games', icon: 'dice' },
     { path: '/players', label: 'Players', icon: 'users' },
     { path: '/insights', label: 'Insights', icon: 'chart' },
@@ -39,7 +41,8 @@ const NAV = [
 ];
 
 const ROUTES = [
-  { match: /^\/$/, render: renderLeaderboard, nav: '/' },
+  { match: /^\/$/, render: renderHome, nav: '/' },
+  { match: /^\/leaderboard$/, render: renderLeaderboard, nav: '/leaderboard' },
   { match: /^\/games$/, render: renderGames, nav: '/games' },
   { match: /^\/players$/, render: renderPlayers, nav: '/players' },
   { match: /^\/players\/([^/]+)$/, render: (id) => renderPlayer(decodeURIComponent(id)), nav: '/players' },
@@ -71,8 +74,8 @@ function renderNav(activePath) {
 }
 
 // On phones the sidebar becomes a bottom tab bar. These pages get their own tab; the rest live under More.
-const TABS = ['/', '/games', '/players'];
-const TAB_LABELS = { '/': 'Table', '/games': 'Games', '/players': 'Players' };
+const TABS = ['/', '/leaderboard', '/games'];
+const TAB_LABELS = { '/': 'Home', '/leaderboard': 'Table', '/games': 'Games' };
 const navItems = () => NAV.flatMap(({ items }) => items);
 
 function renderTabBar(activePath) {
@@ -81,14 +84,14 @@ function renderTabBar(activePath) {
     href: route(item.path),
     'aria-current': item.path === activePath ? 'page' : null,
   }, icon(item.icon), h('span', null, TAB_LABELS[item.path]));
-  const [table, games, players] = TABS.map((path) => navItems().find((item) => item.path === path));
+  const [home, table, games] = TABS.map((path) => navItems().find((item) => item.path === path));
   const inMore = activePath && !TABS.includes(activePath);
   document.getElementById('tabbar').replaceChildren(
+    tab(home),
     tab(table),
-    tab(games),
     h('button', { class: 'tab tab-log', type: 'button', onClick: () => openGameForm() },
       h('span', { class: 'hexbtn' }, icon('plus')), h('span', null, 'Log game')),
-    tab(players),
+    tab(games),
     h('button', { class: `tab ${inMore ? 'active' : ''}`.trim(), type: 'button', 'aria-haspopup': 'dialog', onClick: () => openMoreSheet(activePath) },
       icon('menu'), h('span', null, 'More')));
 }
@@ -172,7 +175,7 @@ function showPage() {
     view.replaceChildren(matched.candidate.render(...matched.found.slice(1)));
   } else {
     view.replaceChildren(lostPage(
-      h('a', { class: 'btn', href: route('/') }, 'Back to the leaderboard'),
+      h('a', { class: 'btn', href: route('/') }, 'Back home'),
       h('a', { class: 'btn primary', href: route('/map') }, icon('map'), 'Consult the Map')));
   }
 

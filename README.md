@@ -187,6 +187,10 @@ The repo owner goes to **Settings → Pages → Build and deployment → Source*
 
 League data is read from and written to the repo's default branch. If the default branch changes, the Actions need to be on the new one too.
 
+## The home page
+
+The home page (`js/pages/home.js`) has the crest and a countdown to the next Fun Lunch Friday (Fridays at 12:30; change `MEET_HOUR` and `MEET_MINUTE` there), the podium, the latest game told as a short story with its board, a window onto the Map, and a few league records. The leaderboard lives at `#/leaderboard`.
+
 ## The Map and the easter eggs
 
 **The Map** (`#/map`, `js/pages/map.js`) is an old-style chart of Oxford with every player walking about on it:
