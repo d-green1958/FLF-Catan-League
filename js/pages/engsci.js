@@ -219,7 +219,7 @@ export function renderEngSci() {
         window.location.hash = route('/map/cryogenics');
         break;
       case 'library':
-        say(story, 'South of the cold', 'Wroth Library', 'A quiet room of books. Its reading room opens shortly.');
+        window.location.hash = route('/map/library');
         break;
       case 'corridor':
         say(story, 'Between Room 11 and the Library', 'The corridor', 'It runs the length of the Jenkin Building: Cryogenics at the north end, the Dead Zone and Hølder at the south. The Wallace Room opens straight off it, and a short hallway leads to the Library door.');

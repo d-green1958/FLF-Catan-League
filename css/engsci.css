@@ -167,3 +167,48 @@
 .plan-bridge-deck { fill: #efe8d8; }
 .plan-bridge-rail { stroke: #1e2430; stroke-width: 3; }
 .plan-bridge-plank { stroke: #a49b88; stroke-width: 1; }
+
+/* The Wroth Library: a wall of books above a reading table. */
+.library-room { border-radius: 10px; overflow: hidden; box-shadow: 0 20px 44px -20px rgba(30, 18, 8, .7); border: 10px solid #4a2e16; border-bottom: 0; background: #3b2616; }
+.bookcase { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 0 14px; gap: 0 3px;
+  background: repeating-linear-gradient(180deg, #24160b 0 170px, #6b4428 170px 176px, #4a2e16 176px 184px); box-shadow: inset 0 10px 24px rgba(0, 0, 0, .6); }
+.book-slot { height: 184px; display: flex; align-items: flex-end; padding-bottom: 14px; }
+.book { position: relative; display: flex; align-items: center; justify-content: center; padding: 10px 0; border: 0; border-radius: 3px 3px 1px 1px; cursor: pointer; color: #f1deb0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .35), rgba(255, 255, 255, .12) 30%, rgba(0, 0, 0, .1) 70%, rgba(0, 0, 0, .4)), var(--binding);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .3), 0 2px 3px rgba(0, 0, 0, .5); transition: transform .15s; }
+.book::before, .book::after { content: ""; position: absolute; left: 3px; right: 3px; height: 2px; background: #c9a24b; opacity: .8; }
+.book::before { top: 12px; } .book::after { bottom: 12px; }
+.book span { writing-mode: vertical-rl; transform: rotate(180deg); font-family: "IM Fell English", Georgia, serif; font-size: 11.5px; line-height: 1.05; max-height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.book:hover, .book:focus-visible { transform: translateY(-8px); }
+.reading-area { display: block; width: 100%; height: auto; }
+@media (prefers-reduced-motion: no-preference) {
+  .lamp-pool { animation: lamp 4s ease-in-out infinite alternate; }
+  @keyframes lamp { to { opacity: .7; } }
+  .library-cat { animation: breathe 3s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom; }
+  @keyframes breathe { 50% { transform: scaleY(1.04); } }
+}
+.open-book { border: 0; padding: 0; background: transparent; max-width: min(760px, 96vw); width: 100%; }
+.open-book::backdrop { background: rgba(20, 12, 4, .7); }
+.book-spread { display: grid; grid-template-columns: 1fr 1fr; background: #6b2a1d; padding: 10px; border-radius: 8px; box-shadow: 0 30px 60px rgba(0, 0, 0, .6); }
+.book-page { background: linear-gradient(90deg, #f6ecd2, #efe2c0); padding: 26px 24px; min-height: 300px; font-family: "IM Fell English", Georgia, serif; color: #2a1d0e; display: grid; align-content: center; gap: 10px; }
+.book-page.left { text-align: center; border-right: 1px solid rgba(90, 60, 20, .25); box-shadow: inset -12px 0 18px -12px rgba(90, 60, 20, .45); }
+.book-page.right { box-shadow: inset 12px 0 18px -12px rgba(90, 60, 20, .45); font-size: 17px; line-height: 1.5; }
+.book-page h2 { font-family: "IM Fell English SC", Georgia, serif; font-size: 26px; font-weight: 400; }
+.book-page p { margin: 0; }
+.book-author { font-style: italic; font-size: 17px; }
+.book-year, .book-stamp { font-size: 13px; opacity: .7; }
+.book-stamp { margin-top: 14px !important; letter-spacing: .2em; text-transform: uppercase; font-size: 10.5px; }
+.book-ornament { font-size: 22px; opacity: .6; }
+.book-sand { font-style: italic; color: #9a6a2a; }
+.book-page .btn { justify-self: start; margin-top: 8px; }
+@media (max-width: 600px) {
+  .book-spread { grid-template-columns: 1fr; }
+  .book-page { min-height: 0; }
+  .book-page.left { border-right: 0; border-bottom: 1px solid rgba(90, 60, 20, .25); }
+}
+.dune-desert { inset: 0; z-index: 2147483001; }
+.dune-art { width: 100%; height: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  body.quake .app { animation: quake .18s linear infinite; }
+  @keyframes quake { 25% { transform: translate(2px, 1px); } 75% { transform: translate(-2px, -1px); } }
+}
