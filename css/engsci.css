@@ -6,7 +6,7 @@
 .crumbs [aria-current] { color: var(--ink); font-weight: 600; }
 .crumb-sep { color: var(--faint); }
 
-.plan-sheet { max-width: 780px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(20, 20, 30, .45), 0 0 0 1px rgba(30, 30, 40, .15); }
+.plan-sheet { max-width: 640px; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px -16px rgba(20, 20, 30, .45), 0 0 0 1px rgba(30, 30, 40, .15); }
 .thom-sheet { max-width: 420px; }
 .plan-svg { display: block; width: 100%; height: auto; font-family: var(--font); }
 .plan-paper { fill: #fbfaf6; }
@@ -290,5 +290,8 @@
 }
 
 .plan-svg rect[fill="url(#grid)"] { display: none; }
-.plan-svg g[transform="translate(700 52)"] path { fill: #2a1a0c; }
+.plan-svg g[transform="translate(540 52)"] path { fill: #2a1a0c; }
 .plan-svg .plan-north { fill: #2a1a0c; font-family: "IM Fell English SC", Georgia, serif; }
+
+.plan-svg .plan-outer.thin { stroke-width: 5; }
+.plan-svg .plan-lift .plan-floor { fill: #e6d4a6; }

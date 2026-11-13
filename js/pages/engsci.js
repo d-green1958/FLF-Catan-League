@@ -115,7 +115,8 @@ const rideTo = (direction) => rideLift(direction, (where) => { window.location.h
 // are in the middle, and a corridor runs down the right (east) end, from Cryogenics to the Dead Zone.
 // Doors: Room 11 from the left of Cryogenics' south wall and from the south end of the Wallace Room's west
 // wall; the Library only from its south side, into the Wallace Room; the Wallace Room straight onto the
-// corridor with no door; the corridor into Cryogenics.
+// corridor with no door; the corridor into Cryogenics. South of Hølder, a small bridge crosses to the
+// Thom Building, which has the Lift inside it.
 const ROOMS = [
   { id: 'cryo', name: 'Cryogenics', box: [50, 92, 500, 118] },
   { id: 'room11', name: 'Room 11', box: [50, 210, 180, 250] },
@@ -124,7 +125,6 @@ const ROOMS = [
   { id: 'corridor', name: 'Corridor', box: [490, 210, 60, 250] },
   { id: 'deadzone', name: 'The Dead Zone', box: [50, 460, 500, 86] },
   { id: 'holder', name: 'Hølder-bygningen', box: [50, 546, 500, 134] },
-  { id: 'lift', name: 'The Lift', box: [255, 680, 90, 80] },
 ];
 
 // Doors: [x, y, length, swing]. On a horizontal wall the door runs along x and swings 'up' or 'down';
@@ -138,7 +138,6 @@ const DOORS = [
   [506, 210, 30, 'up'],      // the corridor, into Cryogenics
   [496, 460, 48, 'open-h'],  // the corridor, out onto the Dead Zone
   [285, 546, 30, 'up'],      // Hølder, from the Dead Zone
-  [285, 680, 30, 'up'],      // the Lift, from Hølder
 ];
 
 const desk = (x, y, rotate = 0) => svg('g', { transform: `translate(${x} ${y}) rotate(${rotate})`, class: 'plan-furniture' },
@@ -250,7 +249,7 @@ export function renderEngSci() {
         discover('deadzone');
         break;
       case 'bridge':
-        say(story, 'East of the Dead Zone', 'The bridge', 'A small footbridge across to the Thom Building.');
+        say(story, 'South of Hølder', 'The bridge', 'A small footbridge across to the Thom Building.');
         break;
       case 'holder':
         say(story, 'South of the Dead Zone', 'Hølder-bygningen', 'Velkommen til Hølder-bygningen! Her bygger vi bosættelser, veje og byer.');
@@ -264,29 +263,33 @@ export function renderEngSci() {
     }
   };
 
+  // The Thom Building, south of Hølder across a small bridge, with the Lift inside it.
+  const lift = svg('g', { class: 'plan-room plan-lift', role: 'button', tabindex: '0', 'aria-label': 'The Lift, inside the Thom Building' },
+    svg('rect', { x: 352, y: 772, width: 62, height: 62, class: 'plan-floor' }),
+    svg('path', { d: 'M360 780l46 46M406 780l-46 46', class: 'plan-lift-x' }),
+    svg('text', { x: 383, y: 852, class: 'plan-name small' }, 'THE LIFT'));
+  const rideFromPlan = (event) => { event.stopPropagation(); tap({ id: 'lift' }); };
+  lift.addEventListener('click', rideFromPlan);
+  lift.addEventListener('keydown', (event) => { if (event.key === 'Enter') rideFromPlan(event); });
   const thomBlock = svg('g', { class: 'plan-room plan-thom', role: 'link', tabindex: '0', 'aria-label': 'Go into the Thom Building' },
-    svg('rect', { x: 614, y: 430, width: 116, height: 200, class: 'plan-floor' }),
-    [0, 1, 2, 3].map((row) => svg('path', { d: `M630 ${470 + row * 40}h84`, class: 'plan-thom-line' })),
-    svg('text', { x: 672, y: 452, class: 'plan-name small' }, 'THOM'),
-    svg('text', { x: 672, y: 616, class: 'plan-name small' }, 'BUILDING'));
+    svg('rect', { x: 170, y: 730, width: 260, height: 170, class: 'plan-floor' }),
+    [0, 1, 2].map((row) => svg('path', { d: `M190 ${790 + row * 30}h140`, class: 'plan-thom-line' })),
+    svg('text', { x: 300, y: 758, class: 'plan-name' }, 'Thom Building'));
   thomBlock.addEventListener('click', () => { window.location.hash = route('/map/thom'); });
   thomBlock.addEventListener('keydown', (event) => { if (event.key === 'Enter') window.location.hash = route('/map/thom'); });
   const bridge = svg('g', { class: 'plan-room plan-bridge', role: 'button', tabindex: '0', 'aria-label': 'The bridge to the Thom Building' },
-    svg('rect', { x: 550, y: 490, width: 64, height: 26, class: 'plan-bridge-deck' }),
-    svg('path', { d: 'M550 490h64M550 516h64', class: 'plan-bridge-rail' }),
-    [560, 574, 588, 602].map((x) => svg('path', { d: `M${x} 490v26`, class: 'plan-bridge-plank' })));
+    svg('rect', { x: 282, y: 680, width: 36, height: 50, class: 'plan-bridge-deck' }),
+    svg('path', { d: 'M282 680v50M318 680v50', class: 'plan-bridge-rail' }),
+    [692, 704, 716].map((y) => svg('path', { d: `M282 ${y}h36`, class: 'plan-bridge-plank' })));
   bridge.addEventListener('click', () => tap({ id: 'bridge' }));
 
-  const plan = svg('svg', { class: 'plan-svg', viewBox: '0 0 760 830', role: 'img', 'aria-label': 'Floor plan of the Engineering Science complex. North is at the top.' },
+  const plan = svg('svg', { class: 'plan-svg', viewBox: '0 0 600 950', role: 'img', 'aria-label': 'Floor plan of the Engineering Science complex. North is at the top.' },
     svg('defs', null,
       svg('pattern', { id: 'hatch', width: 12, height: 12, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
-        svg('path', { d: 'M0 0v12', stroke: 'rgba(30, 30, 30, .18)', 'stroke-width': 3 })),
-      svg('pattern', { id: 'grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
-        svg('path', { d: 'M20 0H0V20', fill: 'none', stroke: 'rgba(60, 90, 140, .08)', 'stroke-width': 1 }))),
-    svg('rect', { x: 0, y: 0, width: 760, height: 830, class: 'plan-paper' }),
-    svg('rect', { x: 0, y: 0, width: 760, height: 830, fill: 'url(#grid)' }),
+        svg('path', { d: 'M0 0v12', stroke: 'rgba(30, 30, 30, .18)', 'stroke-width': 3 }))),
+    svg('rect', { x: 0, y: 0, width: 600, height: 950, class: 'plan-paper' }),
     svg('text', { x: 50, y: 50, class: 'plan-title' }, 'ENGINEERING SCIENCE · GROUND FLOOR'),
-    svg('text', { x: 50, y: 72, class: 'plan-subtitle' }, 'Jenkin Building and what lies south of it. Not to scale.'),
+    svg('text', { x: 50, y: 72, class: 'plan-subtitle' }, 'The Jenkin Building, and south across the bridge to the Thom Building. Not to scale.'),
     ROOMS.map((room) => roomShape(room, tap)),
     // The Jenkin Building's outer walls, drawn over the rooms.
     svg('rect', { x: 50, y: 92, width: 500, height: 368, class: 'plan-outer' }),
@@ -294,10 +297,11 @@ export function renderEngSci() {
     DOORS.map(door),
     bridge,
     thomBlock,
-    svg('rect', { x: 543, y: 491, width: 14, height: 24, class: 'plan-door-gap' }),
-    svg('path', { d: 'M300 790v8', class: 'plan-arrow' }),
-    svg('text', { x: 300, y: 812, class: 'plan-subtitle centre' }, 'to the Thom Building, if the lift allows'),
-    svg('g', { transform: 'translate(700 52)' },
+    lift,
+    svg('rect', { x: 170, y: 730, width: 260, height: 170, class: 'plan-outer thin' }),
+    svg('rect', { x: 284, y: 673, width: 32, height: 14, class: 'plan-door-gap' }),
+    svg('rect', { x: 284, y: 723, width: 32, height: 14, class: 'plan-door-gap' }),
+    svg('g', { transform: 'translate(540 52)' },
       svg('path', { d: 'M0 -20l7 18h-14Z', fill: '#b23a26' }), svg('text', { x: 0, y: 14, class: 'plan-north' }, 'N')));
 
   return page(
@@ -317,7 +321,7 @@ export function renderEngSci() {
 
 // ---------- the Thom Building ----------
 // Drawn as an inked elevation on parchment, in the same hand as the Map: Ground to Floor 7, then the
-// Penthouse on Floor 8. The Lift runs up the side in its own shaft, and you can see its car waiting below.
+// Penthouse on Floor 8. The Lift runs up inside the building, along its east side, its car waiting below.
 export function renderThom() {
   const story = panel('Tap a floor. The Penthouse is at the top, and Floor 3 has something swimming in it.');
   const notes = {
@@ -361,7 +365,7 @@ export function renderThom() {
       svg('rect', { x: X, y, width: WIDTH, height: ROW, class: 'thom-wash' }),
       windows,
       svg('path', { d: `M${X - 6} ${y + ROW}h${WIDTH + 12}`, class: 'thom-cornice' }),
-      svg('text', { x: X + WIDTH + 52, y: y + ROW / 2 + 5, class: `thom-label ${special ? 'special' : ''}`.trim() }, floor.name));
+      svg('text', { x: X + WIDTH + 58, y: y + ROW / 2 + 5, class: `thom-label ${special ? 'special' : ''}`.trim() }, floor.name));
     group.addEventListener('click', () => tap(floor));
     group.addEventListener('keydown', (event) => { if (event.key === 'Enter') tap(floor); });
     return group;
@@ -371,7 +375,7 @@ export function renderThom() {
   const car = svg('g', { class: 'thom-lift-car', role: 'button', tabindex: '0', 'aria-label': 'The Lift. Ride down to the complex.' },
     svg('rect', { x: X + WIDTH + 8, y: bottom - ROW + 8, width: 30, height: ROW - 14, class: 'thom-car' }),
     svg('path', { d: `M${X + WIDTH + 23} ${bottom - ROW + 8}v${ROW - 14}`, class: 'thom-mullion' }),
-    svg('path', { d: `M${X + WIDTH + 23} ${TOP - 30}V${bottom - ROW + 8}`, class: 'thom-cable' }));
+    svg('path', { d: `M${X + WIDTH + 23} ${TOP + 4}V${bottom - ROW + 8}`, class: 'thom-cable' }));
   car.addEventListener('click', () => rideTo('down'));
   car.addEventListener('keydown', (event) => { if (event.key === 'Enter') rideTo('down'); });
 
@@ -386,23 +390,22 @@ export function renderThom() {
     svg('text', { x: 280, y: 66, class: 'thom-title' }, 'The Thom Building'),
     svg('text', { x: 280, y: 90, class: 'thom-subtitle' }, 'an elevation, from the lobby to the Penthouse'),
     // The roof: a parapet and a slender flagpole above the Penthouse.
-    svg('path', { d: `M${X - 10} ${TOP}h${WIDTH + 20}M${X} ${TOP - 10}h${WIDTH}v10M${X} ${TOP - 10}v10M${X + WIDTH / 2} ${TOP - 10}v-30`, class: 'thom-line' }),
+    svg('path', { d: `M${X - 10} ${TOP}h${WIDTH + 66}M${X} ${TOP - 10}h${WIDTH + 46}v10M${X} ${TOP - 10}v10M${X + WIDTH / 2} ${TOP - 10}v-30`, class: 'thom-line' }),
     svg('path', { d: `M${X + WIDTH / 2} ${TOP - 40}l18 6-18 6`, class: 'thom-line' }),
-    // The lift shaft, alongside.
-    svg('rect', { x: X + WIDTH + 4, y: TOP - 30, width: 38, height: bottom - TOP + 30, class: 'thom-shaft' }),
-    svg('path', { d: `M${X + WIDTH + 4} ${TOP - 30}h38`, class: 'thom-line' }),
+    // The lift shaft, inside the building along its east side.
+    svg('rect', { x: X + WIDTH + 4, y: TOP, width: 38, height: bottom - TOP, class: 'thom-shaft' }),
     floors.map(storey),
     car,
-    svg('rect', { x: X, y: TOP, width: WIDTH, height: bottom - TOP, class: 'thom-outline' }),
+    svg('rect', { x: X, y: TOP, width: WIDTH + 46, height: bottom - TOP, class: 'thom-outline' }),
     // A plinth and the ground.
-    svg('path', { d: `M${X - 16} ${bottom}h${WIDTH + 80}M${X - 40} ${bottom + 10}h${WIDTH + 140}`, class: 'thom-line' }),
+    svg('path', { d: `M${X - 16} ${bottom}h${WIDTH + 78}M${X - 40} ${bottom + 10}h${WIDTH + 126}`, class: 'thom-line' }),
     svg('path', { d: `M${X + WIDTH / 2 - 16} ${bottom}v-30h32v30`, class: 'thom-line' }),
     svg('text', { x: X + WIDTH + 23, y: bottom + 34, class: 'thom-subtitle' }, 'the Lift'));
 
   return page(
     trail(['The Map', '/map'], ['EngSci complex', '/map/engsci'], ['Thom Building', null]),
     pageHeader({
-      eyebrow: 'Across the bridge from the Dead Zone',
+      eyebrow: 'Across the bridge from Hølder',
       title: 'The Thom Building',
       intro: 'Floor by floor, with the Aquarium on 3 and the Penthouse on 8. The Lift waits in its shaft at the bottom.',
       actions: [
