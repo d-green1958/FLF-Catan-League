@@ -42,6 +42,16 @@
       "viaPassword": true,
       "at": "2026-11-16T19:28:58.551Z",
       "issue": 10
+    },
+    {
+      "action": "added",
+      "type": "player",
+      "id": "max-bowman",
+      "label": "Max Bowman",
+      "by": "Max Bowman",
+      "viaPassword": true,
+      "at": "2026-11-16T19:33:56.562Z",
+      "issue": 11
     }
   ]
 }
