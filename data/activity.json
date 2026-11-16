@@ -32,6 +32,16 @@
       "viaPassword": true,
       "at": "2026-11-06T19:40:57.050Z",
       "issue": 9
+    },
+    {
+      "action": "added",
+      "type": "player",
+      "id": "magne-rasmussen",
+      "label": "Magne Rasmussen",
+      "by": "Magne",
+      "viaPassword": true,
+      "at": "2026-11-16T19:28:58.551Z",
+      "issue": 10
     }
   ]
 }
